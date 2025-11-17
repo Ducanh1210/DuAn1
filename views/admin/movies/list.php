@@ -54,11 +54,23 @@
                   <?php endif; ?>
                 </td>
                 <td>
-                  <?php if ($item['status'] == 'active'): ?>
-                    <span class="badge bg-success">Đang chiếu</span>
-                  <?php else: ?>
-                    <span class="badge bg-danger">Ngừng chiếu</span>
-                  <?php endif; ?>
+                  <?php
+                  $today = date('Y-m-d');
+                  $releaseDate = $item['release_date'] ? date('Y-m-d', strtotime($item['release_date'])) : null;
+                  $endDate = $item['end_date'] ? date('Y-m-d', strtotime($item['end_date'])) : null;
+                  
+                  // Kiểm tra trạng thái dựa trên ngày
+                  if ($releaseDate && $today < $releaseDate) {
+                    // Chưa đến ngày phát hành
+                    echo '<span class="badge bg-warning text-dark">Sắp chiếu</span>';
+                  } elseif ($item['status'] == 'active' && $releaseDate && $today >= $releaseDate && ($endDate === null || $today <= $endDate)) {
+                    // Đang trong thời gian chiếu
+                    echo '<span class="badge bg-success">Đang chiếu</span>';
+                  } else {
+                    // Đã hết hạn hoặc ngừng chiếu
+                    echo '<span class="badge bg-danger">Ngừng chiếu</span>';
+                  }
+                  ?>
                 </td>
                 <td>
                   <div class="btn-group" role="group">

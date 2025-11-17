@@ -71,10 +71,6 @@ class MoviesController
             $errors['format'] = "Bạn vui lòng chọn định dạng";
         }
 
-        if (empty(trim($_POST['status'] ?? ''))) {
-            $errors['status'] = "Bạn vui lòng chọn trạng thái";
-        }
-
         // Kiểm tra và upload ảnh (chỉ khi không có lỗi validation ban đầu)
         $imagePath = null;
         if (empty($errors) && !empty($_FILES['image']['name'])) {
@@ -112,21 +108,35 @@ class MoviesController
 
         // Nếu không có lỗi, lưu vào database
         if (empty($errors)) {
+            // Tự động tính status dựa trên ngày
+            $today = date('Y-m-d');
+            $releaseDate = trim($_POST['release_date']);
+            $endDate = trim($_POST['end_date'] ?? '');
+            
+            $status = 'active'; // Mặc định là active
+            if ($endDate && $today > $endDate) {
+                // Nếu đã quá ngày kết thúc
+                $status = 'inactive';
+            } elseif ($releaseDate && $today < $releaseDate) {
+                // Nếu chưa đến ngày phát hành, vẫn để active để có thể hiển thị "Sắp chiếu"
+                $status = 'active';
+            }
+            
             $data = [
                 'title' => trim($_POST['title']),
                 'description' => trim($_POST['description']),
                 'image' => $imagePath,
                 'trailer' => trim($_POST['trailer'] ?? ''),
                 'duration' => trim($_POST['duration']),
-                'release_date' => trim($_POST['release_date']),
-                'end_date' => trim($_POST['end_date'] ?? ''),
+                'release_date' => $releaseDate,
+                'end_date' => $endDate ?: null,
                 'format' => trim($_POST['format']),
                 'original_language' => trim($_POST['original_language'] ?? ''),
                 'subtitle_or_dub' => trim($_POST['subtitle_or_dub'] ?? ''),
                 'age_rating' => trim($_POST['age_rating'] ?? ''),
                 'producer' => trim($_POST['producer'] ?? ''),
                 'genre_id' => trim($_POST['genre_id']),
-                'status' => trim($_POST['status'])
+                'status' => $status
             ];
             $this->movie->insert($data);
             header('Location: ' . BASE_URL . '?act=/');
@@ -185,10 +195,6 @@ class MoviesController
                 $errors['format'] = "Bạn vui lòng chọn định dạng";
             }
 
-            if (empty(trim($_POST['status'] ?? ''))) {
-                $errors['status'] = "Bạn vui lòng chọn trạng thái";
-            }
-
             // Lấy thông tin phim hiện tại
             $imagePath = $movie['image']; // Giữ nguyên ảnh cũ nếu không có ảnh mới
 
@@ -231,21 +237,35 @@ class MoviesController
 
             // Nếu không có lỗi, cập nhật phim trong cơ sở dữ liệu
             if (empty($errors)) {
+                // Tự động tính status dựa trên ngày
+                $today = date('Y-m-d');
+                $releaseDate = trim($_POST['release_date']);
+                $endDate = trim($_POST['end_date'] ?? '');
+                
+                $status = 'active'; // Mặc định là active
+                if ($endDate && $today > $endDate) {
+                    // Nếu đã quá ngày kết thúc
+                    $status = 'inactive';
+                } elseif ($releaseDate && $today < $releaseDate) {
+                    // Nếu chưa đến ngày phát hành, vẫn để active để có thể hiển thị "Sắp chiếu"
+                    $status = 'active';
+                }
+                
                 $data = [
                     'title' => trim($_POST['title']),
                     'description' => trim($_POST['description']),
                     'image' => $imagePath,
                     'trailer' => trim($_POST['trailer'] ?? ''),
                     'duration' => trim($_POST['duration']),
-                    'release_date' => trim($_POST['release_date']),
-                    'end_date' => trim($_POST['end_date'] ?? ''),
+                    'release_date' => $releaseDate,
+                    'end_date' => $endDate ?: null,
                     'format' => trim($_POST['format']),
                     'original_language' => trim($_POST['original_language'] ?? ''),
                     'subtitle_or_dub' => trim($_POST['subtitle_or_dub'] ?? ''),
                     'age_rating' => trim($_POST['age_rating'] ?? ''),
                     'producer' => trim($_POST['producer'] ?? ''),
                     'genre_id' => trim($_POST['genre_id']),
-                    'status' => trim($_POST['status'])
+                    'status' => $status
                 ];
                 $this->movie->update($id, $data);
                 header('Location: ' . BASE_URL . '?act=/');

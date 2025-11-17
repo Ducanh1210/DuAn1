@@ -22,6 +22,13 @@ require_once('./controllers/AuthController.php');
 require_once('./controllers/GenresController.php');
 require_once('./controllers/CinemasController.php');
 require_once('./models/Cinema.php');
+require_once('./controllers/RoomsController.php');
+require_once('./models/Room.php');
+require_once('./controllers/SeatsController.php');
+require_once('./models/Seat.php');
+require_once('./controllers/CommentsController.php');
+require_once('./models/Comment.php');
+require_once('./controllers/BookingController.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -32,6 +39,8 @@ match ($act) {
     'trangchu' => (new MoviesController)->trangchu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
     'movies' => (new MoviesController)->movieDetail(),
+    'datve' => (new BookingController)->selectSeats(),
+    'api-seats' => (new BookingController)->getSeatsApi(),
     
     // Auth routes (Client)
     'dangky' => (new AuthController)->register(),
@@ -77,6 +86,27 @@ match ($act) {
     'cinemas-create' => (new CinemasController)->create(),
     'cinemas-edit' => (new CinemasController)->edit(),
     'cinemas-delete' => (new CinemasController)->delete(),
+
+    // Rooms routes (Admin)
+    'rooms' => (new RoomsController)->list(),
+    'rooms-create' => (new RoomsController)->create(),
+    'rooms-edit' => (new RoomsController)->edit(),
+    'rooms-delete' => (new RoomsController)->delete(),
+    'rooms-show' => (new RoomsController)->show(),
+
+    // Seats routes (Admin)
+    'seats' => (new SeatsController)->list(),
+    'seats-create' => (new SeatsController)->create(),
+    'seats-edit' => (new SeatsController)->edit(),
+    'seats-delete' => (new SeatsController)->delete(),
+    'seats-show' => (new SeatsController)->show(),
+    'seats-seatmap' => (new SeatsController)->seatMap(),
+    'seats-generate' => (new SeatsController)->generateSeats(),
+
+    // Comments routes (Admin)
+    'comments' => (new CommentsController)->list(),
+    'comments-show' => (new CommentsController)->show(),
+    'comments-delete' => (new CommentsController)->delete(),
 
     default => notFound(),
 }

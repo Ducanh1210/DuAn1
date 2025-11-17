@@ -160,16 +160,6 @@
               <?php endif; ?>
             </div>
 
-            <div class="mb-3">
-              <label for="status" class="form-label">Trạng thái <span class="text-danger">*</span></label>
-              <select name="status" id="status" class="form-select <?= !empty($errors['status']) ? 'is-invalid' : '' ?>" required>
-                <option value="active" <?= (isset($_POST['status']) && $_POST['status'] == 'active') || !isset($_POST['status']) ? 'selected' : '' ?>>Đang chiếu</option>
-                <option value="inactive" <?= (isset($_POST['status']) && $_POST['status'] == 'inactive') ? 'selected' : '' ?>>Ngừng chiếu</option>
-              </select>
-              <?php if (!empty($errors['status'])): ?>
-                <div class="text-danger small mt-1"><?= $errors['status'] ?></div>
-              <?php endif; ?>
-            </div>
           </div>
         </div>
 
