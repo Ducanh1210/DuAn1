@@ -19,7 +19,7 @@
         </div>
       <?php endif; ?>
 
-      <form action="" method="post" id="seatForm">
+      <form action="" method="post" id="seatForm" onsubmit="return validateSeatForm(event)">
         <div class="row">
           <div class="col-md-8">
             <div class="mb-3">

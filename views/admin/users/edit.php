@@ -19,7 +19,7 @@
       </div>
       <?php endif; ?>
 
-      <form action="" method="post">
+      <form action="" method="post" id="userForm" onsubmit="return validateUserForm(event)">
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
@@ -146,5 +146,59 @@
       });
     }
   });
+
+  // Validation function
+  function validateUserForm(event) {
+    const fullName = document.getElementById('full_name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    const phone = document.getElementById('phone').value.trim();
+
+    if (!fullName || fullName === '') {
+      alert('Vui lòng nhập họ tên!');
+      document.getElementById('full_name').focus();
+      return false;
+    }
+
+    if (!email || email === '') {
+      alert('Vui lòng nhập email!');
+      document.getElementById('email').focus();
+      return false;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Vui lòng nhập email hợp lệ!');
+      document.getElementById('email').focus();
+      return false;
+    }
+
+    // Password is optional in edit, but if provided, must be at least 6 characters
+    if (password && password !== '' && password.length < 6) {
+      alert('Mật khẩu phải có ít nhất 6 ký tự!');
+      document.getElementById('password').focus();
+      return false;
+    }
+
+    if (!role || role === '') {
+      alert('Vui lòng chọn quyền!');
+      document.getElementById('role').focus();
+      return false;
+    }
+
+    // Validate phone if provided
+    if (phone && phone !== '') {
+      const phoneRegex = /^[0-9]{10,11}$/;
+      if (!phoneRegex.test(phone)) {
+        alert('Số điện thoại phải có 10-11 chữ số!');
+        document.getElementById('phone').focus();
+        return false;
+      }
+    }
+
+    return true;
+  }
 </script>
 
