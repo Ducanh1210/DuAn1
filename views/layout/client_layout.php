@@ -122,7 +122,7 @@ if (session_status() === PHP_SESSION_NONE) {
                                 <i class="bi bi-person"></i>
                                 <span>Thông tin cá nhân</span>
                             </a>
-                            <a href="<?= BASE_URL ?>?act=thethanhvien">
+                            <a href="<?= BASE_URL ?>?act=profile&tab=membership">
                                 <i class="bi bi-credit-card"></i>
                                 <span>Thẻ thành viên</span>
                             </a>

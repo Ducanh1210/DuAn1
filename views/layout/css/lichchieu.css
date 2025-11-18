@@ -28,6 +28,8 @@ body {
   width: 100%;
   background: #0d1113; /* MÀU NỀN HEADER LIỀN KHỐI */
   padding: 20px 0;
+  position: relative;
+  z-index: 1000;
 }
 
 .header-container {

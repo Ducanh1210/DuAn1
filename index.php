@@ -30,6 +30,7 @@ require_once('./controllers/CommentsController.php');
 require_once('./models/Comment.php');
 require_once('./controllers/BookingController.php');
 require_once('./models/Booking.php');
+require_once('./controllers/ProfileController.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -48,6 +49,11 @@ match ($act) {
     'dangky' => (new AuthController)->register(),
     'dangnhap' => (new AuthController)->login(),
     'dangxuat' => (new AuthController)->logout(),
+    
+    // Profile routes (Client)
+    'profile' => (new ProfileController)->index(),
+    'profile-update' => (new ProfileController)->update(),
+    'profile-change-password' => (new ProfileController)->changePassword(),
 
     // Dashboard route
     'dashboard' => (new DashboardController)->index(),
