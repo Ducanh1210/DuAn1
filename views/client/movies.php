@@ -713,7 +713,7 @@ function renderSeatSelection(data, showtimeTime) {
                 <div class="ticket-quantity-section">
                     <div class="quantity-selector">
                         <label>Người lớn:</label>
-                        <select id="adultQuantity" onchange="updateTicketSelection()" class="quantity-select">
+                        <select id="adultQuantity" onchange="validateAndUpdateQuantity(event)" class="quantity-select">
                             <option value="0">0</option>
                             <option value="1">1</option>
                             <option value="2">2</option>
@@ -727,7 +727,7 @@ function renderSeatSelection(data, showtimeTime) {
                     </div>
                     <div class="quantity-selector">
                         <label>Sinh viên:</label>
-                        <select id="studentQuantity" onchange="updateTicketSelection()" class="quantity-select">
+                        <select id="studentQuantity" onchange="validateAndUpdateQuantity(event)" class="quantity-select">
                             <option value="0">0</option>
                             <option value="1">1</option>
                             <option value="2">2</option>
@@ -1133,6 +1133,41 @@ function continueBooking() {
 
 let selectedGroups = []; // Mảng các nhóm ghế đã chọn
 let remainingSeats = 0; // Số ghế còn lại cần chọn
+
+function validateAndUpdateQuantity(event) {
+    const adultSelect = document.getElementById('adultQuantity');
+    const studentSelect = document.getElementById('studentQuantity');
+    
+    let adultValue = parseInt(adultSelect.value) || 0;
+    let studentValue = parseInt(studentSelect.value) || 0;
+    let total = adultValue + studentValue;
+    
+    // Kiểm tra tổng số không vượt quá 8
+    if (total > 8) {
+        // Tìm xem dropdown nào vừa được thay đổi
+        const changedSelect = event ? event.target : null;
+        
+        if (changedSelect && changedSelect.id === 'adultQuantity') {
+            // Nếu thay đổi người lớn, giảm sinh viên
+            studentValue = Math.max(0, 8 - adultValue);
+            studentSelect.value = studentValue;
+        } else if (changedSelect && changedSelect.id === 'studentQuantity') {
+            // Nếu thay đổi sinh viên, giảm người lớn
+            adultValue = Math.max(0, 8 - studentValue);
+            adultSelect.value = adultValue;
+        } else {
+            // Nếu không xác định được, điều chỉnh sinh viên
+            studentValue = Math.max(0, 8 - adultValue);
+            studentSelect.value = studentValue;
+        }
+        
+        total = adultValue + studentValue;
+        alert(`Tổng số người không được vượt quá 8 người! Đã tự động điều chỉnh.`);
+    }
+    
+    // Cập nhật sau khi validate
+    updateTicketSelection();
+}
 
 function updateTicketSelection() {
     adultCount = parseInt(document.getElementById('adultQuantity').value) || 0;
