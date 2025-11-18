@@ -19,12 +19,12 @@
         </div>
       <?php endif; ?>
 
-      <form action="" method="post" id="roomForm">
+      <form action="" method="post" id="roomForm" onsubmit="return validateRoomForm(event)">
         <div class="row">
           <div class="col-md-8">
             <div class="mb-3">
               <label for="cinema_id" class="form-label">Rạp <span class="text-danger">*</span></label>
-              <select name="cinema_id" id="cinema_id" class="form-select <?= !empty($errors['cinema_id']) ? 'is-invalid' : '' ?>" required>
+              <select name="cinema_id" id="cinema_id" class="form-select <?= !empty($errors['cinema_id']) ? 'is-invalid' : '' ?>" >
                 <option value="">-- Chọn rạp --</option>
                 <?php if (!empty($cinemas)): ?>
                   <?php foreach ($cinemas as $cinema): ?>
@@ -46,7 +46,7 @@
                      id="room_code" 
                      class="form-control <?= !empty($errors['room_code']) ? 'is-invalid' : '' ?>" 
                      value="<?= htmlspecialchars($_POST['room_code'] ?? $room['room_code'] ?? '') ?>" 
-                     required
+                     
                      placeholder="VD: R1, R2, R3...">
               <?php if (!empty($errors['room_code'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['room_code'] ?></div>
@@ -60,7 +60,7 @@
                      id="name" 
                      class="form-control <?= !empty($errors['name']) ? 'is-invalid' : '' ?>" 
                      value="<?= htmlspecialchars($_POST['name'] ?? $room['name'] ?? '') ?>" 
-                     required
+                     
                      placeholder="VD: Phòng Chiếu 1, Phòng Chiếu 2...">
               <?php if (!empty($errors['name'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['name'] ?></div>
@@ -75,7 +75,7 @@
                      class="form-control <?= !empty($errors['seat_count']) ? 'is-invalid' : '' ?>" 
                      value="<?= htmlspecialchars($_POST['seat_count'] ?? $room['seat_count'] ?? '') ?>" 
                      min="1"
-                     required
+                     
                      placeholder="VD: 150, 200...">
               <?php if (!empty($errors['seat_count'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['seat_count'] ?></div>

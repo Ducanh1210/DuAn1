@@ -62,3 +62,17 @@
     </div>
   </div>
 </div>
+
+<script>
+  function validateGenreForm(event) {
+    const name = document.getElementById('name').value.trim();
+
+    if (!name || name === '') {
+      alert('Vui lòng nhập tên thể loại!');
+      document.getElementById('name').focus();
+      return false;
+    }
+
+    return true;
+  }
+</script>

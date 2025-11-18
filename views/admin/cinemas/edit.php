@@ -19,7 +19,7 @@
         </div>
       <?php endif; ?>
 
-      <form action="" method="post">
+      <form action="" method="post" id="cinemaForm" onsubmit="return validateCinemaForm(event)">
         <div class="row">
           <div class="col-md-8">
             <div class="mb-3">
@@ -29,7 +29,7 @@
                      id="name" 
                      class="form-control <?= !empty($errors['name']) ? 'is-invalid' : '' ?>" 
                      value="<?= htmlspecialchars($_POST['name'] ?? $cinema['name']) ?>" 
-                     required
+                     
                      placeholder="VD: CGV Times City, Galaxy Nguyễn Du...">
               <?php if (!empty($errors['name'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['name'] ?></div>
@@ -62,3 +62,34 @@
     </div>
   </div>
 </div>
+
+<script>
+  function validateCinemaForm(event) {
+    const name = document.getElementById('name').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const phone = document.getElementById('phone') ? document.getElementById('phone').value.trim() : '';
+
+    if (!name || name === '') {
+      alert('Vui lòng nhập tên rạp!');
+      document.getElementById('name').focus();
+      return false;
+    }
+
+    if (!address || address === '') {
+      alert('Vui lòng nhập địa chỉ!');
+      document.getElementById('address').focus();
+      return false;
+    }
+
+    if (phone && phone !== '') {
+      const phoneRegex = /^[0-9]{10,11}$/;
+      if (!phoneRegex.test(phone)) {
+        alert('Số điện thoại phải có 10-11 chữ số!');
+        document.getElementById('phone').focus();
+        return false;
+      }
+    }
+
+    return true;
+  }
+</script>

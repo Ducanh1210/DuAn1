@@ -19,12 +19,12 @@
     </div>
 <?php endif; ?>
 
-      <form action="" method="post" enctype="multipart/form-data">
+      <form action="" method="post" enctype="multipart/form-data" id="movieForm" onsubmit="return validateMovieForm(event)">
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
               <label for="title" class="form-label">Tên phim <span class="text-danger">*</span></label>
-              <input type="text" name="title" id="title" class="form-control <?= !empty($errors['title']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['title'] ?? '') ?>" required>
+              <input type="text" name="title" id="title" class="form-control <?= !empty($errors['title']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['title'] ?? '') ?>" >
               <?php if (!empty($errors['title'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['title'] ?></div>
               <?php endif; ?>
@@ -51,7 +51,7 @@
                   <img src="" alt="Preview" id="imagePreview" style="max-width: 200px; height: auto; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
                 </div>
               <?php endif; ?>
-              <input type="file" name="image" id="image" class="form-control <?= !empty($errors['image']) ? 'is-invalid' : '' ?>" accept="image/*" required>
+              <input type="file" name="image" id="image" class="form-control <?= !empty($errors['image']) ? 'is-invalid' : '' ?>" accept="image/*" >
               <?php if (!empty($errors['image'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['image'] ?></div>
               <?php endif; ?>
@@ -199,4 +199,88 @@
       reader.readAsDataURL(file);
     }
   });
+
+  // Validation function
+  function validateMovieForm(event) {
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const image = document.getElementById('image').files[0];
+    const genreId = document.getElementById('genre_id').value;
+    const duration = document.getElementById('duration').value;
+    const releaseDate = document.getElementById('release_date').value;
+    const producer = document.getElementById('producer').value.trim();
+    const ageRating = document.getElementById('age_rating').value;
+    const format = document.getElementById('format').value;
+    const originalLanguage = document.getElementById('original_language').value.trim();
+
+    if (!title || title === '') {
+      alert('Vui lòng nhập tên phim!');
+      document.getElementById('title').focus();
+      return false;
+    }
+
+    if (!description || description === '') {
+      alert('Vui lòng nhập mô tả phim!');
+      document.getElementById('description').focus();
+      return false;
+    }
+
+    if (!image) {
+      alert('Vui lòng chọn hình ảnh!');
+      document.getElementById('image').focus();
+      return false;
+    }
+
+    // Kiểm tra định dạng file ảnh
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(image.type)) {
+      alert('Vui lòng chọn file ảnh hợp lệ (JPG, PNG, GIF, WEBP)!');
+      document.getElementById('image').focus();
+      return false;
+    }
+
+    if (!genreId || genreId === '') {
+      alert('Vui lòng chọn thể loại!');
+      document.getElementById('genre_id').focus();
+      return false;
+    }
+
+    if (!duration || duration === '' || parseInt(duration) <= 0) {
+      alert('Vui lòng nhập thời lượng phim hợp lệ!');
+      document.getElementById('duration').focus();
+      return false;
+    }
+
+    if (!releaseDate || releaseDate === '') {
+      alert('Vui lòng chọn ngày khởi chiếu!');
+      document.getElementById('release_date').focus();
+      return false;
+    }
+
+    if (!producer || producer === '') {
+      alert('Vui lòng nhập nhà xuất bản!');
+      document.getElementById('producer').focus();
+      return false;
+    }
+
+    if (!ageRating || ageRating === '') {
+      alert('Vui lòng chọn độ tuổi!');
+      document.getElementById('age_rating').focus();
+      return false;
+    }
+
+    if (!format || format === '') {
+      alert('Vui lòng chọn định dạng!');
+      document.getElementById('format').focus();
+      return false;
+    }
+
+    if (!originalLanguage || originalLanguage === '') {
+      alert('Vui lòng nhập ngôn ngữ gốc!');
+      document.getElementById('original_language').focus();
+      return false;
+    }
+
+    return true;
+  }
 </script>

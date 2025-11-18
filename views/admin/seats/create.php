@@ -19,7 +19,7 @@
         </div>
       <?php endif; ?>
 
-      <form action="" method="post" id="seatForm">
+      <form action="" method="post" id="seatForm" onsubmit="return validateSeatForm(event)">
         <div class="row">
           <div class="col-md-8">
             <div class="mb-3">
@@ -117,6 +117,41 @@
     </div>
   </div>
 </div>
+
+<script>
+  function validateSeatForm(event) {
+    const roomId = document.getElementById('room_id').value;
+    const rowLabel = document.getElementById('row_label').value.trim().toUpperCase();
+    const seatNumber = document.getElementById('seat_number').value;
+
+    if (!roomId || roomId === '') {
+      alert('Vui lòng chọn phòng!');
+      document.getElementById('room_id').focus();
+      return false;
+    }
+
+    if (!rowLabel || rowLabel === '') {
+      alert('Vui lòng nhập nhãn hàng!');
+      document.getElementById('row_label').focus();
+      return false;
+    }
+
+    // Validate row label is a single letter A-Z
+    if (!/^[A-Z]$/.test(rowLabel)) {
+      alert('Nhãn hàng phải là 1 chữ cái từ A-Z!');
+      document.getElementById('row_label').focus();
+      return false;
+    }
+
+    if (!seatNumber || seatNumber === '' || parseInt(seatNumber) <= 0) {
+      alert('Vui lòng nhập số ghế hợp lệ!');
+      document.getElementById('seat_number').focus();
+      return false;
+    }
+
+    return true;
+  }
+</script>
 
 <script>
   // Validation form với alert
