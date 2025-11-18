@@ -13,8 +13,12 @@ class DashboardController
      */
     public function index()
     {
-        // Thống kê nhân viên (giả sử 4 nhân viên, có thể lấy từ database sau)
-        $totalStaff = 4; // Có thể query từ bảng users WHERE role = 'staff'
+        // Kiểm tra quyền admin hoặc staff
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrStaff();
+        
+        // Thống kê nhân viên
+        $totalStaff = $this->getTotalStaff();
         
         // Thống kê số vé đã bán
         $totalTickets = $this->getTotalTickets();
@@ -27,9 +31,12 @@ class DashboardController
         
         // Thống kê số phim
         $totalMovies = $this->getTotalMovies();
+        $activeMovies = $this->getActiveMovies();
         
         // Thống kê số người dùng
         $totalUsers = $this->getTotalUsers();
+        $activeUsers = $this->getActiveUsers();
+        $bannedUsers = $this->getBannedUsers();
         
         // Thống kê số rạp
         $totalCinemas = $this->getTotalCinemas();
@@ -39,6 +46,18 @@ class DashboardController
         
         // Doanh thu hôm nay
         $todayRevenue = $this->getTodayRevenue();
+        
+        // Thống kê theo tháng (7 tháng gần nhất)
+        $monthlyStats = $this->getMonthlyStats();
+        
+        // Top phim bán chạy
+        $topMovies = $this->getTopMovies();
+        
+        // Đặt vé gần đây
+        $recentBookings = $this->getRecentBookings();
+        
+        // Thống kê theo trạng thái đặt vé
+        $bookingStatusStats = $this->getBookingStatusStats();
 
         render('admin/dashboard.php', [
             'totalStaff' => $totalStaff,
@@ -46,10 +65,17 @@ class DashboardController
             'totalRevenue' => $totalRevenue,
             'totalRooms' => $totalRooms,
             'totalMovies' => $totalMovies,
+            'activeMovies' => $activeMovies,
             'totalUsers' => $totalUsers,
+            'activeUsers' => $activeUsers,
+            'bannedUsers' => $bannedUsers,
             'totalCinemas' => $totalCinemas,
             'todayBookings' => $todayBookings,
-            'todayRevenue' => $todayRevenue
+            'todayRevenue' => $todayRevenue,
+            'monthlyStats' => $monthlyStats,
+            'topMovies' => $topMovies,
+            'recentBookings' => $recentBookings,
+            'bookingStatusStats' => $bookingStatusStats
         ]);
     }
 
@@ -188,6 +214,168 @@ class DashboardController
             return $result['total'] ?? 0;
         } catch (Exception $e) {
             return 0;
+        }
+    }
+
+    /**
+     * Lấy tổng số nhân viên
+     */
+    private function getTotalStaff()
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM users WHERE role = 'staff'";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetch();
+            return $result['total'] ?? 0;
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Lấy số phim đang hoạt động
+     */
+    private function getActiveMovies()
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM movies WHERE status = 'active'";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetch();
+            return $result['total'] ?? 0;
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Lấy số người dùng đang hoạt động
+     */
+    private function getActiveUsers()
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM users WHERE status = 'active' OR status IS NULL";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetch();
+            return $result['total'] ?? 0;
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Lấy số người dùng bị khóa
+     */
+    private function getBannedUsers()
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM users WHERE status = 'banned'";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetch();
+            return $result['total'] ?? 0;
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Lấy thống kê theo tháng (7 tháng gần nhất)
+     */
+    private function getMonthlyStats()
+    {
+        try {
+            $sql = "SELECT 
+                        DATE_FORMAT(booking_date, '%Y-%m') as month,
+                        COUNT(*) as bookings,
+                        SUM(final_amount) as revenue
+                    FROM bookings 
+                    WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                    AND (status = 'confirmed' OR status = 'completed')
+                    GROUP BY DATE_FORMAT(booking_date, '%Y-%m')
+                    ORDER BY month ASC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Lấy top phim bán chạy
+     */
+    private function getTopMovies($limit = 5)
+    {
+        try {
+            $sql = "SELECT 
+                        m.id,
+                        m.title,
+                        m.image,
+                        COUNT(b.id) as booking_count,
+                        SUM(b.final_amount) as revenue
+                    FROM movies m
+                    LEFT JOIN showtimes st ON m.id = st.movie_id
+                    LEFT JOIN bookings b ON st.id = b.showtime_id
+                    WHERE b.status IN ('confirmed', 'completed') OR b.id IS NULL
+                    GROUP BY m.id, m.title, m.image
+                    ORDER BY booking_count DESC, revenue DESC
+                    LIMIT :limit";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Lấy đặt vé gần đây
+     */
+    private function getRecentBookings($limit = 10)
+    {
+        try {
+            $sql = "SELECT 
+                        b.*,
+                        u.full_name as user_name,
+                        u.email as user_email,
+                        m.title as movie_title,
+                        st.show_date,
+                        st.start_time
+                    FROM bookings b
+                    LEFT JOIN users u ON b.user_id = u.id
+                    LEFT JOIN showtimes st ON b.showtime_id = st.id
+                    LEFT JOIN movies m ON st.movie_id = m.id
+                    ORDER BY b.booking_date DESC
+                    LIMIT :limit";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Lấy thống kê theo trạng thái đặt vé
+     */
+    private function getBookingStatusStats()
+    {
+        try {
+            $sql = "SELECT 
+                        status,
+                        COUNT(*) as count
+                    FROM bookings
+                    GROUP BY status";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            return [];
         }
     }
 }

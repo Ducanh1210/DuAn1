@@ -112,6 +112,7 @@ class UsersController
                     'birth_date' => trim($_POST['birth_date'] ?? ''),
                     'tier_id' => !empty($_POST['tier_id']) ? trim($_POST['tier_id']) : null,
                     'role' => trim($_POST['role']),
+                    'status' => 'active',
                     'total_spending' => 0.00
                 ];
                 $this->user->insert($data);
@@ -220,9 +221,9 @@ class UsersController
     }
 
     /**
-     * Xóa user (Admin)
+     * Ban user (Khóa tài khoản)
      */
-    public function delete()
+    public function ban()
     {
         // Kiểm tra quyền admin
         require_once __DIR__ . '/../commons/auth.php';
@@ -236,12 +237,43 @@ class UsersController
 
         $user = $this->user->find($id);
         if ($user) {
-            // Không cho phép xóa chính mình (nếu có session)
-            // Có thể thêm logic kiểm tra ở đây
-            $this->user->delete($id);
+            // Không cho phép ban chính mình
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $id) {
+                header('Location: ' . BASE_URL . '?act=users&error=cannot_ban_self');
+                exit;
+            }
+            
+            $this->user->ban($id);
         }
 
-        header('Location: ' . BASE_URL . '?act=users');
+        header('Location: ' . BASE_URL . '?act=users&success=banned');
+        exit;
+    }
+
+    /**
+     * Unban user (Mở khóa tài khoản)
+     */
+    public function unban()
+    {
+        // Kiểm tra quyền admin
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdmin();
+        
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: ' . BASE_URL . '?act=users');
+            exit;
+        }
+
+        $user = $this->user->find($id);
+        if ($user) {
+            $this->user->unban($id);
+        }
+
+        header('Location: ' . BASE_URL . '?act=users&success=unbanned');
         exit;
     }
 

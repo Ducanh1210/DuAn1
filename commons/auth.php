@@ -1,10 +1,20 @@
 <?php
 /**
+ * Hàm khởi động session (chỉ start một lần)
+ */
+function startSessionIfNotStarted()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+}
+
+/**
  * Hàm kiểm tra đăng nhập
  */
 function isLoggedIn()
 {
-    session_start();
+    startSessionIfNotStarted();
     return isset($_SESSION['user_id']);
 }
 
@@ -13,7 +23,7 @@ function isLoggedIn()
  */
 function getCurrentUser()
 {
-    session_start();
+    startSessionIfNotStarted();
     if (!isset($_SESSION['user_id'])) {
         return null;
     }
@@ -28,7 +38,7 @@ function getCurrentUser()
  */
 function hasRole($role)
 {
-    session_start();
+    startSessionIfNotStarted();
     return isset($_SESSION['user_role']) && $_SESSION['user_role'] === $role;
 }
 

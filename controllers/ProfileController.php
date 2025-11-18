@@ -17,7 +17,9 @@ class ProfileController
      */
     public function index()
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (!isset($_SESSION['user_id'])) {
             header('Location: ' . BASE_URL . '?act=dangnhap');
             exit;
@@ -75,7 +77,9 @@ class ProfileController
      */
     public function update()
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (!isset($_SESSION['user_id'])) {
             header('Location: ' . BASE_URL . '?act=dangnhap');
             exit;
@@ -128,7 +132,9 @@ class ProfileController
      */
     public function changePassword()
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (!isset($_SESSION['user_id'])) {
             header('Location: ' . BASE_URL . '?act=dangnhap');
             exit;

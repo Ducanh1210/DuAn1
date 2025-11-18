@@ -109,20 +109,28 @@ class AuthController
                 $user = $this->user->findByEmail($email);
                 
                 if ($user && password_verify($password, $user['password'])) {
-                    // Đăng nhập thành công
-                    session_start();
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_email'] = $user['email'];
-                    $_SESSION['user_name'] = $user['full_name'];
-                    $_SESSION['user_role'] = $user['role'] ?? 'customer';
-                    
-                    // Redirect theo role
-                    if (in_array($_SESSION['user_role'], ['admin', 'staff'])) {
-                        header('Location: ' . BASE_URL . '?act=dashboard');
+                    // Kiểm tra trạng thái tài khoản
+                    $status = $user['status'] ?? 'active';
+                    if ($status === 'banned') {
+                        $errors['login'] = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.";
                     } else {
-                        header('Location: ' . BASE_URL . '?act=trangchu');
+                        // Đăng nhập thành công
+                        if (session_status() === PHP_SESSION_NONE) {
+                            session_start();
+                        }
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['user_email'] = $user['email'];
+                        $_SESSION['user_name'] = $user['full_name'];
+                        $_SESSION['user_role'] = $user['role'] ?? 'customer';
+                        
+                        // Redirect theo role
+                        if (in_array($_SESSION['user_role'], ['admin', 'staff'])) {
+                            header('Location: ' . BASE_URL . '?act=dashboard');
+                        } else {
+                            header('Location: ' . BASE_URL . '?act=trangchu');
+                        }
+                        exit;
                     }
-                    exit;
                 } else {
                     $errors['login'] = "Email hoặc mật khẩu không đúng";
                 }
@@ -139,7 +147,9 @@ class AuthController
      */
     public function logout()
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         session_destroy();
         header('Location: ' . BASE_URL . '?act=trangchu');
         exit;

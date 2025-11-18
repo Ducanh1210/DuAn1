@@ -76,7 +76,8 @@ match ($act) {
     'users' => (new UsersController)->list(),
     'users-create' => (new UsersController)->create(),
     'users-edit' => (new UsersController)->edit(),
-    'users-delete' => (new UsersController)->delete(),
+    'users-ban' => (new UsersController)->ban(),
+    'users-unban' => (new UsersController)->unban(),
     'users-show' => (new UsersController)->show(),
 
     // Permissions routes (Admin)

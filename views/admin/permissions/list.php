@@ -3,14 +3,8 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Quản lý phân quyền</h4>
       <div>
-        <a href="<?= BASE_URL ?>?act=permissions-assign&role=admin" class="btn btn-danger btn-sm">
-          <i class="bi bi-shield-check"></i> Phân quyền Admin
-        </a>
         <a href="<?= BASE_URL ?>?act=permissions-assign&role=staff" class="btn btn-warning btn-sm">
-          <i class="bi bi-person-badge"></i> Phân quyền Staff
-        </a>
-        <a href="<?= BASE_URL ?>?act=permissions-assign&role=customer" class="btn btn-success btn-sm">
-          <i class="bi bi-person"></i> Phân quyền Customer
+          <i class="bi bi-person-badge"></i> Phân quyền cho Nhân viên
         </a>
       </div>
     </div>
@@ -18,6 +12,17 @@
       <?php if (isset($_GET['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
           <i class="bi bi-check-circle"></i> Cập nhật phân quyền thành công!
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
+      <?php if (isset($_GET['error'])): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <?php if ($_GET['error'] === 'admin_cannot_edit'): ?>
+            <i class="bi bi-exclamation-triangle"></i> <strong>Lưu ý:</strong> Admin có tất cả quyền và không thể chỉnh sửa.
+          <?php elseif ($_GET['error'] === 'customer_no_permissions'): ?>
+            <i class="bi bi-exclamation-triangle"></i> <strong>Lưu ý:</strong> Khách hàng chỉ được mua hàng, không có quyền quản trị.
+          <?php endif; ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       <?php endif; ?>
@@ -41,9 +46,19 @@
                 <p class="text-muted mb-3">
                   <strong><?= count($rolePermissions) ?></strong> quyền được gán
                 </p>
-                <a href="<?= BASE_URL ?>?act=permissions-assign&role=<?= $role ?>" class="btn btn-outline-<?= $color ?> btn-sm">
-                  <i class="bi bi-pencil"></i> Chỉnh sửa phân quyền
-                </a>
+                <?php if ($role === 'admin'): ?>
+                  <button class="btn btn-outline-<?= $color ?> btn-sm" disabled title="Admin có tất cả quyền và không thể chỉnh sửa">
+                    <i class="bi bi-shield-check"></i> Quyền cao nhất (Không thể chỉnh sửa)
+                  </button>
+                <?php elseif ($role === 'customer'): ?>
+                  <button class="btn btn-outline-<?= $color ?> btn-sm" disabled title="Khách hàng chỉ được mua hàng">
+                    <i class="bi bi-cart"></i> Chỉ mua hàng (Không có quyền quản trị)
+                  </button>
+                <?php else: ?>
+                  <a href="<?= BASE_URL ?>?act=permissions-assign&role=<?= $role ?>" class="btn btn-outline-<?= $color ?> btn-sm">
+                    <i class="bi bi-pencil"></i> Chỉnh sửa phân quyền
+                  </a>
+                <?php endif; ?>
                 <div class="mt-3">
                   <small class="text-muted">Các quyền hiện tại:</small>
                   <div class="mt-2">

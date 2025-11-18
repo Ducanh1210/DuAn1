@@ -126,6 +126,7 @@ class User
                 birth_date,
                 tier_id,
                 role,
+                status,
                 total_spending
             ) VALUES (
                 :full_name,
@@ -135,6 +136,7 @@ class User
                 :birth_date,
                 :tier_id,
                 :role,
+                :status,
                 :total_spending
             )";
             $stmt = $this->conn->prepare($sql);
@@ -146,6 +148,7 @@ class User
                 ':birth_date' => $data['birth_date'] ?? null,
                 ':tier_id' => $data['tier_id'] ?? null,
                 ':role' => $data['role'] ?? 'customer',
+                ':status' => $data['status'] ?? 'active',
                 ':total_spending' => $data['total_spending'] ?? 0.00
             ]);
             return $this->conn->lastInsertId();
@@ -169,6 +172,11 @@ class User
                 role = :role,
                 total_spending = :total_spending";
             
+            // Cập nhật status nếu có
+            if (isset($data['status'])) {
+                $sql .= ", status = :status";
+            }
+            
             // Chỉ cập nhật password nếu có
             if (!empty($data['password'])) {
                 $sql .= ", password = :password";
@@ -187,6 +195,10 @@ class User
                 ':total_spending' => $data['total_spending'] ?? 0.00
             ];
             
+            if (isset($data['status'])) {
+                $params[':status'] = $data['status'];
+            }
+            
             if (!empty($data['password'])) {
                 $params[':password'] = $data['password'];
             }
@@ -200,18 +212,42 @@ class User
     }
 
     /**
-     * Xóa user
+     * Ban user (khóa tài khoản)
      */
-    public function delete($id)
+    public function ban($id)
     {
         try {
-            $sql = "DELETE FROM users WHERE id = :id";
+            $sql = "UPDATE users SET status = 'banned' WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
             return true;
         } catch (Exception $e) {
             debug($e);
         }
+    }
+
+    /**
+     * Unban user (mở khóa tài khoản)
+     */
+    public function unban($id)
+    {
+        try {
+            $sql = "UPDATE users SET status = 'active' WHERE id = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            return true;
+        } catch (Exception $e) {
+            debug($e);
+        }
+    }
+
+    /**
+     * Xóa user (DEPRECATED - không sử dụng nữa)
+     */
+    public function delete($id)
+    {
+        // Không cho phép xóa user, chỉ ban/unban
+        return false;
     }
 
     /**
