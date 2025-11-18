@@ -29,6 +29,7 @@ require_once('./models/Seat.php');
 require_once('./controllers/CommentsController.php');
 require_once('./models/Comment.php');
 require_once('./controllers/BookingController.php');
+require_once('./models/Booking.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -41,6 +42,7 @@ match ($act) {
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
     'api-seats' => (new BookingController)->getSeatsApi(),
+    'my-bookings' => (new BookingController)->myBookings(),
     
     // Auth routes (Client)
     'dangky' => (new AuthController)->register(),
@@ -107,6 +109,12 @@ match ($act) {
     'comments' => (new CommentsController)->list(),
     'comments-show' => (new CommentsController)->show(),
     'comments-delete' => (new CommentsController)->delete(),
+
+    // Bookings routes (Admin)
+    'bookings' => (new BookingController)->list(),
+    'bookings-show' => (new BookingController)->show(),
+    'bookings-delete' => (new BookingController)->deleteBooking(),
+    'bookings-update-status' => (new BookingController)->updateStatus(),
 
     default => notFound(),
 }

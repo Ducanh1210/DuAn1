@@ -55,7 +55,7 @@
     <a href="?act=comments" class="<?= in_array($_GET['act'] ?? '', ['comments', 'comments-show', 'comments-delete']) ? 'active' : '' ?>">
       <i class="bi bi-chat-left-text"></i><span class="label">Quản lý Bình Luận</span>
     </a>
-    <a href="?act=datve" class="<?= ($_GET['act'] ?? '') == 'datve' ? 'active' : '' ?>">
+    <a href="?act=bookings" class="<?= in_array($_GET['act'] ?? '', ['bookings', 'bookings-show', 'bookings-delete', 'bookings-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-ticket-perforated"></i><span class="label">Quản lý Đặt Vé</span>
     </a>
     <a href="?act=thongke" class="<?= ($_GET['act'] ?? '') == 'thongke' ? 'active' : '' ?>">
@@ -119,6 +119,8 @@
             'comments' => 'Quản lý bình luận',
             'comments-show' => 'Chi tiết bình luận',
             'binhluan' => 'Quản lý bình luận',
+            'bookings' => 'Quản lý đặt vé',
+            'bookings-show' => 'Chi tiết đặt vé',
             'datve' => 'Quản lý đặt vé',
             'thongke' => 'Thống kê'
           ];

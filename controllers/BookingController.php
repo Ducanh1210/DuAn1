@@ -5,6 +5,7 @@ class BookingController
     public $seat;
     public $movie;
     public $room;
+    public $booking;
 
     public function __construct()
     {
@@ -12,10 +13,12 @@ class BookingController
         require_once './models/Seat.php';
         require_once './models/Movie.php';
         require_once './models/Room.php';
+        require_once './models/Booking.php';
         $this->showtime = new Showtime();
         $this->seat = new Seat();
         $this->movie = new Movie();
         $this->room = new Room();
+        $this->booking = new Booking();
     }
 
     /**
@@ -190,6 +193,127 @@ class BookingController
             'bookedSeats' => $bookedSeats
         ]);
         exit;
+    }
+
+    /**
+     * Hiển thị danh sách đặt vé (Admin)
+     */
+    public function list()
+    {
+        $status = $_GET['status'] ?? null;
+        $date = $_GET['date'] ?? null;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $page = max(1, $page);
+        
+        $result = $this->booking->paginate($page, 10, $status, $date);
+        
+        render('admin/bookings/list.php', [
+            'data' => $result['data'],
+            'selectedStatus' => $status,
+            'selectedDate' => $date,
+            'pagination' => [
+                'currentPage' => $result['page'],
+                'totalPages' => $result['totalPages'],
+                'total' => $result['total'],
+                'perPage' => $result['perPage']
+            ]
+        ]);
+    }
+
+    /**
+     * Hiển thị chi tiết đặt vé (Admin)
+     */
+    public function show()
+    {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: ' . BASE_URL . '?act=bookings');
+            exit;
+        }
+
+        $booking = $this->booking->find($id);
+        if (!$booking) {
+            header('Location: ' . BASE_URL . '?act=bookings');
+            exit;
+        }
+
+        // Lấy booking items và payment
+        $bookingItems = $this->booking->getBookingItems($id);
+        $payment = $this->booking->getPayment($id);
+
+        render('admin/bookings/show.php', [
+            'booking' => $booking,
+            'bookingItems' => $bookingItems,
+            'payment' => $payment
+        ]);
+    }
+
+    /**
+     * Xóa đặt vé (Admin)
+     */
+    public function deleteBooking()
+    {
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            header('Location: ' . BASE_URL . '?act=bookings');
+            exit;
+        }
+
+        $this->booking->delete($id);
+        header('Location: ' . BASE_URL . '?act=bookings');
+        exit;
+    }
+
+    /**
+     * Cập nhật trạng thái đặt vé (Admin)
+     */
+    public function updateStatus()
+    {
+        $id = $_POST['id'] ?? null;
+        $status = $_POST['status'] ?? null;
+
+        if (!$id || !$status) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Thiếu thông tin']);
+            exit;
+        }
+
+        $result = $this->booking->updateStatus($id, $status);
+        
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => $result,
+            'message' => $result ? 'Cập nhật thành công' : 'Cập nhật thất bại'
+        ]);
+        exit;
+    }
+
+    /**
+     * Hiển thị lịch sử đặt vé của khách hàng (Client)
+     */
+    public function myBookings()
+    {
+        // Kiểm tra đăng nhập
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . '?act=dangnhap');
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $page = max(1, $page);
+
+        $result = $this->booking->getByUser($userId, $page, 10);
+
+        renderClient('client/my-bookings.php', [
+            'data' => $result['data'],
+            'pagination' => [
+                'currentPage' => $result['page'],
+                'totalPages' => $result['totalPages'],
+                'total' => $result['total'],
+                'perPage' => $result['perPage']
+            ]
+        ], 'Lịch sử đặt vé');
     }
 }
 
