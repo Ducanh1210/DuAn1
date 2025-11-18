@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css">
 <!-- Phần nội dung lịch chiếu -->
 <div class="page">
     <header class="page-header" role="banner">

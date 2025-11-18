@@ -46,13 +46,16 @@
     <a href="?act=cinemas" class="<?= in_array($_GET['act'] ?? '', ['cinemas', 'cinemas-create', 'cinemas-edit', 'cinemas-delete']) ? 'active' : '' ?>">
       <i class="bi bi-building"></i><span class="label">Quản lý Rạp</span>
     </a>
-    <a href="?act=phongphim" class="<?= ($_GET['act'] ?? '') == 'phongphim' ? 'active' : '' ?>">
-      <i class="bi bi-camera-reels"></i><span class="label">Quản lý Phòng Phim</span>
+    <a href="?act=rooms" class="<?= in_array($_GET['act'] ?? '', ['rooms', 'rooms-create', 'rooms-edit', 'rooms-show', 'rooms-delete']) ? 'active' : '' ?>">
+      <i class="bi bi-camera-reels"></i><span class="label">Quản lý Phòng Chiếu</span>
     </a>
-    <a href="?act=binhluan" class="<?= ($_GET['act'] ?? '') == 'binhluan' ? 'active' : '' ?>">
+    <a href="?act=seats" class="<?= in_array($_GET['act'] ?? '', ['seats', 'seats-create', 'seats-edit', 'seats-show', 'seats-delete', 'seats-seatmap', 'seats-generate']) ? 'active' : '' ?>">
+      <i class="bi bi-grid-3x3-gap"></i><span class="label">Quản lý Ghế</span>
+    </a>
+    <a href="?act=comments" class="<?= in_array($_GET['act'] ?? '', ['comments', 'comments-show', 'comments-delete']) ? 'active' : '' ?>">
       <i class="bi bi-chat-left-text"></i><span class="label">Quản lý Bình Luận</span>
     </a>
-    <a href="?act=datve" class="<?= ($_GET['act'] ?? '') == 'datve' ? 'active' : '' ?>">
+    <a href="?act=bookings" class="<?= in_array($_GET['act'] ?? '', ['bookings', 'bookings-show', 'bookings-delete', 'bookings-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-ticket-perforated"></i><span class="label">Quản lý Đặt Vé</span>
     </a>
     <a href="?act=thongke" class="<?= ($_GET['act'] ?? '') == 'thongke' ? 'active' : '' ?>">
@@ -102,8 +105,22 @@
             'cinemas' => 'Quản lý Rạp',
             'cinemas-create' => 'Thêm rạp mới',
             'cinemas-edit' => 'Sửa rạp',
+            'rooms' => 'Quản lý Phòng Chiếu',
+            'rooms-create' => 'Thêm phòng mới',
+            'rooms-edit' => 'Sửa phòng',
+            'rooms-show' => 'Chi tiết phòng',
             'phongphim' => 'Quản lý phòng phim',
+            'seats' => 'Quản lý Ghế',
+            'seats-create' => 'Thêm ghế mới',
+            'seats-edit' => 'Sửa ghế',
+            'seats-show' => 'Chi tiết ghế',
+            'seats-seatmap' => 'Sơ đồ ghế',
+            'seats-generate' => 'Tạo sơ đồ ghế tự động',
+            'comments' => 'Quản lý bình luận',
+            'comments-show' => 'Chi tiết bình luận',
             'binhluan' => 'Quản lý bình luận',
+            'bookings' => 'Quản lý đặt vé',
+            'bookings-show' => 'Chi tiết đặt vé',
             'datve' => 'Quản lý đặt vé',
             'thongke' => 'Thống kê'
           ];
