@@ -3,7 +3,7 @@
 /* Override hero section for gioithieu page */
 body:has(.about-container) .hero {
     min-height: auto;
-    padding: 20px 0 40px;
+    padding: 0;
     background: transparent;
 }
 
@@ -11,10 +11,15 @@ body:has(.about-container) .hero::before {
     display: none;
 }
 
+body:has(.about-container) .hero .container {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
 .about-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 60px 20px;
+    padding: 40px 20px 60px;
 }
 
 .about-header {
