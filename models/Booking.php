@@ -236,7 +236,8 @@ class Booking
     public function insert($data)
     {
         try {
-            $bookingCode = $this->generateBookingCode();
+            // Sử dụng booking_code từ data nếu có, nếu không thì tạo mới
+            $bookingCode = $data['booking_code'] ?? $this->generateBookingCode();
             
             $sql = "INSERT INTO bookings (
                 user_id,
@@ -359,6 +360,71 @@ class Booking
         } catch (Exception $e) {
             debug($e);
             return null;
+        }
+    }
+
+    /**
+     * Lấy đặt vé theo user_id (không phân trang)
+     */
+    public function getByUserId($userId)
+    {
+        try {
+            $sql = "SELECT bookings.*, 
+                    movies.title AS movie_title,
+                    movies.image AS movie_image,
+                    showtimes.show_date,
+                    showtimes.start_time,
+                    showtimes.end_time,
+                    showtimes.format AS showtime_format,
+                    rooms.name AS room_name,
+                    rooms.room_code AS room_code,
+                    cinemas.name AS cinema_name
+                    FROM bookings
+                    LEFT JOIN showtimes ON bookings.showtime_id = showtimes.id
+                    LEFT JOIN movies ON showtimes.movie_id = movies.id
+                    LEFT JOIN rooms ON bookings.room_id = rooms.id
+                    LEFT JOIN cinemas ON bookings.cinema_id = cinemas.id
+                    WHERE bookings.user_id = :user_id
+                    ORDER BY bookings.booking_date DESC, bookings.id DESC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':user_id' => $userId]);
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            debug($e);
+            return [];
+        }
+    }
+
+    /**
+     * Lấy danh sách ghế đã đặt cho suất chiếu
+     */
+    public function getBookedSeatsByShowtime($showtimeId)
+    {
+        try {
+            $sql = "SELECT booked_seats FROM bookings 
+                    WHERE showtime_id = :showtime_id 
+                    AND status IN ('pending', 'confirmed', 'paid', 'completed')";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':showtime_id' => $showtimeId]);
+            $bookings = $stmt->fetchAll();
+            
+            $bookedSeats = [];
+            foreach ($bookings as $booking) {
+                if (!empty($booking['booked_seats'])) {
+                    $seats = explode(',', $booking['booked_seats']);
+                    foreach ($seats as $seat) {
+                        $seat = trim($seat);
+                        if (!empty($seat)) {
+                            $bookedSeats[] = $seat;
+                        }
+                    }
+                }
+            }
+            
+            return array_unique($bookedSeats);
+        } catch (Exception $e) {
+            debug($e);
+            return [];
         }
     }
 }
