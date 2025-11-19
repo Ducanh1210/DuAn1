@@ -22,7 +22,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <body>
     <!-- phần menu -->
-    <section class="hero" style="min-height: auto; padding-bottom: 40px;">
+    <section class="hero">
         <div class="container">
             <div class="navbar">
                 <div class="logo">
