@@ -208,5 +208,80 @@ class StatsController
         // fallback: require view directly (no layout)
         require __DIR__ . '/../../views/views/admin/thongke/list.php';
     }
+    public function show()
+{
+    $date = $_GET['date'] ?? null;
+    if (!$date) {
+        // nếu không có ngày thì quay lại list hoặc hiển thị thông báo
+        header('Location: ?act=thongke');
+        exit;
+    }
+
+    // Lấy danh sách booking theo ngày (không phân trang, hiển thị toàn bộ)
+    $res = $this->statsModel->getBookingsList($date, $date, null, 1, 99999);
+    $bookingsList = $res['data'] ?? [];
+
+    // Truyền vào view
+    $data = [
+        'date' => $date,
+        'bookingsList' => $bookingsList
+    ];
+
+    // Biến sẽ dùng trong view
+    extract($data);
+
+    // Set viewPath để main.php include đúng view (main.php dùng $GLOBALS['viewPath'])
+    $GLOBALS['viewPath'] = 'admin/thongke/show.php';
+
+    // Tìm file layout main.php ở các vị trí phổ biến (tương đối với thư mục controllers)
+    $layoutCandidates = [
+        // controllers/ -> ../views/layout/main.php
+        __DIR__ . '/../views/layout/main.php',
+        // controllers/ -> ../../views/layout/main.php (nếu controllers nằm ở controllers/controllers)
+        __DIR__ . '/../../views/layout/main.php',
+        // controllers/ -> ../views/views/layout/main.php (nếu có thư mục views/views)
+        __DIR__ . '/../views/views/layout/main.php',
+        // controllers/ -> ../../views/views/layout/main.php
+        __DIR__ . '/../../views/views/layout/main.php',
+        // fallback, relative to project root
+        __DIR__ . '/../../views/layout/main.php'
+    ];
+
+    $layoutPath = null;
+    foreach ($layoutCandidates as $lp) {
+        if (file_exists($lp)) {
+            $layoutPath = $lp;
+            break;
+        }
+    }
+
+    if ($layoutPath) {
+        require $layoutPath;
+        return;
+    }
+
+    // Nếu không tìm thấy layout, thử include view trực tiếp (fallback)
+    $viewDirect = __DIR__ . '/../views/admin/thongke/show.php';
+    if (!file_exists($viewDirect)) {
+        // Thử alternative path (nếu cấu trúc khác)
+        $viewDirect = __DIR__ . '/../../views/views/admin/thongke/show.php';
+    }
+
+    if (file_exists($viewDirect)) {
+        require $viewDirect;
+        return;
+    }
+
+    // Nếu vẫn không tìm thấy, hiển thị lỗi có ích để debug (không phải stacktrace)
+    echo "<h3>Không tìm thấy layout hoặc view cho trang chi tiết thống kê</h3>";
+    echo "<p>Tìm các đường dẫn sau nhưng không tồn tại:</p><ul>";
+    foreach ($layoutCandidates as $c) {
+        echo "<li>" . htmlspecialchars($c) . "</li>";
+    }
+    echo "</ul>";
+    echo "<p>và các view thử: " . htmlspecialchars(__DIR__ . '/../views/admin/thongke/show.php') . " hoặc " . htmlspecialchars(__DIR__ . '/../../views/views/admin/thongke/show.php') . "</p>";
+}
+
+
 }
 ?>

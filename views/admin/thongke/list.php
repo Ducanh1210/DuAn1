@@ -89,7 +89,8 @@ $to   = $to   ?? date('Y-m-d');
                   <td class="text-end"><?= $bookCount !== null ? number_format($bookCount) : '-' ?></td>
                   <td class="text-end"><?= $tickets !== null ? number_format($tickets) : '-' ?></td>
                   <td class="text-end">
-                    <a href="?act=stats&mode=bookings&from=<?=urlencode($day)?>&to=<?=urlencode($day)?>" class="btn btn-sm btn-link">Xem chi tiết</a>
+                    <a href="?act=thongke-show&date=<?= urlencode($day) ?>" class="btn btn-sm btn-link">Xem chi tiết</a>
+
                   </td>
                 </tr>
               <?php

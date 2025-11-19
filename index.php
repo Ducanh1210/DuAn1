@@ -128,6 +128,7 @@ match ($act) {
     'stats' => (new StatsController)->index(),
     'stats-data' => (new StatsController)->data(),
     'thongke' => (new StatsController)->list(),
+    'thongke-show' => (new StatsController)->show(),
 
 
     default => notFound(),
