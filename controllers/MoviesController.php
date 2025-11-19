@@ -345,6 +345,16 @@ class MoviesController
     }
 
     /**
+     * Hiển thị trang giới thiệu (Client)
+     */
+    public function gioithieu()
+    {
+        // Include view client (không dùng layout chung)
+        require_once __DIR__ . '/../views/client/gioithieu.php';
+        exit; // Dừng lại để không render layout admin
+    }
+
+    /**
      * Lấy danh sách phim đang chiếu
      */
     private function getNowShowing($searchKeyword = '', $cinemaId = '')

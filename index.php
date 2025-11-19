@@ -38,6 +38,7 @@ match ($act) {
 
     // Client routes (public pages)
     'trangchu' => (new MoviesController)->trangchu(),
+    'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
