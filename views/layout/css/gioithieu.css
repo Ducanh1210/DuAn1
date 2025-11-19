@@ -1,7 +1,7 @@
 /* Giới thiệu page specific styles */
 .about-container {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 50px auto 0;
     padding: 60px 20px;
 }
 
