@@ -9,6 +9,26 @@
       </div>
     </div>
     <div class="card-body">
+      <?php if (isset($_GET['success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <?php if ($_GET['success'] === 'banned'): ?>
+            <i class="bi bi-check-circle"></i> Đã khóa tài khoản thành công!
+          <?php elseif ($_GET['success'] === 'unbanned'): ?>
+            <i class="bi bi-check-circle"></i> Đã mở khóa tài khoản thành công!
+          <?php endif; ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
+      <?php if (isset($_GET['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <?php if ($_GET['error'] === 'cannot_ban_self'): ?>
+            <i class="bi bi-exclamation-triangle"></i> Bạn không thể khóa tài khoản của chính mình!
+          <?php endif; ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
       <!-- Thống kê -->
       <div class="row mb-4">
         <div class="col-md-3">
@@ -81,6 +101,7 @@
               <th>Hạng thành viên</th>
               <th>Tổng chi tiêu</th>
               <th>Quyền</th>
+              <th>Trạng thái</th>
               <th>Ngày tạo</th>
               <th>Thao tác</th>
             </tr>
@@ -120,6 +141,22 @@
                   ?>
                   <span class="badge bg-<?= $color ?>"><?= $label ?></span>
                 </td>
+                <td>
+                  <?php
+                    $status = $item['status'] ?? 'active';
+                    $statusColors = [
+                      'active' => 'success',
+                      'banned' => 'danger'
+                    ];
+                    $statusLabels = [
+                      'active' => 'Hoạt động',
+                      'banned' => 'Đã khóa'
+                    ];
+                    $statusColor = $statusColors[$status] ?? 'secondary';
+                    $statusLabel = $statusLabels[$status] ?? ucfirst($status);
+                  ?>
+                  <span class="badge bg-<?= $statusColor ?>"><?= $statusLabel ?></span>
+                </td>
                 <td><?= $item['created_at'] ? date('d/m/Y H:i', strtotime($item['created_at'])) : 'N/A' ?></td>
                 <td>
                   <div class="btn-group" role="group">
@@ -129,19 +166,28 @@
                     <a href="<?= BASE_URL ?>?act=users-edit&id=<?= $item['id'] ?>" class="btn btn-sm btn-warning" title="Sửa">
                       <i class="bi bi-pencil"></i>
                     </a>
-                    <a href="<?= BASE_URL ?>?act=users-delete&id=<?= $item['id'] ?>" 
-                       class="btn btn-sm btn-danger" 
-                       title="Xóa"
-                       onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này?')">
-                      <i class="bi bi-trash"></i>
-                    </a>
+                    <?php if (($item['status'] ?? 'active') === 'active'): ?>
+                      <a href="<?= BASE_URL ?>?act=users-ban&id=<?= $item['id'] ?>" 
+                         class="btn btn-sm btn-danger" 
+                         title="Khóa tài khoản"
+                         onclick="return confirm('Bạn có chắc chắn muốn khóa tài khoản này?')">
+                        <i class="bi bi-lock"></i>
+                      </a>
+                    <?php else: ?>
+                      <a href="<?= BASE_URL ?>?act=users-unban&id=<?= $item['id'] ?>" 
+                         class="btn btn-sm btn-success" 
+                         title="Mở khóa tài khoản"
+                         onclick="return confirm('Bạn có chắc chắn muốn mở khóa tài khoản này?')">
+                        <i class="bi bi-unlock"></i>
+                      </a>
+                    <?php endif; ?>
                   </div>
                 </td>
               </tr>
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="10" class="text-center text-muted py-4">Chưa có người dùng nào</td>
+                <td colspan="11" class="text-center text-muted py-4">Chưa có người dùng nào</td>
               </tr>
             <?php endif; ?>
           </tbody>

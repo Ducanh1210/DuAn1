@@ -119,7 +119,7 @@ if (session_status() === PHP_SESSION_NONE) {
                                     <i class="bi bi-person"></i>
                                     <span>Thông tin cá nhân</span>
                                 </a>
-                                <a href="<?= BASE_URL ?>?act=thethanhvien">
+                                <a href="<?= BASE_URL ?>?act=profile&tab=membership">
                                     <i class="bi bi-credit-card"></i>
                                     <span>Thẻ thành viên</span>
                                 </a>
@@ -146,8 +146,8 @@ if (session_status() === PHP_SESSION_NONE) {
                         lẫn nhau để sinh tồn, hai người gặp nhau ở London và
                         cố gắng ngăn chặn một âm mưu.</p>
                     <div class="cta">
-                        <a class="btn-primary" href="#">Đặt Vé →</a>
-                        <a class="btn-secondary" href="#">Watch Trailer</a>
+                        <a class="btn-primary" href="<?= BASE_URL ?>?act=lichchieu">Đặt Vé →</a>
+                        <a class="btn-secondary" href="https://youtu.be/KCSNFZKbhZE?si=HytyMDkb_dx0XPrV" target="_blank" rel="noopener noreferrer">Watch Trailer</a>
                     </div>
                 </div>
             </div>

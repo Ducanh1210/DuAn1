@@ -12,6 +12,12 @@
       </a>
     </div>
     <div class="card-body">
+      <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle"></i> <strong>Hướng dẫn:</strong> 
+        Chọn các quyền mà nhân viên có thể thực hiện. Bạn có thể chọn từng quyền cụ thể cho từng chức năng (xem, thêm, sửa, xóa).
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+
       <?php if (!empty($errors)): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <strong><i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại:</strong>
