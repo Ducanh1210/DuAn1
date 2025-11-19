@@ -75,8 +75,6 @@
               <select name="seat_type" id="seat_type" class="form-select">
                 <option value="normal" <?= (isset($_POST['seat_type']) && $_POST['seat_type'] == 'normal') ? 'selected' : '' ?>>Thường</option>
                 <option value="vip" <?= (isset($_POST['seat_type']) && $_POST['seat_type'] == 'vip') ? 'selected' : '' ?>>VIP</option>
-                <option value="couple" <?= (isset($_POST['seat_type']) && $_POST['seat_type'] == 'couple') ? 'selected' : '' ?>>Đôi</option>
-                <option value="disabled" <?= (isset($_POST['seat_type']) && $_POST['seat_type'] == 'disabled') ? 'selected' : '' ?>>Khuyết tật</option>
               </select>
             </div>
 
@@ -96,7 +94,7 @@
             <div class="mb-3">
               <label for="status" class="form-label">Trạng thái</label>
               <select name="status" id="status" class="form-select">
-                <option value="available" <?= (isset($_POST['status']) && $_POST['status'] == 'available') ? 'selected' : '' ?>>Có sẵn</option>
+                <option value="available" <?= (!isset($_POST['status']) || $_POST['status'] == 'available') ? 'selected' : '' ?>>Có sẵn</option>
                 <option value="booked" <?= (isset($_POST['status']) && $_POST['status'] == 'booked') ? 'selected' : '' ?>>Đã đặt</option>
                 <option value="maintenance" <?= (isset($_POST['status']) && $_POST['status'] == 'maintenance') ? 'selected' : '' ?>>Bảo trì</option>
                 <option value="reserved" <?= (isset($_POST['status']) && $_POST['status'] == 'reserved') ? 'selected' : '' ?>>Giữ chỗ</option>

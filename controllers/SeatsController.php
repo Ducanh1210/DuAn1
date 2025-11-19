@@ -100,19 +100,31 @@ class SeatsController
             }
 
             if (empty($errors)) {
-                // Xóa ghế cũ nếu được chọn
-                if ($clearExisting) {
-                    $this->seat->deleteByRoom($roomId);
-                }
-
-                // Tạo ghế mới
-                $result = $this->seat->insertBulk($roomId, $rows, $seatsPerRow, $seatType, $extraPrice);
+                // Lấy thông tin phòng để kiểm tra capacity
+                $room = $this->room->find($roomId);
+                $roomCapacity = $room['capacity'] ?? 0;
+                $totalSeatsToCreate = $rows * $seatsPerRow;
                 
-                if ($result !== false) {
-                    header('Location: ' . BASE_URL . '?act=seats-seatmap&room_id=' . $roomId);
-                    exit;
-                } else {
-                    $errors['general'] = 'Có lỗi xảy ra khi tạo ghế. Vui lòng thử lại.';
+                // Kiểm tra nếu phòng có capacity và tổng số ghế tạo ra khác capacity
+                if ($roomCapacity > 0 && $totalSeatsToCreate != $roomCapacity) {
+                    $errors['general'] = "Phòng này có {$roomCapacity} ghế, nhưng bạn đang tạo {$totalSeatsToCreate} ghế ({$rows} hàng x {$seatsPerRow} ghế). Vui lòng điều chỉnh để khớp với số ghế của phòng.";
+                }
+                
+                if (empty($errors)) {
+                    // Xóa ghế cũ nếu được chọn
+                    if ($clearExisting) {
+                        $this->seat->deleteByRoom($roomId);
+                    }
+
+                    // Tạo ghế mới với giới hạn capacity
+                    $result = $this->seat->insertBulk($roomId, $rows, $seatsPerRow, $seatType, $extraPrice, $roomCapacity);
+                    
+                    if ($result !== false) {
+                        header('Location: ' . BASE_URL . '?act=seats-seatmap&room_id=' . $roomId);
+                        exit;
+                    } else {
+                        $errors['general'] = 'Có lỗi xảy ra khi tạo ghế. Vui lòng thử lại.';
+                    }
                 }
             }
         }

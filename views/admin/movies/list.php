@@ -112,7 +112,7 @@
                 <!-- Previous -->
                 <?php if ($pagination['currentPage'] > 1): ?>
                   <li class="page-item">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=movies&page=<?= $pagination['currentPage'] - 1 ?>">
+                    <a class="page-link" href="<?= BASE_URL ?>?act=movies-list&page=<?= $pagination['currentPage'] - 1 ?>">
                       <i class="bi bi-chevron-left"></i> Trước
                     </a>
                   </li>
@@ -129,7 +129,7 @@
                 
                 if ($startPage > 1): ?>
                   <li class="page-item">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=movies&page=1">1</a>
+                    <a class="page-link" href="<?= BASE_URL ?>?act=movies-list&page=1">1</a>
                   </li>
                   <?php if ($startPage > 2): ?>
                     <li class="page-item disabled">
@@ -140,7 +140,7 @@
                 
                 <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                   <li class="page-item <?= $i == $pagination['currentPage'] ? 'active' : '' ?>">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=movies&page=<?= $i ?>"><?= $i ?></a>
+                    <a class="page-link" href="<?= BASE_URL ?>?act=movies-list&page=<?= $i ?>"><?= $i ?></a>
                   </li>
                 <?php endfor; ?>
                 
@@ -151,14 +151,14 @@
                     </li>
                   <?php endif; ?>
                   <li class="page-item">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=movies&page=<?= $pagination['totalPages'] ?>"><?= $pagination['totalPages'] ?></a>
+                    <a class="page-link" href="<?= BASE_URL ?>?act=movies-list&page=<?= $pagination['totalPages'] ?>"><?= $pagination['totalPages'] ?></a>
                   </li>
                 <?php endif; ?>
                 
                 <!-- Next -->
                 <?php if ($pagination['currentPage'] < $pagination['totalPages']): ?>
                   <li class="page-item">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=movies&page=<?= $pagination['currentPage'] + 1 ?>">
+                    <a class="page-link" href="<?= BASE_URL ?>?act=movies-list&page=<?= $pagination['currentPage'] + 1 ?>">
                       Sau <i class="bi bi-chevron-right"></i>
                     </a>
                   </li>

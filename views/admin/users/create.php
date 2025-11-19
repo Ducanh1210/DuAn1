@@ -74,7 +74,6 @@
               <label for="role" class="form-label">Quyền <span class="text-danger">*</span></label>
               <select name="role" id="role" class="form-select <?= !empty($errors['role']) ? 'is-invalid' : '' ?>" required>
                 <option value="">-- Chọn quyền --</option>
-                <option value="admin" <?= (isset($_POST['role']) && $_POST['role'] == 'admin') ? 'selected' : '' ?>>Admin</option>
                 <option value="staff" <?= (isset($_POST['role']) && $_POST['role'] == 'staff') ? 'selected' : '' ?>>Staff</option>
                 <option value="customer" <?= (isset($_POST['role']) && $_POST['role'] == 'customer') || !isset($_POST['role']) ? 'selected' : '' ?>>Customer</option>
               </select>
@@ -82,9 +81,9 @@
                 <div class="text-danger small mt-1"><?= $errors['role'] ?></div>
               <?php endif; ?>
               <small class="text-muted">
-                <strong>Admin:</strong> Toàn quyền quản trị<br>
                 <strong>Staff:</strong> Quyền nhân viên<br>
-                <strong>Customer:</strong> Khách hàng
+                <strong>Customer:</strong> Khách hàng<br>
+                <em class="text-warning">Lưu ý: Chỉ có 1 Admin duy nhất trong hệ thống</em>
               </small>
             </div>
 
@@ -183,6 +182,12 @@
 
     if (!role || role === '') {
       alert('Vui lòng chọn quyền!');
+      document.getElementById('role').focus();
+      return false;
+    }
+
+    if (role === 'admin') {
+      alert('Không thể tạo tài khoản Admin. Chỉ có 1 Admin duy nhất trong hệ thống!');
       document.getElementById('role').focus();
       return false;
     }

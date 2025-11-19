@@ -76,20 +76,20 @@
                   <?php
                   $seatTypeLabels = [
                     'normal' => 'Thường',
-                    'vip' => 'VIP',
-                    'couple' => 'Đôi',
-                    'disabled' => 'Khuyết tật'
+                    'vip' => 'VIP'
                   ];
                   $seatTypeClass = [
                     'normal' => 'secondary',
-                    'vip' => 'warning',
-                    'couple' => 'info',
-                    'disabled' => 'dark'
+                    'vip' => 'warning'
                   ];
                   $type = $item['seat_type'] ?? 'normal';
+                  // Nếu là loại ghế không hợp lệ, hiển thị là "Thường"
+                  if (!isset($seatTypeLabels[$type])) {
+                    $type = 'normal';
+                  }
                   ?>
                   <span class="badge bg-<?= $seatTypeClass[$type] ?? 'secondary' ?>">
-                    <?= $seatTypeLabels[$type] ?? ucfirst($type) ?>
+                    <?= $seatTypeLabels[$type] ?? 'Thường' ?>
                   </span>
                 </td>
                 <td><?= number_format($item['extra_price'] ?? 0, 0, ',', '.') ?> đ</td>
@@ -108,9 +108,13 @@
                     'reserved' => 'info'
                   ];
                   $status = $item['status'] ?? 'available';
+                  // Nếu trạng thái không hợp lệ, mặc định là available
+                  if (!isset($statusLabels[$status])) {
+                    $status = 'available';
+                  }
                   ?>
-                  <span class="badge bg-<?= $statusClass[$status] ?? 'secondary' ?>">
-                    <?= $statusLabels[$status] ?? ucfirst($status) ?>
+                  <span class="badge bg-<?= $statusClass[$status] ?? 'success' ?>">
+                    <?= $statusLabels[$status] ?? 'Có sẵn' ?>
                   </span>
                 </td>
                 <td>

@@ -192,18 +192,27 @@ class Seat
     /**
      * Thêm nhiều ghế cùng lúc (tự động tạo sơ đồ ghế)
      */
-    public function insertBulk($room_id, $rows, $seatsPerRow, $seatType = 'normal', $extraPrice = 0)
+    public function insertBulk($room_id, $rows, $seatsPerRow, $seatType = 'normal', $extraPrice = 0, $maxCapacity = null)
     {
         try {
             $this->conn->beginTransaction();
             
             $rowLabels = range('A', 'Z');
             $inserted = 0;
+            $targetSeats = $rows * $seatsPerRow;
             
-            for ($i = 0; $i < $rows; $i++) {
+            // Nếu có maxCapacity, đảm bảo không tạo quá capacity
+            if ($maxCapacity !== null && $maxCapacity > 0) {
+                $targetSeats = min($targetSeats, $maxCapacity);
+            }
+            
+            for ($i = 0; $i < $rows && $inserted < $targetSeats; $i++) {
                 $rowLabel = $rowLabels[$i] ?? chr(65 + $i); // A, B, C...
                 
-                for ($j = 1; $j <= $seatsPerRow; $j++) {
+                // Tính số ghế cần tạo trong hàng này
+                $seatsInThisRow = min($seatsPerRow, $targetSeats - $inserted);
+                
+                for ($j = 1; $j <= $seatsInThisRow && $inserted < $targetSeats; $j++) {
                     $sql = "INSERT INTO seats (room_id, row_label, seat_number, seat_type, extra_price, status) 
                             VALUES (:room_id, :row_label, :seat_number, :seat_type, :extra_price, :status)";
                     $stmt = $this->conn->prepare($sql);

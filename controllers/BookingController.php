@@ -293,7 +293,10 @@ class BookingController
      */
     public function myBookings()
     {
-        // Kiểm tra đăng nhập
+        // Khởi động session và kiểm tra đăng nhập
+        require_once './commons/auth.php';
+        startSessionIfNotStarted();
+        
         if (!isset($_SESSION['user_id'])) {
             header('Location: ' . BASE_URL . '?act=dangnhap');
             exit;
@@ -314,6 +317,199 @@ class BookingController
                 'perPage' => $result['perPage']
             ]
         ], 'Lịch sử đặt vé');
+    }
+
+    /**
+     * Hiển thị trang thanh toán (Client)
+     */
+    public function payment()
+    {
+        // Khởi động session và kiểm tra đăng nhập
+        require_once './commons/auth.php';
+        startSessionIfNotStarted();
+        
+        if (!isset($_SESSION['user_id'])) {
+            // Lưu URL hiện tại để redirect sau khi đăng nhập
+            $returnUrl = BASE_URL . '?act=payment&showtime_id=' . ($_GET['showtime_id'] ?? '') . 
+                        '&seats=' . urlencode($_GET['seats'] ?? '') . 
+                        '&seat_labels=' . urlencode($_GET['seat_labels'] ?? '');
+            $_SESSION['return_url'] = $returnUrl;
+            header('Location: ' . BASE_URL . '?act=dangnhap');
+            exit;
+        }
+
+        $showtimeId = $_GET['showtime_id'] ?? null;
+        $seatIds = $_GET['seats'] ?? '';
+        $seatLabels = $_GET['seat_labels'] ?? '';
+
+        if (!$showtimeId || empty($seatIds) || empty($seatLabels)) {
+            header('Location: ' . BASE_URL . '?act=trangchu');
+            exit;
+        }
+
+        // Lấy thông tin showtime
+        $showtime = $this->showtime->find($showtimeId);
+        if (!$showtime || !$showtime['room_id']) {
+            header('Location: ' . BASE_URL . '?act=trangchu');
+            exit;
+        }
+
+        // Lấy thông tin phim
+        $movie = $this->movie->find($showtime['movie_id']);
+        if (!$movie) {
+            header('Location: ' . BASE_URL . '?act=trangchu');
+            exit;
+        }
+
+        // Lấy thông tin phòng
+        $room = $this->room->find($showtime['room_id']);
+        if (!$room) {
+            header('Location: ' . BASE_URL . '?act=trangchu');
+            exit;
+        }
+
+        // Lấy thông tin rạp
+        require_once './models/Cinema.php';
+        $cinema = new Cinema();
+        $cinemaInfo = $cinema->find($room['cinema_id']);
+
+        // Lấy thông tin ghế đã chọn
+        $seatIdArray = explode(',', $seatIds);
+        $seatLabelArray = explode(',', $seatLabels);
+        $selectedSeats = [];
+        $totalPrice = 0;
+        $vipExtraPrice = 10000; // Phụ thu VIP
+
+        // Lấy giá vé (ưu tiên adult_price, nếu không có thì dùng student_price, mặc định 80000)
+        $basePrice = $showtime['adult_price'] ?? $showtime['student_price'] ?? 80000;
+        
+        foreach ($seatIdArray as $index => $seatId) {
+            $seat = $this->seat->find($seatId);
+            if ($seat) {
+                $seatPrice = $basePrice;
+                if ($seat['seat_type'] === 'vip') {
+                    $seatPrice += $vipExtraPrice;
+                }
+                $selectedSeats[] = [
+                    'id' => $seat['id'],
+                    'label' => $seatLabelArray[$index] ?? ($seat['row_label'] . $seat['seat_number']),
+                    'type' => $seat['seat_type'],
+                    'price' => $seatPrice
+                ];
+                $totalPrice += $seatPrice;
+            }
+        }
+
+        renderClient('client/thanhtoan.php', [
+            'showtime' => $showtime,
+            'movie' => $movie,
+            'room' => $room,
+            'cinema' => $cinemaInfo,
+            'selectedSeats' => $selectedSeats,
+            'seatIds' => $seatIds,
+            'seatLabels' => $seatLabels,
+            'totalPrice' => $totalPrice,
+            'vipExtraPrice' => $vipExtraPrice
+        ], 'Thanh toán - ' . htmlspecialchars($movie['title']));
+    }
+
+    /**
+     * Xử lý thanh toán (Client)
+     */
+    public function processPayment()
+    {
+        // Khởi động session và kiểm tra đăng nhập
+        require_once './commons/auth.php';
+        startSessionIfNotStarted();
+        
+        if (!isset($_SESSION['user_id'])) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Phương thức không hợp lệ']);
+            exit;
+        }
+
+        $showtimeId = $_POST['showtime_id'] ?? null;
+        $seatIds = $_POST['seats'] ?? '';
+        $seatLabels = $_POST['seat_labels'] ?? '';
+        $paymentMethod = $_POST['payment_method'] ?? '';
+
+        if (!$showtimeId || empty($seatIds) || empty($seatLabels) || empty($paymentMethod)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Thiếu thông tin']);
+            exit;
+        }
+
+        // Lấy thông tin showtime
+        $showtime = $this->showtime->find($showtimeId);
+        if (!$showtime || !$showtime['room_id']) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Suất chiếu không hợp lệ']);
+            exit;
+        }
+
+        // Lấy thông tin phòng
+        $room = $this->room->find($showtime['room_id']);
+        if (!$room) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Phòng chiếu không hợp lệ']);
+            exit;
+        }
+
+        // Tính toán giá tiền
+        $seatIdArray = explode(',', $seatIds);
+        $totalPrice = 0;
+        $vipExtraPrice = 10000;
+        $seatTypes = [];
+
+        // Lấy giá vé (ưu tiên adult_price, nếu không có thì dùng student_price, mặc định 80000)
+        $basePrice = $showtime['adult_price'] ?? $showtime['student_price'] ?? 80000;
+        
+        foreach ($seatIdArray as $seatId) {
+            $seat = $this->seat->find($seatId);
+            if ($seat) {
+                $seatPrice = $basePrice;
+                if ($seat['seat_type'] === 'vip') {
+                    $seatPrice += $vipExtraPrice;
+                }
+                $totalPrice += $seatPrice;
+                $seatTypes[] = $seat['seat_type'];
+            }
+        }
+
+        // Lưu booking vào database
+        $bookingData = [
+            'user_id' => $_SESSION['user_id'],
+            'showtime_id' => $showtimeId,
+            'booked_seats' => $seatLabels,
+            'seat_type' => implode(',', array_unique($seatTypes)),
+            'total_amount' => $totalPrice,
+            'discount_amount' => 0,
+            'final_amount' => $totalPrice,
+            'status' => 'paid', // Hoặc 'pending' tùy vào phương thức thanh toán
+            'cinema_id' => $room['cinema_id'],
+            'room_id' => $room['id']
+        ];
+
+        $bookingId = $this->booking->insert($bookingData);
+
+        if ($bookingId) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'message' => 'Thanh toán thành công',
+                'booking_id' => $bookingId
+            ]);
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi xử lý thanh toán']);
+        }
+        exit;
     }
 }
 

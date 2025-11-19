@@ -44,6 +44,8 @@ match ($act) {
     'datve' => (new BookingController)->selectSeats(),
     'api-seats' => (new BookingController)->getSeatsApi(),
     'my-bookings' => (new BookingController)->myBookings(),
+    'payment' => (new BookingController)->payment(),
+    'payment-process' => (new BookingController)->processPayment(),
     
     // Auth routes (Client)
     'dangky' => (new AuthController)->register(),
@@ -60,6 +62,7 @@ match ($act) {
 
     // Movies routes (Admin)
     '/' => (new MoviesController)->list(),
+    'movies-list' => (new MoviesController)->list(),
     'movies-create' => (new MoviesController)->create(),
     'movies-edit' => (new MoviesController)->edit(),
     'movies-delete' => (new MoviesController)->delete(),

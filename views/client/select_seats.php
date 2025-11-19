@@ -47,14 +47,17 @@ $countdownSeconds = $countdownSeconds ?? 900;
 }
 
 .screen {
-    background: linear-gradient(to bottom, #ff8c00, #ff6b00);
-    height: 80px;
-    border-radius: 50px 50px 0 0;
+    background: linear-gradient(to bottom, #333, #555);
+    height: 60px;
+    border-radius: 10px;
     margin-bottom: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
 }
 
 .room-title {
@@ -100,38 +103,71 @@ $countdownSeconds = $countdownSeconds ?? 900;
     border: 2px solid transparent;
 }
 
+/* Ghế thường - màu xám đen */
 .seat.available {
-    background: #4a4a4a;
+    background: #6c757d;
     color: #fff;
-    border-color: #666;
+    border-color: #5a6268;
 }
 
 .seat.available:hover {
-    background: #5a5a5a;
+    background: #5a6268;
     transform: scale(1.1);
 }
 
-.seat.selected {
-    background: #ff8c00;
-    color: #fff;
-    border-color: #ff6b00;
-}
-
-.seat.booked {
-    background: #ff8c00;
-    color: #fff;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-.seat.special {
-    background: #28a745;
-    color: #fff;
-}
-
-.seat.special.selected {
+/* Ghế VIP - màu vàng */
+.seat.vip {
     background: #ffc107;
     color: #000;
+    border-color: #ffb300;
+}
+
+.seat.vip:hover {
+    background: #ffb300;
+    transform: scale(1.1);
+}
+
+/* Ghế đã chọn - màu xanh nhạt */
+.seat.selected {
+    background: #0dcaf0;
+    color: #000;
+    border-color: #0aa2c0;
+}
+
+.seat.vip.selected {
+    background: #0dcaf0;
+    color: #000;
+    border-color: #0aa2c0;
+}
+
+/* Ghế đã đặt - màu đỏ */
+.seat.booked {
+    background: #dc3545;
+    color: #fff;
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+/* Ghế bảo trì - màu vàng với dấu X */
+.seat.maintenance {
+    background: #ffc107;
+    color: transparent; /* Ẩn số ghế, chỉ hiển thị dấu X */
+    cursor: not-allowed;
+    opacity: 0.8;
+    position: relative;
+}
+
+.seat.maintenance::after {
+    content: '✕';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+    z-index: 2;
+    line-height: 1;
 }
 
 .seat-gap {
@@ -238,7 +274,7 @@ $countdownSeconds = $countdownSeconds ?? 900;
     </div>
 
     <div class="screen-container">
-        <div class="screen"></div>
+        <div class="screen">MÀN HÌNH</div>
         <div class="room-title">
             <?php 
             // Hiển thị số phòng từ name hoặc room_code
@@ -254,7 +290,7 @@ $countdownSeconds = $countdownSeconds ?? 900;
                 $roomNumber = !empty($matches) ? $matches[0] : '';
             }
             ?>
-            Phòng chiếu số <?= $roomNumber ?: htmlspecialchars($room['name'] ?? '') ?>
+            PHÒNG <?= strtoupper($room['room_code'] ?? $roomNumber ?: htmlspecialchars($room['name'] ?? '')) ?> (<?= strtoupper($room['room_code'] ?? $roomNumber ?: htmlspecialchars($room['name'] ?? '')) ?>)
         </div>
     </div>
 
@@ -271,7 +307,13 @@ $countdownSeconds = $countdownSeconds ?? 900;
                     $seatKey = $seatLabel;
                     $isBooked = in_array($seatKey, $bookedSeats);
                     $seatType = $seat['seat_type'] ?? 'normal';
-                    $isSpecial = in_array($seatType, ['vip', 'couple', 'special']);
+                    $seatStatus = $seat['status'] ?? 'available';
+                    $isMaintenance = ($seatStatus === 'maintenance');
+                    
+                    // Chỉ hiển thị ghế normal và vip, bỏ qua disabled và couple
+                    if (in_array($seatType, ['disabled', 'couple'])) {
+                        continue;
+                    }
                     
                     // Thêm khoảng trống nếu cần (sau mỗi 4 ghế)
                     if ($prevSeatNumber > 0 && ($seatNumber - $prevSeatNumber) > 1) {
@@ -286,13 +328,34 @@ $countdownSeconds = $countdownSeconds ?? 900;
                         // Thêm khoảng trống sau mỗi 4 ghế liên tiếp
                         echo '<div class="seat-gap"></div>';
                     }
+                    
+                    // Xác định class CSS cho ghế
+                    $seatClass = 'available';
+                    if ($isBooked) {
+                        $seatClass = 'booked';
+                    } elseif ($isMaintenance) {
+                        $seatClass = 'maintenance';
+                    } elseif ($seatType === 'vip') {
+                        $seatClass = 'vip';
+                    }
+                    
+                    $onClick = '';
+                    $title = '';
+                    if ($isBooked) {
+                        $title = 'title="Ghế đã được đặt"';
+                    } elseif ($isMaintenance) {
+                        $title = 'title="Ghế đang bảo trì"';
+                    } else {
+                        $onClick = 'onclick="toggleSeat(this)"';
+                    }
                 ?>
-                    <div class="seat <?= $isBooked ? 'booked' : ($isSpecial ? 'special' : 'available') ?>" 
+                    <div class="seat <?= $seatClass ?>" 
                          data-seat-id="<?= $seatId ?>"
                          data-seat-label="<?= htmlspecialchars($seatLabel) ?>"
                          data-seat-type="<?= htmlspecialchars($seatType) ?>"
-                         <?= $isBooked ? 'title="Ghế đã được đặt"' : 'onclick="toggleSeat(this)"' ?>>
-                        <?= htmlspecialchars($seatLabel) ?>
+                         data-seat-status="<?= htmlspecialchars($seatStatus) ?>"
+                         <?= $title ?> <?= $onClick ?>>
+                        <?= htmlspecialchars($seatNumber) ?>
                     </div>
                 <?php
                     $prevSeatNumber = $seatNumber;
@@ -304,20 +367,26 @@ $countdownSeconds = $countdownSeconds ?? 900;
 
     <div class="seat-legend">
         <div class="legend-item">
-            <div class="legend-seat available"></div>
-            <span>Ghế trống</span>
+            <div class="legend-seat" style="background: #6c757d;"></div>
+            <span>Thường</span>
         </div>
         <div class="legend-item">
-            <div class="legend-seat selected" style="background: #ff8c00;"></div>
-            <span>Ghế đã chọn</span>
+            <div class="legend-seat" style="background: #ffc107;"></div>
+            <span>VIP</span>
         </div>
         <div class="legend-item">
-            <div class="legend-seat booked" style="background: #ff8c00; opacity: 0.7;"></div>
-            <span>Ghế đã đặt</span>
+            <div class="legend-seat" style="background: #0dcaf0;"></div>
+            <span>Ghế bạn chọn</span>
         </div>
         <div class="legend-item">
-            <div class="legend-seat special" style="background: #28a745;"></div>
-            <span>Ghế đặc biệt</span>
+            <div class="legend-seat" style="background: #dc3545;"></div>
+            <span>Đã đặt</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-seat" style="background: #ffc107; position: relative;">
+                <span style="position: absolute; font-size: 14px; font-weight: bold; color: #000;">✕</span>
+            </div>
+            <span>Bảo trì</span>
         </div>
     </div>
 
@@ -340,7 +409,8 @@ $countdownSeconds = $countdownSeconds ?? 900;
 
 <script>
 let selectedSeats = [];
-const seatPrice = 80000; // Giá mỗi ghế (có thể lấy từ showtime)
+const seatPrice = 80000; // Giá mỗi ghế thường
+const vipExtraPrice = 10000; // Phụ thu ghế VIP (10k)
 
 // Countdown timer
 let countdown = <?= $countdownSeconds ?>;
@@ -362,14 +432,27 @@ function toggleSeat(seatElement) {
     const seatId = seatElement.getAttribute('data-seat-id');
     const seatLabel = seatElement.getAttribute('data-seat-label');
     const seatType = seatElement.getAttribute('data-seat-type');
+    const seatStatus = seatElement.getAttribute('data-seat-status');
+    
+    // Không cho chọn ghế bảo trì hoặc đã đặt
+    if (seatStatus === 'maintenance' || seatElement.classList.contains('booked')) {
+        return;
+    }
     
     if (seatElement.classList.contains('selected')) {
         // Bỏ chọn
         seatElement.classList.remove('selected');
+        // Khôi phục màu gốc
+        if (seatType === 'vip') {
+            seatElement.classList.add('vip');
+        } else {
+            seatElement.classList.add('available');
+        }
         selectedSeats = selectedSeats.filter(s => s.id !== seatId);
     } else {
         // Chọn ghế
         seatElement.classList.add('selected');
+        seatElement.classList.remove('vip', 'available');
         selectedSeats.push({
             id: seatId,
             label: seatLabel,
@@ -394,10 +477,19 @@ function updateSummary() {
     
     summaryElement.style.display = 'block';
     seatsListElement.innerHTML = selectedSeats.map(seat => 
-        `<span class="selected-seat-badge">${seat.label}</span>`
+        `<span class="selected-seat-badge">${seat.label}${seat.type === 'vip' ? ' (VIP)' : ''}</span>`
     ).join('');
     
-    const total = selectedSeats.length * seatPrice;
+    // Tính tổng tiền: ghế thường + phụ thu VIP
+    let total = 0;
+    selectedSeats.forEach(seat => {
+        if (seat.type === 'vip') {
+            total += seatPrice + vipExtraPrice; // Ghế VIP = giá thường + 10k
+        } else {
+            total += seatPrice; // Ghế thường
+        }
+    });
+    
     totalPriceElement.textContent = total.toLocaleString('vi-VN') + ' đ';
     
     continueBtn.disabled = false;

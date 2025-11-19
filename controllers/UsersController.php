@@ -84,6 +84,10 @@ class UsersController
 
             if (empty(trim($_POST['role'] ?? ''))) {
                 $errors['role'] = "Bạn vui lòng chọn quyền";
+            } elseif ($_POST['role'] === 'admin') {
+                $errors['role'] = "Không thể tạo tài khoản Admin. Chỉ có 1 Admin duy nhất trong hệ thống";
+            } elseif (!in_array($_POST['role'], ['staff', 'customer'])) {
+                $errors['role'] = "Quyền không hợp lệ. Chỉ có thể tạo Staff hoặc Customer";
             }
 
             // Kiểm tra phone nếu có
@@ -176,6 +180,23 @@ class UsersController
 
             if (empty(trim($_POST['role'] ?? ''))) {
                 $errors['role'] = "Bạn vui lòng chọn quyền";
+            } else {
+                // Kiểm tra quyền thay đổi
+                $newRole = trim($_POST['role']);
+                $currentRole = $user['role'] ?? '';
+                
+                // Không cho phép chuyển sang admin
+                if ($newRole === 'admin') {
+                    $errors['role'] = "Không thể chuyển tài khoản sang Admin. Chỉ có 1 Admin duy nhất trong hệ thống";
+                }
+                // Không cho phép thay đổi role của admin
+                elseif ($currentRole === 'admin' && $newRole !== 'admin') {
+                    $errors['role'] = "Không thể thay đổi quyền của Admin";
+                }
+                // Chỉ cho phép chuyển giữa staff và customer
+                elseif (!in_array($newRole, ['staff', 'customer'])) {
+                    $errors['role'] = "Quyền không hợp lệ. Chỉ có thể chuyển giữa Staff và Customer";
+                }
             }
 
             // Kiểm tra phone nếu có

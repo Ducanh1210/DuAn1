@@ -163,6 +163,27 @@ class User
     public function update($id, $data)
     {
         try {
+            // Lấy thông tin user hiện tại để đảm bảo không mất dữ liệu
+            $currentUser = $this->find($id);
+            if (!$currentUser) {
+                return false;
+            }
+            
+            // Đảm bảo email không rỗng
+            $email = $data['email'] ?? $currentUser['email'] ?? '';
+            if (empty($email)) {
+                throw new Exception("Email không được để trống");
+            }
+            
+            // Kiểm tra xem cột address có tồn tại không
+            $hasAddressColumn = false;
+            try {
+                $checkColumn = $this->conn->query("SHOW COLUMNS FROM users LIKE 'address'");
+                $hasAddressColumn = ($checkColumn && $checkColumn->rowCount() > 0);
+            } catch (Exception $e) {
+                $hasAddressColumn = false;
+            }
+            
             $sql = "UPDATE users SET 
                 full_name = :full_name,
                 email = :email,
@@ -171,6 +192,11 @@ class User
                 tier_id = :tier_id,
                 role = :role,
                 total_spending = :total_spending";
+            
+            // Cập nhật address nếu có trong data và cột tồn tại
+            if (isset($data['address']) && $hasAddressColumn) {
+                $sql .= ", address = :address";
+            }
             
             // Cập nhật status nếu có
             if (isset($data['status'])) {
@@ -186,14 +212,19 @@ class User
             
             $params = [
                 ':id' => $id,
-                ':full_name' => $data['full_name'],
-                ':email' => $data['email'],
-                ':phone' => $data['phone'] ?? null,
-                ':birth_date' => $data['birth_date'] ?? null,
-                ':tier_id' => $data['tier_id'] ?? null,
-                ':role' => $data['role'] ?? 'customer',
-                ':total_spending' => $data['total_spending'] ?? 0.00
+                ':full_name' => $data['full_name'] ?? $currentUser['full_name'],
+                ':email' => $email,
+                ':phone' => $data['phone'] ?? $currentUser['phone'] ?? null,
+                ':birth_date' => $data['birth_date'] ?? $currentUser['birth_date'] ?? null,
+                ':tier_id' => $data['tier_id'] ?? $currentUser['tier_id'] ?? null,
+                ':role' => $data['role'] ?? $currentUser['role'] ?? 'customer',
+                ':total_spending' => $data['total_spending'] ?? $currentUser['total_spending'] ?? 0.00
             ];
+            
+            // Chỉ thêm address nếu cột tồn tại
+            if (isset($data['address']) && $hasAddressColumn) {
+                $params[':address'] = $data['address'];
+            }
             
             if (isset($data['status'])) {
                 $params[':status'] = $data['status'];
@@ -208,6 +239,7 @@ class User
             return true;
         } catch (Exception $e) {
             debug($e);
+            return false;
         }
     }
 
