@@ -104,15 +104,40 @@ class ProfileController
             }
 
             if (empty($errors)) {
-                // Cập nhật thông tin
+                // Lấy thông tin user hiện tại để giữ nguyên email và các trường khác
+                $currentUser = $this->user->find($userId);
+                
+                if (!$currentUser) {
+                    header('Location: ' . BASE_URL . '?act=profile&tab=account');
+                    exit;
+                }
+                
+                // Đảm bảo email không rỗng
+                $email = $currentUser['email'] ?? '';
+                if (empty($email)) {
+                    $errors['email'] = "Email không được để trống";
+                    header('Location: ' . BASE_URL . '?act=profile&tab=account');
+                    exit;
+                }
+                
+                // Cập nhật thông tin (giữ nguyên email và các trường không thay đổi)
                 $data = [
                     'full_name' => $fullName,
+                    'email' => $email, // Giữ nguyên email từ database
                     'phone' => $_POST['phone'] ?? null,
-                    'address' => $_POST['address'] ?? null,
-                    'birth_date' => !empty($_POST['birth_date']) ? $_POST['birth_date'] : null
+                    'birth_date' => !empty($_POST['birth_date']) ? $_POST['birth_date'] : null,
+                    'tier_id' => $currentUser['tier_id'] ?? null, // Giữ nguyên tier_id
+                    'role' => $currentUser['role'] ?? 'customer', // Giữ nguyên role
+                    'total_spending' => $currentUser['total_spending'] ?? 0.00, // Giữ nguyên total_spending
+                    'status' => $currentUser['status'] ?? 'active' // Giữ nguyên status
                 ];
 
-                $this->user->update($userId, $data);
+                $result = $this->user->update($userId, $data);
+                
+                if (!$result) {
+                    header('Location: ' . BASE_URL . '?act=profile&tab=account&error=1');
+                    exit;
+                }
                 
                 // Cập nhật session
                 $_SESSION['user_name'] = $fullName;

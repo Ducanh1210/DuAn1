@@ -72,20 +72,28 @@
           <div class="col-md-6">
             <div class="mb-3">
               <label for="role" class="form-label">Quyền <span class="text-danger">*</span></label>
-              <select name="role" id="role" class="form-select <?= !empty($errors['role']) ? 'is-invalid' : '' ?>" required>
-                <option value="">-- Chọn quyền --</option>
-                <option value="admin" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'admin' ? 'selected' : '' ?>>Admin</option>
-                <option value="staff" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'staff' ? 'selected' : '' ?>>Staff</option>
-                <option value="customer" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'customer' ? 'selected' : '' ?>>Customer</option>
-              </select>
-              <?php if (!empty($errors['role'])): ?>
-                <div class="text-danger small mt-1"><?= $errors['role'] ?></div>
+              <?php if ($user['role'] === 'admin'): ?>
+                <!-- Admin không thể đổi role -->
+                <input type="text" class="form-control" value="Admin" readonly style="background-color: #f8f9fa;">
+                <input type="hidden" name="role" value="admin">
+                <small class="text-muted">
+                  <em class="text-warning">Không thể thay đổi quyền của Admin</em>
+                </small>
+              <?php else: ?>
+                <!-- Staff và Customer có thể chuyển đổi -->
+                <select name="role" id="role" class="form-select <?= !empty($errors['role']) ? 'is-invalid' : '' ?>" required>
+                  <option value="staff" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'staff' ? 'selected' : '' ?>>Staff</option>
+                  <option value="customer" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'customer' ? 'selected' : '' ?>>Customer</option>
+                </select>
+                <?php if (!empty($errors['role'])): ?>
+                  <div class="text-danger small mt-1"><?= $errors['role'] ?></div>
+                <?php endif; ?>
+                <small class="text-muted">
+                  <strong>Staff:</strong> Quyền nhân viên<br>
+                  <strong>Customer:</strong> Khách hàng<br>
+                  <em class="text-info">Admin có thể chuyển Customer sang Staff</em>
+                </small>
               <?php endif; ?>
-              <small class="text-muted">
-                <strong>Admin:</strong> Toàn quyền quản trị<br>
-                <strong>Staff:</strong> Quyền nhân viên<br>
-                <strong>Customer:</strong> Khách hàng
-              </small>
             </div>
 
             <div class="mb-3">
@@ -184,7 +192,20 @@
 
     if (!role || role === '') {
       alert('Vui lòng chọn quyền!');
-      document.getElementById('role').focus();
+      const roleField = document.getElementById('role');
+      if (roleField) {
+        roleField.focus();
+      }
+      return false;
+    }
+
+    // Kiểm tra nếu cố gắng chọn admin
+    if (role === 'admin') {
+      alert('Không thể chuyển tài khoản sang Admin. Chỉ có 1 Admin duy nhất trong hệ thống!');
+      const roleField = document.getElementById('role');
+      if (roleField) {
+        roleField.focus();
+      }
       return false;
     }
 

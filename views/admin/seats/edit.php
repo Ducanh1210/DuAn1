@@ -75,8 +75,6 @@
               <select name="seat_type" id="seat_type" class="form-select">
                 <option value="normal" <?= (isset($_POST['seat_type']) ? $_POST['seat_type'] : ($seat['seat_type'] ?? 'normal')) == 'normal' ? 'selected' : '' ?>>Thường</option>
                 <option value="vip" <?= (isset($_POST['seat_type']) ? $_POST['seat_type'] : ($seat['seat_type'] ?? 'normal')) == 'vip' ? 'selected' : '' ?>>VIP</option>
-                <option value="couple" <?= (isset($_POST['seat_type']) ? $_POST['seat_type'] : ($seat['seat_type'] ?? 'normal')) == 'couple' ? 'selected' : '' ?>>Đôi</option>
-                <option value="disabled" <?= (isset($_POST['seat_type']) ? $_POST['seat_type'] : ($seat['seat_type'] ?? 'normal')) == 'disabled' ? 'selected' : '' ?>>Khuyết tật</option>
               </select>
             </div>
 
@@ -96,10 +94,18 @@
             <div class="mb-3">
               <label for="status" class="form-label">Trạng thái</label>
               <select name="status" id="status" class="form-select">
-                <option value="available" <?= (isset($_POST['status']) ? $_POST['status'] : ($seat['status'] ?? 'available')) == 'available' ? 'selected' : '' ?>>Có sẵn</option>
-                <option value="booked" <?= (isset($_POST['status']) ? $_POST['status'] : ($seat['status'] ?? 'available')) == 'booked' ? 'selected' : '' ?>>Đã đặt</option>
-                <option value="maintenance" <?= (isset($_POST['status']) ? $_POST['status'] : ($seat['status'] ?? 'available')) == 'maintenance' ? 'selected' : '' ?>>Bảo trì</option>
-                <option value="reserved" <?= (isset($_POST['status']) ? $_POST['status'] : ($seat['status'] ?? 'available')) == 'reserved' ? 'selected' : '' ?>>Giữ chỗ</option>
+                <?php
+                $currentStatus = isset($_POST['status']) ? $_POST['status'] : ($seat['status'] ?? 'available');
+                // Nếu trạng thái không hợp lệ, mặc định là available
+                $validStatuses = ['available', 'booked', 'maintenance', 'reserved'];
+                if (!in_array($currentStatus, $validStatuses)) {
+                  $currentStatus = 'available';
+                }
+                ?>
+                <option value="available" <?= $currentStatus == 'available' ? 'selected' : '' ?>>Có sẵn</option>
+                <option value="booked" <?= $currentStatus == 'booked' ? 'selected' : '' ?>>Đã đặt</option>
+                <option value="maintenance" <?= $currentStatus == 'maintenance' ? 'selected' : '' ?>>Bảo trì</option>
+                <option value="reserved" <?= $currentStatus == 'reserved' ? 'selected' : '' ?>>Giữ chỗ</option>
               </select>
             </div>
           </div>

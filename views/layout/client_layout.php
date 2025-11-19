@@ -15,6 +15,9 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'movies.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/movies.css">
     <?php endif; ?>
+    <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'thanhtoan.php') !== false): ?>
+        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/thanhtoan.css">
+    <?php endif; ?>
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap"
         rel="stylesheet" />
