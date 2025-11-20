@@ -42,15 +42,19 @@ class ProfileController
         // Lấy tất cả tiers để hiển thị thông tin
         $allTiers = $this->getAllTiers();
 
-        // Tính điểm thưởng từ total_spending (1 điểm = 1000 VNĐ)
-        $rewardPoints = floor($user['total_spending'] / 1000);
-        
-        // Tính điểm cần để lên hạng tiếp theo
-        $nextTier = $this->getNextTier($user['total_spending']);
-        $pointsToNextTier = $nextTier ? ($nextTier['spending_min'] - $user['total_spending']) / 1000 : 0;
-
         // Lấy lịch sử điểm thưởng (từ bookings)
         $rewardHistory = $this->getRewardHistory($userId);
+        
+        // Tính tổng điểm từ lịch sử tích điểm (tổng tất cả points_earned)
+        $rewardPoints = 0;
+        foreach ($rewardHistory as $reward) {
+            $rewardPoints += (int)($reward['points_earned'] ?? 0);
+        }
+        
+        // Tính điểm cần để lên hạng tiếp theo dựa trên total_spending
+        // (vì tier dựa trên tổng chi tiêu, không phải điểm)
+        $nextTier = $this->getNextTier($user['total_spending']);
+        $pointsToNextTier = $nextTier ? ($nextTier['spending_min'] - $user['total_spending']) / 1000 : 0;
 
         // Lấy lịch sử mua vé
         $bookingResult = $this->booking->getByUser($userId);
