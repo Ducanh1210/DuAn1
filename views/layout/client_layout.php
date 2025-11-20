@@ -20,6 +20,8 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php endif; ?>
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'gioithieu.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/gioithieu.css">
+    <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'khuyenmai.php') !== false): ?>
+        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/khuyenmai.css">
     <?php endif; ?>
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap"
@@ -57,6 +59,12 @@ if (session_status() === PHP_SESSION_NONE) {
                 <a href="<?= BASE_URL ?>?act=khuyenmai" class="<?= $isKhuyenMai ? 'active' : '' ?>">Khuyến Mãi</a>
                 <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
                 <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
+                <a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a>
+                <a href="<?= BASE_URL ?>?act=gioithieu">Giới Thiệu</a>
+                <a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a>
+                <a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a>
+                <a href="<?= BASE_URL ?>?act=giave">Giá Vé</a>
+                <a href="<?= BASE_URL ?>?act=lienhe">Liên Hệ</a>
             </nav>
 
             <div class="nav-actions">
@@ -182,6 +190,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <ul>
                         <li><a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a></li>
                         <li><a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a></li>
                         <li><a href="<?= BASE_URL ?>?act=giave">Giá vé</a></li>
                         <li><a href="<?= BASE_URL ?>?act=tintuc">Tin tức</a></li>
                         <li><a href="<?= BASE_URL ?>?act=lienhe">Liên hệ</a></li>
