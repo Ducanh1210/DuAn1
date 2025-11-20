@@ -18,6 +18,9 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'thanhtoan.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/thanhtoan.css">
     <?php endif; ?>
+    <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'gioithieu.php') !== false): ?>
+        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/gioithieu.css">
+    <?php endif; ?>
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap"
         rel="stylesheet" />
@@ -43,6 +46,7 @@ if (session_status() === PHP_SESSION_NONE) {
             $isTrangChu = in_array($currentAct, ['trangchu', '', 'movies']);
             $isGioiThieu = ($currentAct === 'gioithieu');
             $isLichChieu = ($currentAct === 'lichchieu');
+            $isKhuyenMai = ($currentAct === 'khuyenmai');
             $isGiaVe = ($currentAct === 'giave');
             $isLienHe = ($currentAct === 'lienhe');
             ?>
@@ -50,6 +54,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <a href="<?= BASE_URL ?>?act=trangchu" class="<?= $isTrangChu ? 'active' : '' ?>">Trang Chủ</a>
                 <a href="<?= BASE_URL ?>?act=gioithieu" class="<?= $isGioiThieu ? 'active' : '' ?>">Giới Thiệu</a>
                 <a href="<?= BASE_URL ?>?act=lichchieu" class="<?= $isLichChieu ? 'active' : '' ?>">Lịch Chiếu</a>
+                <a href="<?= BASE_URL ?>?act=khuyenmai" class="<?= $isKhuyenMai ? 'active' : '' ?>">Khuyến Mãi</a>
                 <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
                 <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
             </nav>
@@ -179,7 +184,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <li><a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a></li>
                         <li><a href="<?= BASE_URL ?>?act=giave">Giá vé</a></li>
                         <li><a href="<?= BASE_URL ?>?act=tintuc">Tin tức</a></li>
-                        <li><a href="<?= BASE_URL ?>?act=hoidap">Hỏi đáp</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=lienhe">Liên hệ</a></li>
                     </ul>
                 </div>
 

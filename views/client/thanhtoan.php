@@ -66,10 +66,12 @@ function formatPrice($price) {
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Giờ chiếu:</span>
-                            <span class="detail-value highlight-time"><?= $formattedTime ?></span>
-                            <?php if (!empty($showtime['end_time'])): ?>
-                                <span class="detail-value"> - <?= date('H:i', strtotime($showtime['end_time'])) ?></span>
-                            <?php endif; ?>
+                            <span class="detail-value highlight-time">
+                                <?= $formattedTime ?>
+                                <?php if (!empty($showtime['end_time'])): ?>
+                                    - <?= date('H:i', strtotime($showtime['end_time'])) ?>
+                                <?php endif; ?>
+                            </span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Ghế đã chọn:</span>
@@ -94,10 +96,6 @@ function formatPrice($price) {
                         </div>
                         <?php endif; ?>
                     </div>
-
-                    <p class="desc">
-                        <?= htmlspecialchars(substr($movie['description'] ?? '', 0, 150)) ?><?= strlen($movie['description'] ?? '') > 150 ? '...' : '' ?>
-                    </p>
                 </div>
             </div>
         </div>

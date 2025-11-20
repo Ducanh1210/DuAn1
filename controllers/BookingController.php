@@ -540,6 +540,9 @@ class BookingController
             // Cập nhật booking status
             $this->booking->updateStatus($bookingId, $bookingStatus);
 
+            // Cập nhật total_spending và tier_id của user
+            $this->updateUserSpendingAndTier($booking['user_id'], $booking['final_amount']);
+
             renderClient('client/payment-result.php', [
                 'success' => true,
                 'message' => 'Thanh toán thành công! Cảm ơn bạn đã đặt vé.',
@@ -591,5 +594,62 @@ class BookingController
             ], 'Thanh toán thất bại');
         }
         exit;
+    }
+
+    /**
+     * Cập nhật total_spending và tier_id của user sau khi thanh toán thành công
+     */
+    private function updateUserSpendingAndTier($userId, $amount)
+    {
+        try {
+            require_once __DIR__ . '/../models/User.php';
+            $userModel = new User();
+            
+            // Lấy thông tin user hiện tại
+            $user = $userModel->find($userId);
+            if (!$user) {
+                return;
+            }
+            
+            // Tính total_spending mới
+            $currentSpending = floatval($user['total_spending'] ?? 0);
+            $newSpending = $currentSpending + floatval($amount);
+            
+            // Lấy tier phù hợp dựa trên total_spending mới
+            $tierId = $this->getTierBySpending($newSpending);
+            
+            // Cập nhật user
+            $userModel->update($userId, [
+                'total_spending' => $newSpending,
+                'tier_id' => $tierId
+            ]);
+        } catch (Exception $e) {
+            // Log lỗi nhưng không làm gián đoạn quá trình thanh toán
+            error_log('Error updating user spending: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Lấy tier_id phù hợp dựa trên total_spending
+     */
+    private function getTierBySpending($totalSpending)
+    {
+        try {
+            $conn = connectDB();
+            // Lấy tier cao nhất mà user đủ điều kiện
+            $sql = "SELECT id FROM customer_tiers 
+                    WHERE spending_min <= :spending 
+                    AND (spending_max IS NULL OR spending_max >= :spending)
+                    ORDER BY spending_min DESC 
+                    LIMIT 1";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([':spending' => $totalSpending]);
+            $tier = $stmt->fetch();
+            
+            return $tier ? $tier['id'] : null;
+        } catch (Exception $e) {
+            error_log('Error getting tier: ' . $e->getMessage());
+            return null;
+        }
     }
 }

@@ -44,6 +44,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <a href="<?= BASE_URL ?>?act=trangchu" class="<?= $isTrangChu ? 'active' : '' ?>">Trang Chủ</a>
                         <a href="<?= BASE_URL ?>?act=gioithieu" class="<?= $isGioiThieu ? 'active' : '' ?>">Giới Thiệu</a>
                         <a href="<?= BASE_URL ?>?act=lichchieu" class="<?= $isLichChieu ? 'active' : '' ?>">Lịch Chiếu</a>
+                        <a href="<?= BASE_URL ?>?act=khuyenmai" class="<?= $isKhuyenMai ? 'active' : '' ?>">Khuyến mãi</a>
                         <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
                         <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
                     </nav>
@@ -225,18 +226,14 @@ if (session_status() === PHP_SESSION_NONE) {
                         <a class="view-all" href="#">Xem tất cả</a>
                     </div>
 
-                    <div class="promo-list">
-                        <div class="promo-card">
-                            <img src="<?= BASE_URL ?>/image/banner1.jpg" alt="promo1">
-                        </div>
-
-                        <div class="promo-card">
-                            <img src="<?= BASE_URL ?>/image/banner2.jpg" alt="promo2">
+                    <div class="promo-carousel-wrapper" id="viewport">
+                        <div class="promo-carousel">
+                            <div class="promo-list" id="track"></div>
                         </div>
                     </div>
 
                     <!-- small pager (mirrors carousel pages) -->
-                    <div class="mini-dots" id="miniDots"></div>
+                    <div class="mini-dots" id="dots"></div>
                 </aside>
             </div>
         </section>
@@ -460,6 +457,148 @@ if (session_status() === PHP_SESSION_NONE) {
                 }
             });
         }
+    })();
+
+    // Promo Carousel - Tự động chạy và hỗ trợ vuốt (mỗi trang 3 ảnh)
+    (function(){
+        // ======= Thay ảnh ở đây =======
+        const imagePaths = [
+            '<?= BASE_URL ?>/image/banner1.jpg',
+            '<?= BASE_URL ?>/image/banner2.jpg',
+            '<?= BASE_URL ?>/image/banner3.jpg',
+            '<?= BASE_URL ?>/image/banner4.jpg',
+            '<?= BASE_URL ?>/image/banner3.jpg',
+            '<?= BASE_URL ?>/image/banner4.jpg'
+        ];
+        // =====================================
+
+        const perPage = 3; // số ảnh trên 1 trang
+        const pages = [];
+
+        for(let i=0; i<imagePaths.length; i+=perPage){
+            pages.push(imagePaths.slice(i, i+perPage));
+        }
+
+        const track = document.getElementById('track');
+        const dotsContainer = document.getElementById('dots');
+        const viewport = document.getElementById('viewport');
+
+        if (!track || !dotsContainer || !viewport) return;
+
+        // tạo DOM cho các page
+        pages.forEach((pageImgs, pageIndex) => {
+            const page = document.createElement('div');
+            page.className = 'page';
+            pageImgs.forEach(src => {
+                const a = document.createElement('a');
+                a.className = 'card';
+                a.href = '#';
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = '';
+                a.appendChild(img);
+                page.appendChild(a);
+            });
+            track.appendChild(page);
+
+            // tạo dot
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (pageIndex === 0 ? ' active' : '');
+            dot.dataset.idx = pageIndex;
+            dot.addEventListener('click', () => goToPage(pageIndex));
+            dotsContainer.appendChild(dot);
+        });
+
+        const dotElems = Array.from(dotsContainer.children);
+        const totalPages = pages.length;
+        let pageIndex = 0;
+        let autoTimer = null;
+
+        function update(){
+            track.style.transform = `translateX(-${pageIndex * 100}%)`;
+            dotElems.forEach(d => d.classList.remove('active'));
+            if(dotElems[pageIndex]) dotElems[pageIndex].classList.add('active');
+        }
+
+        function goToPage(i){
+            pageIndex = ((i % totalPages) + totalPages) % totalPages;
+            update();
+            restartAuto();
+        }
+
+        // auto-play (theo page)
+        function startAuto(){
+            stopAuto();
+            autoTimer = setInterval(() => {
+                goToPage(pageIndex + 1);
+            }, 3500);
+        }
+
+        function stopAuto(){
+            if(autoTimer){ clearInterval(autoTimer); autoTimer = null; }
+        }
+
+        function restartAuto(){
+            stopAuto();
+            startAuto();
+        }
+
+        // swipe support (touch + mouse)
+        let startX = 0;
+        let isDragging = false;
+
+        viewport.addEventListener('touchstart', (e) => {
+            stopAuto();
+            isDragging = true;
+            startX = e.touches[0].clientX;
+        }, {passive:true});
+
+        viewport.addEventListener('touchend', (e) => {
+            if(!isDragging) return;
+            const endX = e.changedTouches[0].clientX;
+            handleSwipe(startX, endX);
+            isDragging = false;
+            restartAuto();
+        });
+
+        // mouse drag for desktop
+        viewport.addEventListener('mousedown', (e) => {
+            stopAuto();
+            isDragging = true;
+            startX = e.clientX;
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if(!isDragging) return;
+            const endX = e.clientX;
+            handleSwipe(startX, endX);
+            isDragging = false;
+            restartAuto();
+        });
+
+        function handleSwipe(start, end){
+            const diff = end - start;
+            const threshold = 40; // px để tính là swipe
+            if(diff < -threshold){
+                goToPage(pageIndex + 1);
+            } else if(diff > threshold){
+                goToPage(pageIndex - 1);
+            } else {
+                // small movement -> no change
+                goToPage(pageIndex);
+            }
+        }
+
+        // pause auto when hover (desktop)
+        viewport.addEventListener('mouseenter', stopAuto);
+        viewport.addEventListener('mouseleave', startAuto);
+
+        // init
+        update();
+        startAuto();
+
+        // ensure correct alignment on resize
+        window.addEventListener('resize', update);
     })();
 </script>
 
