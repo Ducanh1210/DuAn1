@@ -42,8 +42,8 @@ if (session_status() === PHP_SESSION_NONE) {
             <?php
             // Lấy trang hiện tại
             $currentAct = $_GET['act'] ?? 'trangchu';
-            // Kiểm tra active cho từng menu item
-            $isTrangChu = in_array($currentAct, ['trangchu', '', 'movies']);
+            // Kiểm tra active cho từng menu item - chỉ active đúng trang, không active khi là trang khác
+            $isTrangChu = ($currentAct === 'trangchu' || $currentAct === '');
             $isGioiThieu = ($currentAct === 'gioithieu');
             $isLichChieu = ($currentAct === 'lichchieu');
             $isKhuyenMai = ($currentAct === 'khuyenmai');

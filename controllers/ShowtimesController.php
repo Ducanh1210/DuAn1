@@ -60,8 +60,6 @@ class ShowtimesController
                 'show_date' => $_POST['show_date'] ?? '',
                 'start_time' => $_POST['start_time'] ?? '',
                 'end_time' => $_POST['end_time'] ?? '',
-                'adult_price' => $_POST['adult_price'] ?? '',
-                'student_price' => $_POST['student_price'] ?? '',
                 'format' => $_POST['format'] ?? '2D'
             ];
 
@@ -125,8 +123,6 @@ class ShowtimesController
                 'show_date' => $_POST['show_date'] ?? '',
                 'start_time' => $_POST['start_time'] ?? '',
                 'end_time' => $_POST['end_time'] ?? '',
-                'adult_price' => $_POST['adult_price'] ?? '',
-                'student_price' => $_POST['student_price'] ?? '',
                 'format' => $_POST['format'] ?? '2D'
             ];
 

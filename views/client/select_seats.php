@@ -569,8 +569,10 @@ let remainingSeats = 0;
 let adultCount = 0;
 let studentCount = 0;
 let selectedAdjacentCount = 0;
-const seatPrice = 80000; // Giá mỗi ghế thường
-const vipExtraPrice = 10000; // Phụ thu ghế VIP (10k)
+const adultNormalPrice = <?= $normalPrice ?? 70000 ?>; // Giá ghế thường người lớn từ database
+const adultVipPrice = <?= $vipPrice ?? 80000 ?>; // Giá ghế VIP người lớn từ database
+const studentNormalPrice = <?= $studentNormalPrice ?? 60000 ?>; // Giá ghế thường sinh viên từ database
+const studentVipPrice = <?= $studentVipPrice ?? 70000 ?>; // Giá ghế VIP sinh viên từ database
 
 // Countdown timer
 let countdown = <?= $countdownSeconds ?>;
@@ -742,14 +744,20 @@ function updateSummary() {
         `<span class="selected-seat-badge">${seat.label}${seat.type === 'vip' ? ' (VIP)' : ''}</span>`
     ).join('');
     
-    // Tính tổng tiền: ghế thường + phụ thu VIP
+    // Tính tổng tiền sử dụng giá từ database theo loại khách hàng
     let total = 0;
-    selectedSeats.forEach(seat => {
+    selectedSeats.forEach((seat, index) => {
+        // Xác định loại khách hàng: số ghế đầu = người lớn, số ghế sau = sinh viên
+        const isAdult = index < adultCount;
+        let price = 0;
+        
         if (seat.type === 'vip') {
-            total += seatPrice + vipExtraPrice; // Ghế VIP = giá thường + 10k
+            price = isAdult ? adultVipPrice : studentVipPrice;
         } else {
-            total += seatPrice; // Ghế thường
+            price = isAdult ? adultNormalPrice : studentNormalPrice;
         }
+        
+        total += price;
     });
     
     totalPriceElement.textContent = total.toLocaleString('vi-VN') + ' đ';

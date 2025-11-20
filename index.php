@@ -36,6 +36,8 @@ require_once('./controllers/BookingController.php');
 require_once('./models/Booking.php');
 require_once('./models/Payment.php');
 require_once('./controllers/ProfileController.php');
+require_once('./controllers/TicketPriceController.php');
+require_once('./models/TicketPrice.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -46,6 +48,7 @@ match ($act) {
     'trangchu' => (new MoviesController)->trangchu(),
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
+    'giave' => (new TicketPriceController)->index(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
     'api-seats' => (new BookingController)->getSeatsApi(),
@@ -132,6 +135,11 @@ match ($act) {
     'bookings-show' => (new BookingController)->show(),
     'bookings-delete' => (new BookingController)->deleteBooking(),
     'bookings-update-status' => (new BookingController)->updateStatus(),
+
+    // Ticket Prices routes (Admin)
+    'ticket-prices' => (new TicketPriceController)->list(),
+    'ticket-prices-edit' => (new TicketPriceController)->edit(),
+    'ticket-prices-update' => (new TicketPriceController)->update(),
 
     default => notFound(),
 };

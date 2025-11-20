@@ -73,13 +73,37 @@ class BookingController
             // Thời gian đếm ngược (15 phút = 900 giây)
             $countdownSeconds = 900;
 
+            // Đảm bảo format được lấy đúng từ showtime
+            $showtimeFormat = isset($showtime['format']) ? trim($showtime['format']) : '2D';
+            
+            // Chuyển đổi format để đảm bảo đúng: IMAX/4DX -> 3D
+            $formatUpper = strtoupper($showtimeFormat);
+            if (in_array($formatUpper, ['3D', 'IMAX', '4DX'])) {
+                $showtimeFormat = '3D';
+            } else {
+                $showtimeFormat = '2D';
+            }
+            
+            // Đảm bảo showtime có format đúng trước khi tính giá
+            $showtime['format'] = $showtimeFormat;
+
+            // Lấy giá vé từ database (mặc định dùng giá người lớn để hiển thị)
+            require_once __DIR__ . '/../models/TicketPrice.php';
+            $ticketPriceModel = new TicketPrice();
+            $normalPrice = $ticketPriceModel->getPriceForShowtime($showtime, 'adult', 'normal');
+            $vipPrice = $ticketPriceModel->getPriceForShowtime($showtime, 'adult', 'vip');
+            $studentNormalPrice = $ticketPriceModel->getPriceForShowtime($showtime, 'student', 'normal');
+            $studentVipPrice = $ticketPriceModel->getPriceForShowtime($showtime, 'student', 'vip');
+
             renderClient('client/select_seats.php', [
                 'showtime' => $showtime,
                 'movie' => $movie,
                 'room' => $room,
                 'seatsByRow' => $seatsByRow,
                 'bookedSeats' => $bookedSeats,
-                'countdownSeconds' => $countdownSeconds
+                'countdownSeconds' => $countdownSeconds,
+                'normalPrice' => $normalPrice,
+                'vipPrice' => $vipPrice
             ], 'Chọn ghế');
         } catch (Exception $e) {
             // Log lỗi và redirect
@@ -123,12 +147,42 @@ class BookingController
             $seatsByRow = $seatModel->getSeatMapByRoom($room['id']);
             $bookedSeats = $this->booking->getBookedSeatsByShowtime($showtimeId);
 
+            // Lấy giá vé từ ticket_prices
+            require_once __DIR__ . '/../models/TicketPrice.php';
+            $ticketPriceModel = new TicketPrice();
+            
+            // Đảm bảo format được lấy đúng từ showtime
+            $showtimeFormat = isset($showtime['format']) ? trim($showtime['format']) : '2D';
+            
+            // Chuyển đổi format để đảm bảo đúng: IMAX/4DX -> 3D
+            $formatUpper = strtoupper($showtimeFormat);
+            if (in_array($formatUpper, ['3D', 'IMAX', '4DX'])) {
+                $showtimeFormat = '3D';
+            } else {
+                $showtimeFormat = '2D';
+            }
+            
+            // Đảm bảo showtime có format đúng trước khi tính giá
+            $showtime['format'] = $showtimeFormat;
+            
+            $adultNormalPrice = $ticketPriceModel->getPriceForShowtime($showtime, 'adult', 'normal');
+            $adultVipPrice = $ticketPriceModel->getPriceForShowtime($showtime, 'adult', 'vip');
+            $studentNormalPrice = $ticketPriceModel->getPriceForShowtime($showtime, 'student', 'normal');
+            $studentVipPrice = $ticketPriceModel->getPriceForShowtime($showtime, 'student', 'vip');
+
             echo json_encode([
                 'success' => true,
                 'showtime' => $showtime,
                 'room' => $room,
                 'seatsByRow' => $seatsByRow,
-                'bookedSeats' => $bookedSeats
+                'bookedSeats' => $bookedSeats,
+                'prices' => [
+                    'adult_normal' => $adultNormalPrice,
+                    'adult_vip' => $adultVipPrice,
+                    'student_normal' => $studentNormalPrice,
+                    'student_vip' => $studentVipPrice
+                ],
+                'format' => $showtimeFormat
             ]);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi tải dữ liệu ghế: ' . $e->getMessage()]);
@@ -161,6 +215,20 @@ class BookingController
             exit;
         }
 
+        // Đảm bảo format được lấy đúng từ showtime
+        $showtimeFormat = isset($showtime['format']) ? trim($showtime['format']) : '2D';
+        
+        // Chuyển đổi format để đảm bảo đúng: IMAX/4DX -> 3D
+        $formatUpper = strtoupper($showtimeFormat);
+        if (in_array($formatUpper, ['3D', 'IMAX', '4DX'])) {
+            $showtimeFormat = '3D';
+        } else {
+            $showtimeFormat = '2D';
+        }
+        
+        // Đảm bảo showtime có format đúng trước khi tính giá
+        $showtime['format'] = $showtimeFormat;
+
         $roomModel = new Room();
         $room = $roomModel->find($showtime['room_id']);
         
@@ -178,10 +246,9 @@ class BookingController
         $adultCount = isset($_GET['adult_count']) ? (int)$_GET['adult_count'] : 0;
         $studentCount = isset($_GET['student_count']) ? (int)$_GET['student_count'] : 0;
         
-        // Lấy giá từ showtime
-        $adultPrice = $showtime['adult_price'] ?? 80000;
-        $studentPrice = $showtime['student_price'] ?? 60000;
-        $vipExtraPrice = 10000; // Phụ thu VIP
+        // Sử dụng giá vé từ database
+        require_once __DIR__ . '/../models/TicketPrice.php';
+        $ticketPriceModel = new TicketPrice();
 
         // Lấy thông tin ghế đã chọn
         $seatModel = new Seat();
@@ -192,16 +259,12 @@ class BookingController
         foreach ($seatIdArray as $index => $seatId) {
             $seat = $seatModel->find(trim($seatId));
             if ($seat) {
-                // Xác định giá cơ bản: người lớn hay sinh viên
-                // Số ghế đầu = người lớn, số ghế sau = sinh viên
-                $basePrice = ($index < $adultCount) ? $adultPrice : $studentPrice;
+                // Xác định loại khách hàng
                 $customerType = ($index < $adultCount) ? 'adult' : 'student';
                 
-                // Tính giá: giá cơ bản + phụ thu VIP (nếu có)
-                $price = $basePrice;
-                if ($seat['seat_type'] === 'vip') {
-                    $price += $vipExtraPrice;
-                }
+                // Lấy giá vé từ database dựa trên showtime, loại khách hàng và loại ghế
+                $seatType = $seat['seat_type'] === 'vip' ? 'vip' : 'normal';
+                $price = $ticketPriceModel->getPriceForShowtime($showtime, $customerType, $seatType);
                 
                 $selectedSeats[] = [
                     'id' => $seat['id'],
@@ -213,6 +276,8 @@ class BookingController
                 $totalPrice += $price;
             }
         }
+        
+        $vipExtraPrice = 0; // Không cần nữa vì giá đã bao gồm trong database
 
         renderClient('client/thanhtoan.php', [
             'showtime' => $showtime,
@@ -263,20 +328,39 @@ class BookingController
                 exit;
             }
 
-            // Tính tổng tiền
+            // Đảm bảo format được lấy đúng từ showtime
+            $showtimeFormat = isset($showtime['format']) ? trim($showtime['format']) : '2D';
+            
+            // Chuyển đổi format để đảm bảo đúng: IMAX/4DX -> 3D
+            $formatUpper = strtoupper($showtimeFormat);
+            if (in_array($formatUpper, ['3D', 'IMAX', '4DX'])) {
+                $showtimeFormat = '3D';
+            } else {
+                $showtimeFormat = '2D';
+            }
+            
+            // Đảm bảo showtime có format đúng trước khi tính giá
+            $showtime['format'] = $showtimeFormat;
+
+            // Tính tổng tiền sử dụng giá vé từ database
+            require_once __DIR__ . '/../models/TicketPrice.php';
+            $ticketPriceModel = new TicketPrice();
+            
             $seatModel = new Seat();
             $seatIdArray = explode(',', $seatIds);
             $totalPrice = 0;
-            $seatPrice = 80000;
-            $vipExtraPrice = 10000;
 
-            foreach ($seatIdArray as $seatId) {
+            // Lấy số lượng người lớn và sinh viên
+            $adultCount = isset($_POST['adult_count']) ? (int)$_POST['adult_count'] : 0;
+            $studentCount = isset($_POST['student_count']) ? (int)$_POST['student_count'] : 0;
+
+            foreach ($seatIdArray as $index => $seatId) {
                 $seat = $seatModel->find(trim($seatId));
                 if ($seat) {
-                    $price = $seatPrice;
-                    if ($seat['seat_type'] === 'vip') {
-                        $price += $vipExtraPrice;
-                    }
+                    $seatType = $seat['seat_type'] === 'vip' ? 'vip' : 'normal';
+                    // Xác định loại khách hàng: số ghế đầu = người lớn, số ghế sau = sinh viên
+                    $customerType = ($index < $adultCount) ? 'adult' : 'student';
+                    $price = $ticketPriceModel->getPriceForShowtime($showtime, $customerType, $seatType);
                     $totalPrice += $price;
                 }
             }

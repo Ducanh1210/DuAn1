@@ -39,8 +39,6 @@
               <th>Ngày chiếu</th>
               <th>Giờ bắt đầu</th>
               <th>Giờ kết thúc</th>
-              <th>Giá vé người lớn</th>
-              <th>Giá vé học sinh</th>
               <th>Định dạng</th>
               <th>Thao tác</th>
             </tr>
@@ -75,8 +73,6 @@
                 <td><?= $item['show_date'] ? date('d/m/Y', strtotime($item['show_date'])) : 'N/A' ?></td>
                 <td><?= $item['start_time'] ? date('H:i', strtotime($item['start_time'])) : 'N/A' ?></td>
                 <td><?= $item['end_time'] ? date('H:i', strtotime($item['end_time'])) : 'N/A' ?></td>
-                <td><?= $item['adult_price'] ? number_format($item['adult_price'], 0, ',', '.') . ' đ' : 'N/A' ?></td>
-                <td><?= $item['student_price'] ? number_format($item['student_price'], 0, ',', '.') . ' đ' : 'N/A' ?></td>
                 <td>
                   <span class="badge bg-info"><?= htmlspecialchars($item['format'] ?? '2D') ?></span>
                 </td>
@@ -100,7 +96,7 @@
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="11" class="text-center text-muted py-4">
+                <td colspan="9" class="text-center text-muted py-4">
                   <i class="bi bi-calendar-x" style="font-size: 48px; display: block; margin-bottom: 10px;"></i>
                   Chưa có lịch chiếu nào
                 </td>

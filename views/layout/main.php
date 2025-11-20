@@ -58,6 +58,9 @@
     <a href="?act=bookings" class="<?= in_array($_GET['act'] ?? '', ['bookings', 'bookings-show', 'bookings-delete', 'bookings-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-ticket-perforated"></i><span class="label">Quản lý Đặt Vé</span>
     </a>
+    <a href="?act=ticket-prices" class="<?= in_array($_GET['act'] ?? '', ['ticket-prices', 'ticket-prices-update']) ? 'active' : '' ?>">
+      <i class="bi bi-cash-coin"></i><span class="label">Quản lý Giá Vé</span>
+    </a>
     <a href="?act=thongke" class="<?= ($_GET['act'] ?? '') == 'thongke' ? 'active' : '' ?>">
       <i class="bi bi-bar-chart"></i><span class="label">Thống Kê</span>
     </a>
