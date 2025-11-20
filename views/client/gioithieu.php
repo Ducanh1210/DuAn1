@@ -35,6 +35,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a>
                         <a href="<?= BASE_URL ?>?act=gioithieu" class="active">Giới Thiệu</a>
                         <a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a>
+                        <a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a>
                         <a href="<?= BASE_URL ?>?act=giave">Giá Vé</a>
                         <a href="<?= BASE_URL ?>?act=lienhe">Liên Hệ</a>
                     </nav>
@@ -156,12 +157,12 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                     <h2>Về Chúng Tôi</h2>
                     <p>
-                        TicketHub là nền tảng đặt vé xem phim trực tuyến hàng đầu tại Việt Nam, mang đến cho khán giả 
-                        trải nghiệm giải trí điện ảnh tuyệt vời nhất. Với hệ thống hiện đại và dịch vụ chuyên nghiệp, 
+                        TicketHub là nền tảng đặt vé xem phim trực tuyến hàng đầu tại Việt Nam, mang đến cho khán giả
+                        trải nghiệm giải trí điện ảnh tuyệt vời nhất. Với hệ thống hiện đại và dịch vụ chuyên nghiệp,
                         chúng tôi cam kết đem lại sự tiện lợi và hài lòng tối đa cho mọi khách hàng.
                     </p>
                     <p>
-                        Được thành lập với sứ mệnh kết nối người yêu phim với những bộ phim hay nhất từ khắp nơi trên thế giới, 
+                        Được thành lập với sứ mệnh kết nối người yêu phim với những bộ phim hay nhất từ khắp nơi trên thế giới,
                         TicketHub không ngừng phát triển và cải tiến để phục vụ hàng triệu người xem mỗi năm.
                     </p>
                 </section>
@@ -209,12 +210,12 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                     <h2>Sứ Mệnh Của Chúng Tôi</h2>
                     <p>
-                        Chúng tôi tin rằng điện ảnh là một hình thức nghệ thuật độc đáo có khả năng kết nối mọi người, 
-                        truyền cảm hứng và tạo nên những kỷ niệm đáng nhớ. TicketHub được xây dựng với mục tiêu làm cho 
+                        Chúng tôi tin rằng điện ảnh là một hình thức nghệ thuật độc đáo có khả năng kết nối mọi người,
+                        truyền cảm hứng và tạo nên những kỷ niệm đáng nhớ. TicketHub được xây dựng với mục tiêu làm cho
                         việc thưởng thức phim ảnh trở nên dễ dàng và thuận tiện hơn bao giờ hết.
                     </p>
                     <p>
-                        Chúng tôi không ngừng nỗ lực để mang đến trải nghiệm tốt nhất cho khán giả, từ việc lựa chọn phim, 
+                        Chúng tôi không ngừng nỗ lực để mang đến trải nghiệm tốt nhất cho khán giả, từ việc lựa chọn phim,
                         đặt vé, cho đến việc tận hưởng bộ phim tại rạp với chất lượng hình ảnh và âm thanh tuyệt hảo.
                     </p>
                 </section>
@@ -267,6 +268,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <ul>
                         <li><a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a></li>
                         <li><a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a></li>
                         <li><a href="<?= BASE_URL ?>?act=giave">Giá vé</a></li>
                         <li><a href="<?= BASE_URL ?>?act=tintuc">Tin tức</a></li>
                         <li><a href="<?= BASE_URL ?>?act=hoidap">Hỏi đáp</a></li>
@@ -353,7 +355,7 @@ if (session_status() === PHP_SESSION_NONE) {
     document.getElementById('currentYear').textContent = new Date().getFullYear();
 
     // Search box toggle functionality
-    (function () {
+    (function() {
         const searchIcon = document.getElementById('searchIcon');
         const searchBox = document.getElementById('searchBox');
         const searchInput = document.getElementById('searchInput');
@@ -362,7 +364,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         // Toggle search box khi click vào icon
         if (searchIcon) {
-            searchIcon.addEventListener('click', function (e) {
+            searchIcon.addEventListener('click', function(e) {
                 e.stopPropagation();
                 searchBox.classList.add('active');
                 searchInput.focus();
@@ -370,7 +372,7 @@ if (session_status() === PHP_SESSION_NONE) {
         }
 
         // Đóng search box khi click bên ngoài
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             if (!searchBox.contains(e.target) && !searchIcon.contains(e.target)) {
                 searchBox.classList.remove('active');
             }
@@ -379,7 +381,7 @@ if (session_status() === PHP_SESSION_NONE) {
         // Xử lý khi nhấn Enter trong search input
         const searchForm = document.getElementById('searchForm');
         if (searchInput) {
-            searchInput.addEventListener('keypress', function (e) {
+            searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     if (searchForm) {
@@ -391,7 +393,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         // Xử lý khi click vào nút search
         if (searchBtn) {
-            searchBtn.addEventListener('click', function (e) {
+            searchBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (searchForm) {
                     searchForm.submit();

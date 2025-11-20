@@ -41,6 +41,7 @@ match ($act) {
     'trangchu' => (new MoviesController)->trangchu(),
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
+    'khuyenmai' => (new MoviesController)->khuyenmai(),
     'giave' => (new MovieController)->giave(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
@@ -48,12 +49,12 @@ match ($act) {
     'my-bookings' => (new BookingController)->myBookings(),
     'payment' => (new BookingController)->payment(),
     'payment-process' => (new BookingController)->processPayment(),
-    
+
     // Auth routes (Client)
     'dangky' => (new AuthController)->register(),
     'dangnhap' => (new AuthController)->login(),
     'dangxuat' => (new AuthController)->logout(),
-    
+
     // Profile routes (Client)
     'profile' => (new ProfileController)->index(),
     'profile-update' => (new ProfileController)->update(),
@@ -129,6 +130,4 @@ match ($act) {
     'bookings-update-status' => (new BookingController)->updateStatus(),
 
     default => notFound(),
-}
-
-?>
+};

@@ -355,6 +355,118 @@ class MoviesController
     }
 
     /**
+     * Hiển thị trang khuyến mãi (Client)
+     */
+    public function khuyenmai()
+    {
+        $promotions = [
+            [
+                'title' => 'Cuối tuần rực rỡ',
+                'tag' => 'combo',
+                'status' => 'ongoing',
+                'period' => '01/11 - 31/12',
+                'description' => 'Giảm 35% combo 2 vé + bắp nước khi đặt vé online trong ba ngày cuối tuần.',
+                'benefits' => [
+                    'Áp dụng Thứ 6 - Chủ nhật cho ghế Standard & VIP',
+                    'Tặng thêm voucher nước ngọt 25.000đ',
+                    'Không giới hạn số lần đổi trong thời gian diễn ra'
+                ],
+                'code' => 'WEEKEND35',
+                'cta' => 'Đặt vé ngay'
+            ],
+            [
+                'title' => 'Thành viên kim cương',
+                'tag' => 'membership',
+                'status' => 'ongoing',
+                'period' => '15/10 - 15/12',
+                'description' => 'Ưu đãi độc quyền cho khách hàng chi tiêu từ 3.000.000đ trong 60 ngày.',
+                'benefits' => [
+                    'Tích lũy x3 điểm thưởng trên mọi giao dịch',
+                    'Miễn phí nâng hạng ghế khi đặt trước 24h',
+                    'Tặng 02 vé IMAX mỗi tháng'
+                ],
+                'code' => 'DIAMONDUP',
+                'cta' => 'Nâng hạng ngay'
+            ],
+            [
+                'title' => 'Combo gia đình 4 vé',
+                'tag' => 'family',
+                'status' => 'upcoming',
+                'period' => 'Khởi động 01/12',
+                'description' => 'Ưu đãi cho gia đình với 4 vé + 2 bắp lớn + 4 nước chỉ từ 399.000đ.',
+                'benefits' => [
+                    'Đặt trước để giữ ghế liền kề',
+                    'Tặng album sticker chủ đề phim tháng 12',
+                    'Giảm thêm 5% khi thanh toán qua Momo'
+                ],
+                'code' => 'FAMILYJOY',
+                'cta' => 'Đăng ký nhắc lịch'
+            ],
+            [
+                'title' => 'Sinh viên đồng giá',
+                'tag' => 'student',
+                'status' => 'ongoing',
+                'period' => '24/7 - Không giới hạn',
+                'description' => 'Vé Standard đồng giá 55.000đ cho sinh viên trên toàn hệ thống.',
+                'benefits' => [
+                    'Áp dụng cho tất cả suất chiếu trước 18h',
+                    'Ưu đãi 15% bắp nước khi xuất trình thẻ',
+                    'Mua 5 vé/tháng tặng 1 vé bất kỳ'
+                ],
+                'code' => 'STUDENT55',
+                'cta' => 'Xem chi tiết'
+            ],
+        ];
+
+        $membershipBenefits = [
+            [
+                'icon' => 'bi-gift',
+                'title' => 'Quà tặng mỗi tháng',
+                'desc' => 'Voucher đồ ăn, vé miễn phí, suất chiếu đặc biệt dành riêng cho hội viên.'
+            ],
+            [
+                'icon' => 'bi-lightning-charge',
+                'title' => 'Đặc quyền ưu tiên',
+                'desc' => 'Check-in và nhận vé nhanh, vào phòng chiếu sớm hơn 10 phút.'
+            ],
+            [
+                'icon' => 'bi-graph-up',
+                'title' => 'Tích điểm đa tầng',
+                'desc' => 'Tự động nhân 1.5-3 lần điểm thưởng dựa trên hạng thẻ hiện tại.'
+            ],
+        ];
+
+        $faqs = [
+            [
+                'question' => 'Làm sao để nhận mã khuyến mãi?',
+                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm “Sao chép mã”. Mã sẽ lưu trong ví voucher và tự áp dụng ở bước thanh toán.'
+            ],
+            [
+                'question' => 'Tôi có thể dùng nhiều mã trong cùng một đơn?',
+                'answer' => 'Mỗi đơn hàng chỉ áp dụng 01 mã giảm giá. Tuy nhiên bạn có thể kết hợp thêm ưu đãi tích điểm và thẻ thành viên.'
+            ],
+            [
+                'question' => 'Vé đã giảm giá có được hoàn/đổi?',
+                'answer' => 'Bạn vẫn có thể đổi suất chiếu trước giờ chiếu ít nhất 2 tiếng. Tiền chênh lệch (nếu có) sẽ được thông báo trong bước xác nhận.'
+            ],
+        ];
+
+        $heroStats = [
+            ['label' => 'Ưu đãi đang diễn ra', 'value' => count($promotions)],
+            ['label' => 'Khách nhận mã trong tuần', 'value' => '12.457'],
+            ['label' => 'Điểm thưởng đã tặng', 'value' => '3.2M']
+        ];
+
+        renderClient('client/khuyenmai.php', [
+            'promotions' => $promotions,
+            'membershipBenefits' => $membershipBenefits,
+            'faqs' => $faqs,
+            'heroStats' => $heroStats
+        ], 'Khuyến mãi');
+        exit;
+    }
+
+    /**
      * Lấy danh sách phim đang chiếu
      */
     private function getNowShowing($searchKeyword = '', $cinemaId = '')
