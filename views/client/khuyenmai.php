@@ -50,38 +50,47 @@ $statusLabels = [
             <?php foreach ($promotions as $promo): ?>
                 <?php
                 $tag = htmlspecialchars($promo['tag']);
-                $status = htmlspecialchars($promo['status']);
+                $status = htmlspecialchars($promo['display_status'] ?? $promo['status'] ?? 'ongoing');
+                $code = !empty($promo['code']) ? htmlspecialchars($promo['code']) : '';
                 ?>
                 <article class="promo-card" data-status="<?= $status ?>">
                     <div class="card-head">
                         <span class="promo-tag tag-<?= $tag ?>"><?= ucfirst($tag) ?></span>
                         <span class="promo-status status-<?= $status ?>">
-                            <?= $statusLabels[$promo['status']] ?? 'Ưu đãi' ?>
+                            <?= $statusLabels[$status] ?? 'Ưu đãi' ?>
                         </span>
                     </div>
                     <h3><?= htmlspecialchars($promo['title']) ?></h3>
                     <p class="desc"><?= htmlspecialchars($promo['description']) ?></p>
                     <ul class="benefits">
-                        <?php foreach ($promo['benefits'] as $benefit): ?>
-                            <li>
-                                <i class="bi bi-check2-circle"></i>
-                                <span><?= htmlspecialchars($benefit) ?></span>
-                            </li>
-                        <?php endforeach; ?>
+                        <?php if (!empty($promo['benefits']) && is_array($promo['benefits'])): ?>
+                            <?php foreach ($promo['benefits'] as $benefit): ?>
+                                <?php if (!empty(trim($benefit))): ?>
+                                    <li>
+                                        <i class="bi bi-check2-circle"></i>
+                                        <span><?= htmlspecialchars(trim($benefit)) ?></span>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </ul>
                     <div class="meta">
                         <span class="period">
                             <i class="bi bi-calendar-event"></i>
-                            <?= htmlspecialchars($promo['period']) ?>
+                            <?= htmlspecialchars($promo['period'] ?? 'Áp dụng thường xuyên') ?>
                         </span>
-                        <button class="code-btn" data-code="<?= htmlspecialchars($promo['code']) ?>">
-                            <span><?= htmlspecialchars($promo['code']) ?></span>
-                            <i class="bi bi-copy"></i>
-                        </button>
+                        <?php if (!empty($code)): ?>
+                            <button class="code-btn" data-code="<?= $code ?>">
+                                <span><?= $code ?></span>
+                                <i class="bi bi-copy"></i>
+                            </button>
+                        <?php endif; ?>
                     </div>
                     <div class="promo-actions">
-                        <a class="btn-primary" href="<?= BASE_URL ?>?act=datve"><?= htmlspecialchars($promo['cta']) ?></a>
-                        <?php if ($promo['status'] === 'upcoming'): ?>
+                        <a class="btn-primary" href="<?= !empty($promo['cta_link']) ? htmlspecialchars($promo['cta_link']) : BASE_URL . '?act=datve' ?>">
+                            <?= htmlspecialchars($promo['cta'] ?? 'Đặt vé ngay') ?>
+                        </a>
+                        <?php if ($status === 'upcoming'): ?>
                             <span class="hint">Chúng tôi sẽ gửi thông báo khi ưu đãi mở</span>
                         <?php else: ?>
                             <span class="hint">Áp dụng tự động khi nhập mã ở bước thanh toán</span>

@@ -38,6 +38,9 @@ require_once('./models/Payment.php');
 require_once('./controllers/ProfileController.php');
 require_once('./controllers/TicketPriceController.php');
 require_once('./models/TicketPrice.php');
+require_once('./controllers/VoucherController.php');
+require_once('./models/Voucher.php');
+require_once('./models/DiscountCode.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -49,6 +52,8 @@ match ($act) {
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
     'giave' => (new TicketPriceController)->index(),
+    'khuyenmai' => (new VoucherController)->index(),
+    'check-voucher' => (new VoucherController)->checkVoucher(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
     'api-seats' => (new BookingController)->getSeatsApi(),
@@ -140,6 +145,12 @@ match ($act) {
     'ticket-prices' => (new TicketPriceController)->list(),
     'ticket-prices-edit' => (new TicketPriceController)->edit(),
     'ticket-prices-update' => (new TicketPriceController)->update(),
+
+    // Vouchers routes (Admin)
+    'vouchers' => (new VoucherController)->list(),
+    'vouchers-create' => (new VoucherController)->create(),
+    'vouchers-edit' => (new VoucherController)->edit(),
+    'vouchers-delete' => (new VoucherController)->delete(),
 
     default => notFound(),
 };

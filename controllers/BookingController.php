@@ -365,17 +365,36 @@ class BookingController
                 }
             }
 
+            // Xử lý voucher/discount code
+            $discountId = null;
+            $discountAmount = 0;
+            $voucherCode = $_POST['voucher_code'] ?? '';
+            
+            if (!empty($voucherCode)) {
+                require_once __DIR__ . '/../models/Voucher.php';
+                $voucherModel = new Voucher();
+                $discountCode = $voucherModel->getDiscountCodeByVoucherCode($voucherCode);
+                
+                if ($discountCode && $discountCode['discount_percent'] > 0) {
+                    $discountId = $discountCode['id'];
+                    $discountAmount = ($totalPrice * $discountCode['discount_percent']) / 100;
+                }
+            }
+
+            $finalAmount = $totalPrice - $discountAmount;
+
             // Tạo booking
             $bookingCode = 'BK' . time() . rand(1000, 9999);
             $bookingData = [
                 'user_id' => $_SESSION['user_id'],
                 'showtime_id' => $showtimeId,
                 'room_id' => $showtime['room_id'],
+                'discount_id' => $discountId,
                 'cinema_id' => $showtime['cinema_id'] ?? null,
                 'booked_seats' => $seatLabels,
                 'total_amount' => $totalPrice,
-                'discount_amount' => 0,
-                'final_amount' => $totalPrice,
+                'discount_amount' => $discountAmount,
+                'final_amount' => $finalAmount,
                 'status' => 'pending',
                 'booking_code' => $bookingCode
             ];

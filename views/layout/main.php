@@ -37,6 +37,9 @@
     <a href="?act=showtimes" class="<?= in_array($_GET['act'] ?? '', ['showtimes', 'showtimes-create', 'showtimes-edit', 'showtimes-show', 'showtimes-delete']) ? 'active' : '' ?>">
       <i class="bi bi-clock-history"></i><span class="label">Quản lý Lịch chiếu</span>
     </a>
+    <a href="?act=vouchers" class="<?= in_array($_GET['act'] ?? '', ['vouchers', 'vouchers-create', 'vouchers-edit', 'vouchers-delete']) ? 'active' : '' ?>">
+      <i class="bi bi-gift"></i><span class="label">Quản lý Khuyến mãi</span>
+    </a>
     <a href="?act=users" class="<?= in_array($_GET['act'] ?? '', ['users', 'users-create', 'users-edit', 'users-show', 'users-delete']) ? 'active' : '' ?>">
       <i class="bi bi-people"></i><span class="label">Quản lý Người dùng</span>
     </a>
