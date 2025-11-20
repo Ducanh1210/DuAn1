@@ -41,6 +41,7 @@ match ($act) {
     'trangchu' => (new MoviesController)->trangchu(),
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
+    'giave' => (new MovieController)->giave(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
     'api-seats' => (new BookingController)->getSeatsApi(),
