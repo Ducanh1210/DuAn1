@@ -1,13 +1,20 @@
 <?php
-$promotions = $promotions ?? [];
+$discounts = $discounts ?? [];
 $membershipBenefits = $membershipBenefits ?? [];
 $faqs = $faqs ?? [];
 $heroStats = $heroStats ?? [];
 
 $statusLabels = [
+    'active' => 'Đang diễn ra',
     'ongoing' => 'Đang diễn ra',
     'upcoming' => 'Sắp diễn ra',
     'ended' => 'Đã kết thúc'
+];
+
+$tagLabels = [
+    'ticket' => 'Vé phim',
+    'food' => 'Đồ ăn & đồ uống',
+    'combo' => 'Combo vé + F&B'
 ];
 ?>
 
@@ -46,50 +53,64 @@ $statusLabels = [
             </div>
         </div>
 
-        <div class="grid">
-            <?php foreach ($promotions as $promo): ?>
-                <?php
-                $tag = htmlspecialchars($promo['tag']);
-                $status = htmlspecialchars($promo['status']);
-                ?>
-                <article class="promo-card" data-status="<?= $status ?>">
-                    <div class="card-head">
-                        <span class="promo-tag tag-<?= $tag ?>"><?= ucfirst($tag) ?></span>
-                        <span class="promo-status status-<?= $status ?>">
-                            <?= $statusLabels[$promo['status']] ?? 'Ưu đãi' ?>
-                        </span>
-                    </div>
-                    <h3><?= htmlspecialchars($promo['title']) ?></h3>
-                    <p class="desc"><?= htmlspecialchars($promo['description']) ?></p>
-                    <ul class="benefits">
-                        <?php foreach ($promo['benefits'] as $benefit): ?>
-                            <li>
-                                <i class="bi bi-check2-circle"></i>
-                                <span><?= htmlspecialchars($benefit) ?></span>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                    <div class="meta">
-                        <span class="period">
-                            <i class="bi bi-calendar-event"></i>
-                            <?= htmlspecialchars($promo['period']) ?>
-                        </span>
-                        <button class="code-btn" data-code="<?= htmlspecialchars($promo['code']) ?>">
-                            <span><?= htmlspecialchars($promo['code']) ?></span>
-                            <i class="bi bi-copy"></i>
-                        </button>
-                    </div>
-                    <div class="promo-actions">
-                        <a class="btn-primary" href="<?= BASE_URL ?>?act=datve"><?= htmlspecialchars($promo['cta']) ?></a>
-                        <?php if ($promo['status'] === 'upcoming'): ?>
-                            <span class="hint">Chúng tôi sẽ gửi thông báo khi ưu đãi mở</span>
-                        <?php else: ?>
-                            <span class="hint">Áp dụng tự động khi nhập mã ở bước thanh toán</span>
+        <?php if (!empty($discounts)): ?>
+            <div class="grid">
+                <?php foreach ($discounts as $discount): ?>
+                    <?php
+                    $tag = htmlspecialchars($discount['tag']);
+                    $status = htmlspecialchars($discount['status']);
+                    ?>
+                    <article class="promo-card" data-status="<?= $status ?>">
+                        <div class="card-head">
+                            <span class="promo-tag tag-<?= $tag ?>">
+                                <?= htmlspecialchars($tagLabels[$discount['tag']] ?? ucfirst($discount['tag'])) ?>
+                            </span>
+                            <span class="promo-status status-<?= $status ?>">
+                                <?= $statusLabels[$discount['status']] ?? 'Ưu đãi' ?>
+                            </span>
+                        </div>
+                        <h3><?= htmlspecialchars($discount['title']) ?></h3>
+                        <p class="desc"><?= htmlspecialchars($discount['description']) ?></p>
+                        <?php if (!empty($discount['benefits'])): ?>
+                            <ul class="benefits">
+                                <?php foreach ($discount['benefits'] as $benefit): ?>
+                                    <li>
+                                        <i class="bi bi-check2-circle"></i>
+                                        <span><?= htmlspecialchars($benefit) ?></span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
                         <?php endif; ?>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
+                        <div class="meta">
+                            <span class="period">
+                                <i class="bi bi-calendar-event"></i>
+                                <?= htmlspecialchars($discount['period']) ?>
+                            </span>
+                            <?php if (!empty($discount['code'])): ?>
+                                <button class="code-btn" data-code="<?= htmlspecialchars($discount['code']) ?>">
+                                    <span><?= htmlspecialchars($discount['code']) ?></span>
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                        <div class="promo-actions">
+                            <a class="btn-primary" href="<?= BASE_URL ?>?act=datve"><?= htmlspecialchars($discount['cta']) ?></a>
+                            <?php if ($discount['status'] === 'upcoming'): ?>
+                                <span class="hint">Nhấn nhận thông báo khi ưu đãi mở</span>
+                            <?php else: ?>
+                                <span class="hint">Nhập mã ở bước thanh toán để áp dụng</span>
+                            <?php endif; ?>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="promo-empty">
+                <i class="bi bi-bell"></i>
+                <p>Ưu đãi đang được cập nhật. Đăng ký email để nhận thông báo sớm nhất.</p>
+                <button class="btn-outline" type="button" data-scroll="#promoNewsletter">Nhận thông báo</button>
+            </div>
+        <?php endif; ?>
     </section>
 
     <section class="membership">
@@ -182,8 +203,8 @@ $statusLabels = [
 </div>
 
 <script>
-    document.querySelectorAll('.code-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
+    document.querySelectorAll('.code-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
             const code = this.dataset.code;
             navigator.clipboard.writeText(code).then(() => {
                 this.classList.add('copied');
@@ -196,13 +217,14 @@ $statusLabels = [
         });
     });
 
-    document.querySelectorAll('[data-scroll]').forEach(function (trigger) {
-        trigger.addEventListener('click', function () {
+    document.querySelectorAll('[data-scroll]').forEach(function(trigger) {
+        trigger.addEventListener('click', function() {
             const target = document.querySelector(this.dataset.scroll);
             if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
             }
         });
     });
 </script>
-

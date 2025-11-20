@@ -31,6 +31,7 @@ require_once('./models/Comment.php');
 require_once('./controllers/BookingController.php');
 require_once('./models/Booking.php');
 require_once('./controllers/ProfileController.php');
+require_once('./models/DiscountCode.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
