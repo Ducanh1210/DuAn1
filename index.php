@@ -32,6 +32,7 @@ require_once('./controllers/BookingController.php');
 require_once('./models/Booking.php');
 require_once('./controllers/ProfileController.php');
 require_once('./models/DiscountCode.php');
+require_once('./controllers/DiscountsController.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -43,7 +44,6 @@ match ($act) {
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
     'khuyenmai' => (new MoviesController)->khuyenmai(),
-    'giave' => (new MovieController)->giave(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
     'api-seats' => (new BookingController)->getSeatsApi(),
@@ -129,6 +129,12 @@ match ($act) {
     'bookings-show' => (new BookingController)->show(),
     'bookings-delete' => (new BookingController)->deleteBooking(),
     'bookings-update-status' => (new BookingController)->updateStatus(),
+
+    // Discounts routes (Admin)
+    'discounts' => (new DiscountsController)->list(),
+    'discounts-create' => (new DiscountsController)->create(),
+    'discounts-edit' => (new DiscountsController)->edit(),
+    'discounts-delete' => (new DiscountsController)->delete(),
 
     default => notFound(),
 };

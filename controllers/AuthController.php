@@ -74,7 +74,7 @@ class AuthController
                     'total_spending' => 0.00
                 ];
                 $userId = $this->user->insert($data);
-                
+
                 // Sau khi đăng ký thành công, chuyển về trang đăng nhập
                 header('Location: ' . BASE_URL . '?act=dangnhap&registered=1&email=' . urlencode($data['email']));
                 exit;
@@ -107,7 +107,7 @@ class AuthController
 
             if (empty($errors)) {
                 $user = $this->user->findByEmail($email);
-                
+
                 if ($user && password_verify($password, $user['password'])) {
                     // Kiểm tra trạng thái tài khoản
                     $status = $user['status'] ?? 'active';
@@ -122,7 +122,7 @@ class AuthController
                         $_SESSION['user_email'] = $user['email'];
                         $_SESSION['user_name'] = $user['full_name'];
                         $_SESSION['user_role'] = $user['role'] ?? 'customer';
-                        
+
                         // Kiểm tra return_url nếu có (ví dụ: từ trang thanh toán)
                         if (isset($_SESSION['return_url']) && !empty($_SESSION['return_url'])) {
                             $returnUrl = $_SESSION['return_url'];
@@ -130,7 +130,7 @@ class AuthController
                             header('Location: ' . $returnUrl);
                             exit;
                         }
-                        
+
                         // Redirect theo role
                         if (in_array($_SESSION['user_role'], ['admin', 'staff'])) {
                             header('Location: ' . BASE_URL . '?act=dashboard');
@@ -163,6 +163,3 @@ class AuthController
         exit;
     }
 }
-
-?>
-
