@@ -630,9 +630,10 @@ let selectedAdjacentCount = 0;
 let currentShowtimeId = null;
 let countdownInterval = null;
 let countdown = 900;
-let adultPrice = 80000; // Giá vé người lớn (sẽ được cập nhật từ API)
-let studentPrice = 60000; // Giá vé sinh viên (sẽ được cập nhật từ API)
-let vipExtraPrice = 10000; // Phụ thu VIP
+let adultPrice = 70000; // Giá vé người lớn ghế thường (sẽ được cập nhật từ API)
+let studentPrice = 60000; // Giá vé sinh viên ghế thường (sẽ được cập nhật từ API)
+let adultVipPrice = 80000; // Giá vé người lớn ghế VIP (sẽ được cập nhật từ API)
+let studentVipPrice = 70000; // Giá vé sinh viên ghế VIP (sẽ được cập nhật từ API)
 
 function showSeatSelection(button) {
     const showtimeId = button.getAttribute('data-showtime-id');
@@ -677,10 +678,21 @@ function loadSeatData(showtimeId, showtimeTime) {
                 return;
             }
             
-            // Cập nhật giá từ showtime
-            if (data.showtime) {
-                adultPrice = parseFloat(data.showtime.adult_price) || 80000;
-                studentPrice = parseFloat(data.showtime.student_price) || 60000;
+            // Cập nhật giá từ ticket_prices
+            if (data.prices) {
+                adultPrice = parseFloat(data.prices.adult_normal) || 70000;
+                studentPrice = parseFloat(data.prices.student_normal) || 60000;
+                adultVipPrice = parseFloat(data.prices.adult_vip) || 80000;
+                studentVipPrice = parseFloat(data.prices.student_vip) || 70000;
+                
+                // Debug: Log giá và format để kiểm tra
+                console.log('Format showtime:', data.format);
+                console.log('Giá vé:', {
+                    'Người lớn thường': adultPrice,
+                    'Sinh viên thường': studentPrice,
+                    'Người lớn VIP': adultVipPrice,
+                    'Sinh viên VIP': studentVipPrice
+                });
             }
             
             renderSeatSelection(data, showtimeTime);
@@ -1086,17 +1098,17 @@ function updateSummary() {
     });
     seatsListElement.innerHTML = seatLabels.join('');
     
-    // Tính tổng tiền: phân biệt giá người lớn và sinh viên
+    // Tính tổng tiền: phân biệt giá người lớn và sinh viên, ghế thường và VIP
     let total = 0;
     selectedSeats.forEach((seat, index) => {
-        // Xác định giá cơ bản: người lớn hay sinh viên
-        let basePrice = (index < adultCount) ? adultPrice : studentPrice;
+        // Xác định loại khách hàng: số ghế đầu = người lớn, số ghế sau = sinh viên
+        const isAdult = index < adultCount;
         
-        // Thêm phụ thu VIP nếu là ghế VIP
+        // Lấy giá theo loại khách hàng và loại ghế
         if (seat.type === 'vip') {
-            total += basePrice + vipExtraPrice;
+            total += isAdult ? adultVipPrice : studentVipPrice;
         } else {
-            total += basePrice;
+            total += isAdult ? adultPrice : studentPrice;
         }
     });
     

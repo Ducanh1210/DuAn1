@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 18, 2025 at 03:24 PM
+-- Generation Time: Nov 20, 2025 at 03:14 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -46,6 +46,25 @@ CREATE TABLE `bookings` (
   `room_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `bookings`
+--
+
+INSERT INTO `bookings` (`id`, `user_id`, `showtime_id`, `discount_id`, `booking_date`, `booked_seats`, `seat_type`, `customer_type`, `total_amount`, `discount_amount`, `final_amount`, `status`, `qr_code`, `booking_code`, `cinema_id`, `room_id`) VALUES
+(4, 3, 9, NULL, '2025-11-19 10:21:08', 'C12,C11', 'normal', NULL, 160000.00, 0.00, 160000.00, 'paid', NULL, 'BK2025111943C218', 1, 18),
+(5, 3, 9, NULL, '2025-11-19 10:32:15', 'B7,B6,B5', 'normal', NULL, 240000.00, 0.00, 240000.00, 'paid', NULL, 'BK20251119F0FF11', 1, 18),
+(6, 3, 9, NULL, '2025-11-19 12:53:17', 'C8,C7', 'normal', NULL, 160000.00, 0.00, 160000.00, 'cancelled', NULL, 'BK20251119D29273', 1, 18),
+(7, 3, 9, NULL, '2025-11-19 13:23:29', 'A11', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635334097649', 1, 18),
+(8, 3, 9, NULL, '2025-11-19 13:38:21', 'D11', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635343016235', 1, 18),
+(10, 3, 9, NULL, '2025-11-19 23:29:59', 'A4,A5,A6,A7', NULL, NULL, 320000.00, 0.00, 320000.00, 'paid', NULL, 'BK17635697994209', 1, 18),
+(11, 3, 9, NULL, '2025-11-19 23:34:04', 'B3,B4', NULL, NULL, 160000.00, 0.00, 160000.00, 'paid', NULL, 'BK17635700449534', 1, 18),
+(12, 3, 9, NULL, '2025-11-19 23:41:37', 'B9', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635704977283', 1, 18),
+(13, 3, 7, NULL, '2025-11-19 23:54:26', 'B8,B9', NULL, NULL, 180000.00, 0.00, 180000.00, 'pending', NULL, 'BK17635712663434', 1, 17),
+(14, 3, 2, NULL, '2025-11-20 09:43:19', 'A5,A6,A7,A8,A9', NULL, NULL, 400000.00, 0.00, 400000.00, 'paid', NULL, 'BK17636065992196', 1, 18),
+(15, 3, 4, NULL, '2025-11-20 19:46:25', 'A3,A4', NULL, NULL, 180000.00, 0.00, 180000.00, 'paid', NULL, 'BK17636427856547', 1, 17),
+(16, 3, 2, NULL, '2025-11-20 21:31:24', 'B6', NULL, NULL, 55000.00, 0.00, 55000.00, 'pending', NULL, 'BK17636490845963', 1, 18),
+(17, 3, 2, NULL, '2025-11-20 21:32:21', 'B6', NULL, NULL, 55000.00, 0.00, 55000.00, 'paid', NULL, 'BK17636491412783', 1, 18);
+
 -- --------------------------------------------------------
 
 --
@@ -79,8 +98,8 @@ CREATE TABLE `cinemas` (
 --
 
 INSERT INTO `cinemas` (`id`, `name`, `address`, `created_at`) VALUES
-(1, 'CGV Times City', '458 Minh Khai, Hai Bà Trưng, Hà Nội', '2025-11-15 12:00:17'),
-(2, 'Galaxy Nguyễn Du', '116 Nguyễn Du, Quận 1, TP.HCM', '2025-11-15 12:00:17'),
+(1, 'Times City', '458 Minh Khai, Hai Bà Trưng, Hà Nội', '2025-11-15 12:00:17'),
+(2, 'Nguyễn Du', '116 Nguyễn Du, Quận 1, TP.HCM', '2025-11-15 12:00:17'),
 (3, 'Phủ Lý', 'TTTM Vincom Plaza Phủ Lý, số 60, đường Biên Hòa, Phường Phủ Lý, Tỉnh Ninh Bình', '2025-11-16 17:00:08');
 
 -- --------------------------------------------------------
@@ -197,11 +216,13 @@ CREATE TABLE `movies` (
 --
 
 INSERT INTO `movies` (`id`, `genre_id`, `title`, `description`, `duration`, `image`, `trailer`, `release_date`, `end_date`, `format`, `original_language`, `subtitle_or_dub`, `age_rating`, `producer`, `status`, `created_at`, `updated_at`) VALUES
-(6, 7, 'Quán kỳ nma', 'ko hay lắm đâu', 120, 'image/phim 4.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-08', '2025-11-16', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'inactive', '2025-11-14 19:38:50', '2025-11-17 09:48:32'),
+(6, 7, 'Quán kỳ nma', 'ko hay lắm đâu', 120, 'image/phim 4.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-20', '2025-11-23', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-14 19:38:50', '2025-11-20 21:14:48'),
 (7, 3, 'Phòng trọ ma bầu', 'kinh dị ko nên xem', 120, 'image/phim 5.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-17', '2025-11-20', '3D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-14 20:27:20', '2025-11-17 09:52:58'),
-(8, 1, 'Truy tìm long diên hương', 'cx hay lắm nha', 122, 'image/phim 2.jpg', 'https://youtu.be/XjhAFebnNkM?si=vKFX_9ElyDAoSMMX', '2025-11-16', '2025-11-17', '2D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-15 11:43:43', '2025-11-15 22:42:10'),
-(9, 1, 'TRỐN CHẠY TỬ THẦN-T18', 'Trong bối cảnh xã hội tương lai gần, Trốn Chạy Tử Thần là chương trình truyền hình ăn khách nhất, một cuộc thi sinh tồn khốc liệt nơi các thí sinh, được gọi là “Runners”, phải trốn chạy suốt 30 ngày khỏi sự truy đuổi của các sát thủ chuyên nghiệp. Mọi bước đi của họ đều được phát sóng công khai cho khán giả theo dõi và phần thưởng tiền mặt sẽ tăng lên sau mỗi ngày sống sót. Vì cần tiền cứu chữa cho cô con gái bệnh nặng, Ben...', 133, 'image/phim 3.jpg', 'https://youtu.be/NuOl156fv_c?si=98qM39lvGn18VcdI', '2025-11-19', '2025-11-20', '2D', 'Tiếng Anh', 'Phụ Đề', 'C16', 'Mỹ', 'coming_soon', '2025-11-15 22:40:20', '2025-11-17 09:55:03'),
-(10, 6, 'MỘ ĐOM ĐÓM', 'Hai anh em Seita và Setsuko mất mẹ sau cuộc thả bom dữ dội của không quân Mỹ. Cả hai phải vật lộn để tồn tại ở Nhật Bản hậu Thế chiến II. Nhưng xã hội khắc nghiệt và chúng vật lộn tìm kiếm thức ăn cũng như thoát khỏi những khó khăn giữa chiến tranh.', 120, 'image/phim 6.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-11-17', '2025-11-19', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-17 09:58:57', '2025-11-17 19:38:42');
+(8, 1, 'Truy tìm long diên hương', 'cx hay lắm nha', 122, 'image/phim5.jpg', 'https://youtu.be/XjhAFebnNkM?si=vKFX_9ElyDAoSMMX', '2025-11-19', '2025-11-21', '2D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-15 11:43:43', '2025-11-19 09:39:00'),
+(9, 1, 'TRỐN CHẠY TỬ THẦN-T18', 'Trong bối cảnh xã hội tương lai gần, Trốn Chạy Tử Thần là chương trình truyền hình ăn khách nhất, một cuộc thi sinh tồn khốc liệt nơi các thí sinh, được gọi là “Runners”, phải trốn chạy suốt 30 ngày khỏi sự truy đuổi của các sát thủ chuyên nghiệp. Mọi bước đi của họ đều được phát sóng công khai cho khán giả theo dõi và phần thưởng tiền mặt sẽ tăng lên sau mỗi ngày sống sót. Vì cần tiền cứu chữa cho cô con gái bệnh nặng, Ben...', 133, 'image/phim 3.jpg', 'https://youtu.be/NuOl156fv_c?si=98qM39lvGn18VcdI', '2025-11-19', '2025-11-20', '2D', 'Tiếng Anh', 'Phụ Đề', 'C16', 'Mỹ', 'active', '2025-11-15 22:40:20', '2025-11-19 07:29:12'),
+(10, 6, 'MỘ ĐOM ĐÓM', 'Hai anh em Seita và Setsuko mất mẹ sau cuộc thả bom dữ dội của không quân Mỹ. Cả hai phải vật lộn để tồn tại ở Nhật Bản hậu Thế chiến II. Nhưng xã hội khắc nghiệt và chúng vật lộn tìm kiếm thức ăn cũng như thoát khỏi những khó khăn giữa chiến tranh.', 120, 'image/phim 6.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-11-17', '2025-11-19', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-17 09:58:57', '2025-11-17 19:38:42'),
+(11, 2, 'Tay Anh Giữ Một Vì Sao', 'Tay Anh Giữ Một Vì Sao” mang đến một làn gió mới trong dòng phim chiếu rạp hay khi kết hợp khéo léo giữa yếu tố hài hước và cảm xúc chân thành. Câu chuyện xoay quanh siêu sao Kang Jun Woo bỗng rơi vào chuỗi sự cố trớ trêu khiến anh vô tình “mắc kẹt” tại Việt Nam. Tại đây, anh gặp Thảo - cô gái bán cà phê giản dị nhưng mang trong mình khát vọng lớn lao. Những va chạm và hiểu lầm dần trở thành sợi dây gắn kết, giúp cả hai tìm thấy niềm tin, ước mơ và định nghĩa mới về tình yêu. Bộ phim không chỉ khiến khán giả bật cười bởi những tình huống duyên dáng mà còn chạm đến trái tim bằng câu chuyện nhân văn về sự đồng cảm và thay đổi.', 117, 'image/phim7.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-20', '2025-11-22', '2D', 'Tiếng Anh', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-19 09:35:10', '2025-11-19 09:35:10'),
+(12, 2, 'Chị Ngã Em Nâng', 'Giữa muôn vàn phim chiếu rạp hay tháng 10, “Chị Ngã Em Nâng” nổi bật như một bản giao hòa đầy cảm xúc về tình thân và nghị lực con người. Bộ phim khắc họa hành trình của hai chị em Thương và Lực là những người lớn lên trong gia đình gắn bó với nghề làm nhang truyền thống. Với tuổi thơ nhiều mất mát, Thương trở thành điểm tựa duy nhất cho em trai, mang trong mình khát vọng đổi đời và niềm tin mãnh liệt vào tương lai. Thế nhưng, khi thành công đến, sự kỳ vọng và áp lực vô tình khiến tình chị em rạn nứt, đẩy họ đến những lựa chọn đau lòng. “Chị Ngã Em Nâng” chạm đến trái tim người xem bằng những giá trị nhân văn sâu sắc, về tình thương, sự bao dung và ý nghĩa của hai chữ “gia đình”.', 122, 'image/hh.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-11-20', '2025-11-22', '3D', 'Tiếng Việt', 'Phụ Đề', 'C13', 'Việt Nam', 'active', '2025-11-19 09:40:28', '2025-11-19 09:40:28');
 
 -- --------------------------------------------------------
 
@@ -244,6 +265,21 @@ CREATE TABLE `payments` (
   `final_amount` decimal(12,2) DEFAULT NULL,
   `status` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`id`, `booking_id`, `method`, `transaction_code`, `payment_date`, `total_amount`, `discount_amount`, `final_amount`, `status`) VALUES
+(1, 6, 'vnpay', '15270232', '2025-11-19 05:54:14', 160000.00, 0.00, 160000.00, 'failed'),
+(2, 7, 'vnpay', '15270278', '2025-11-19 06:24:14', 80000.00, 0.00, 80000.00, 'paid'),
+(3, 8, 'vnpay', '15270313', '2025-11-19 06:38:44', 80000.00, 0.00, 80000.00, 'paid'),
+(4, NULL, 'vnpay', '15271280', '2025-11-19 15:55:34', 640000.00, 0.00, 640000.00, 'paid'),
+(5, 11, 'vnpay', '15271319', '2025-11-19 16:34:32', 160000.00, 0.00, 160000.00, 'paid'),
+(6, 12, 'vnpay', '15271325', '2025-11-19 16:42:48', 80000.00, 0.00, 80000.00, 'paid'),
+(7, 14, 'vnpay', '15271629', '2025-11-20 02:44:19', 400000.00, 0.00, 400000.00, 'paid'),
+(8, 15, 'vnpay', '15273280', '2025-11-20 12:47:13', 180000.00, 0.00, 180000.00, 'paid'),
+(9, 17, 'vnpay', '15273478', '2025-11-20 14:33:33', 55000.00, 0.00, 55000.00, 'paid');
 
 -- --------------------------------------------------------
 
@@ -332,17 +368,17 @@ INSERT INTO `role_permissions` (`id`, `role`, `permission_id`, `created_at`) VAL
 (68, 'admin', 11, '2025-11-18 15:14:04'),
 (69, 'admin', 23, '2025-11-18 15:14:04'),
 (70, 'admin', 15, '2025-11-18 15:14:04'),
-(78, 'staff', 2, '2025-11-18 15:14:04'),
-(79, 'staff', 3, '2025-11-18 15:14:04'),
-(80, 'staff', 14, '2025-11-18 15:14:04'),
-(81, 'staff', 22, '2025-11-18 15:14:04'),
-(82, 'staff', 12, '2025-11-18 15:14:04'),
-(83, 'staff', 13, '2025-11-18 15:14:04'),
-(84, 'staff', 21, '2025-11-18 15:14:04'),
-(85, 'staff', 24, '2025-11-18 15:14:04'),
-(86, 'staff', 1, '2025-11-18 15:14:04'),
-(87, 'staff', 11, '2025-11-18 15:14:04'),
-(88, 'staff', 15, '2025-11-18 15:14:04');
+(105, 'staff', 14, '2025-11-18 23:16:57'),
+(106, 'staff', 13, '2025-11-18 23:16:57'),
+(107, 'staff', 22, '2025-11-18 23:16:57'),
+(108, 'staff', 21, '2025-11-18 23:16:57'),
+(109, 'staff', 24, '2025-11-18 23:16:57'),
+(110, 'staff', 2, '2025-11-18 23:16:57'),
+(111, 'staff', 3, '2025-11-18 23:16:57'),
+(112, 'staff', 1, '2025-11-18 23:16:57'),
+(113, 'staff', 12, '2025-11-18 23:16:57'),
+(114, 'staff', 11, '2025-11-18 23:16:57'),
+(115, 'staff', 15, '2025-11-18 23:16:57');
 
 -- --------------------------------------------------------
 
@@ -367,7 +403,9 @@ INSERT INTO `rooms` (`id`, `cinema_id`, `room_code`, `name`, `seat_count`) VALUE
 (18, 1, 'R2', 'Phòng Chiếu 2', 130),
 (19, 1, 'R3', 'Phòng Chiếu 3', 150),
 (21, 2, 'R1', 'Phòng Chiếu 1', 100),
-(22, 2, 'R2', 'Phòng Chiếu 2', 140);
+(22, 2, 'R2', 'Phòng Chiếu 2', 150),
+(23, 3, 'S1', 'Phòng S1', 150),
+(24, 3, 'S2', 'Phòng S2', 170);
 
 -- --------------------------------------------------------
 
@@ -393,66 +431,66 @@ INSERT INTO `seats` (`id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `
 (1, 17, 'A', 1, 'normal', NULL, 'active'),
 (2, 17, 'A', 2, 'normal', NULL, 'active'),
 (3, 17, 'A', 3, 'vip', 0.00, 'available'),
-(4, 17, 'A', 4, 'normal', NULL, 'active'),
-(5, 17, 'A', 5, 'normal', NULL, 'active'),
-(6, 17, 'A', 6, 'normal', 0.00, 'inactive'),
-(7, 17, 'A', 7, 'normal', NULL, 'active'),
-(8, 17, 'A', 8, 'normal', NULL, 'active'),
-(9, 17, 'A', 9, 'normal', NULL, 'active'),
-(10, 17, 'A', 10, 'normal', NULL, 'active'),
+(4, 17, 'A', 4, 'vip', 0.00, 'available'),
+(5, 17, 'A', 5, 'vip', 0.00, 'available'),
+(6, 17, 'A', 6, 'vip', 0.00, 'available'),
+(7, 17, 'A', 7, 'vip', 0.00, 'available'),
+(8, 17, 'A', 8, 'vip', 0.00, 'available'),
+(9, 17, 'A', 9, 'vip', 0.00, 'available'),
+(10, 17, 'A', 10, 'normal', 0.00, 'maintenance'),
 (11, 17, 'A', 11, 'normal', NULL, 'active'),
 (12, 17, 'A', 12, 'normal', 0.00, 'inactive'),
 (13, 17, 'B', 1, 'normal', NULL, 'active'),
 (14, 17, 'B', 2, 'normal', NULL, 'active'),
-(15, 17, 'B', 3, 'normal', NULL, 'active'),
-(16, 17, 'B', 4, 'normal', NULL, 'active'),
-(17, 17, 'B', 5, 'normal', NULL, 'active'),
-(18, 17, 'B', 6, 'normal', NULL, 'active'),
-(19, 17, 'B', 7, 'normal', NULL, 'active'),
-(20, 17, 'B', 8, 'normal', NULL, 'active'),
-(21, 17, 'B', 9, 'normal', NULL, 'active'),
-(22, 17, 'B', 10, 'normal', NULL, 'active'),
+(15, 17, 'B', 3, 'vip', 0.00, 'available'),
+(16, 17, 'B', 4, 'vip', 0.00, 'available'),
+(17, 17, 'B', 5, 'vip', 0.00, 'available'),
+(18, 17, 'B', 6, 'vip', 0.00, 'available'),
+(19, 17, 'B', 7, 'vip', 0.00, 'available'),
+(20, 17, 'B', 8, 'vip', 0.00, 'available'),
+(21, 17, 'B', 9, 'vip', 0.00, 'available'),
+(22, 17, 'B', 10, 'vip', 0.00, 'available'),
 (23, 17, 'B', 11, 'normal', NULL, 'active'),
 (24, 17, 'B', 12, 'normal', NULL, 'active'),
 (25, 17, 'C', 1, 'VIP', 0.00, 'active'),
 (26, 17, 'C', 2, 'VIP', 0.00, 'active'),
-(27, 17, 'C', 3, 'VIP', 0.00, 'active'),
-(28, 17, 'C', 4, 'VIP', 0.00, 'active'),
-(29, 17, 'C', 5, 'VIP', 0.00, 'active'),
-(30, 17, 'C', 6, 'VIP', 0.00, 'active'),
-(31, 17, 'C', 7, 'VIP', 0.00, 'active'),
-(32, 17, 'C', 8, 'VIP', 0.00, 'active'),
-(33, 17, 'C', 9, 'VIP', 0.00, 'active'),
-(34, 17, 'C', 10, 'VIP', 0.00, 'active'),
+(27, 17, 'C', 3, 'normal', 0.00, 'maintenance'),
+(28, 17, 'C', 4, 'vip', 0.00, 'available'),
+(29, 17, 'C', 5, 'vip', 0.00, 'available'),
+(30, 17, 'C', 6, 'vip', 0.00, 'available'),
+(31, 17, 'C', 7, 'vip', 0.00, 'available'),
+(32, 17, 'C', 8, 'vip', 0.00, 'available'),
+(33, 17, 'C', 9, 'vip', 0.00, 'available'),
+(34, 17, 'C', 10, 'vip', 0.00, 'available'),
 (35, 17, 'C', 11, 'VIP', 0.00, 'active'),
 (36, 17, 'C', 12, 'VIP', 0.00, 'active'),
 (37, 17, 'D', 1, 'VIP', 0.00, 'active'),
 (38, 17, 'D', 2, 'VIP', 0.00, 'active'),
-(39, 17, 'D', 3, 'VIP', 0.00, 'active'),
-(40, 17, 'D', 4, 'VIP', 0.00, 'active'),
-(41, 17, 'D', 5, 'VIP', 0.00, 'active'),
-(42, 17, 'D', 6, 'VIP', 0.00, 'active'),
-(43, 17, 'D', 7, 'VIP', 0.00, 'active'),
-(44, 17, 'D', 8, 'VIP', 0.00, 'active'),
-(45, 17, 'D', 9, 'VIP', 0.00, 'active'),
-(46, 17, 'D', 10, 'VIP', 0.00, 'active'),
+(39, 17, 'D', 3, 'vip', 0.00, 'available'),
+(40, 17, 'D', 4, 'vip', 0.00, 'available'),
+(41, 17, 'D', 5, 'vip', 0.00, 'available'),
+(42, 17, 'D', 6, 'vip', 0.00, 'available'),
+(43, 17, 'D', 7, 'vip', 0.00, 'available'),
+(44, 17, 'D', 8, 'vip', 0.00, 'available'),
+(45, 17, 'D', 9, 'normal', 0.00, 'maintenance'),
+(46, 17, 'D', 10, 'vip', 0.00, 'available'),
 (47, 17, 'D', 11, 'VIP', 0.00, 'active'),
 (48, 17, 'D', 12, 'VIP', 0.00, 'active'),
 (49, 17, 'E', 1, 'normal', 0.00, 'inactive'),
 (50, 17, 'E', 2, 'VIP', 0.00, 'active'),
-(51, 17, 'E', 3, 'VIP', 0.00, 'active'),
-(52, 17, 'E', 4, 'VIP', 0.00, 'active'),
-(53, 17, 'E', 5, 'VIP', 0.00, 'active'),
-(54, 17, 'E', 6, 'VIP', 0.00, 'active'),
-(55, 17, 'E', 7, 'VIP', 0.00, 'active'),
-(56, 17, 'E', 8, 'VIP', 0.00, 'active'),
-(57, 17, 'E', 9, 'VIP', 0.00, 'active'),
-(58, 17, 'E', 10, 'VIP', 0.00, 'active'),
+(51, 17, 'E', 3, 'vip', 0.00, 'available'),
+(52, 17, 'E', 4, 'vip', 0.00, 'available'),
+(53, 17, 'E', 5, 'vip', 0.00, 'available'),
+(54, 17, 'E', 6, 'vip', 0.00, 'available'),
+(55, 17, 'E', 7, 'vip', 0.00, 'available'),
+(56, 17, 'E', 8, 'vip', 0.00, 'available'),
+(57, 17, 'E', 9, 'vip', 0.00, 'available'),
+(58, 17, 'E', 10, 'vip', 0.00, 'available'),
 (59, 17, 'E', 11, 'VIP', 0.00, 'active'),
 (60, 17, 'E', 12, 'normal', 0.00, 'inactive'),
 (61, 17, 'F', 1, 'normal', NULL, 'active'),
 (62, 17, 'F', 2, 'VIP', 0.00, 'active'),
-(63, 17, 'F', 3, 'VIP', 0.00, 'active'),
+(63, 17, 'F', 3, 'normal', 0.00, 'available'),
 (64, 17, 'F', 4, 'VIP', 0.00, 'active'),
 (65, 17, 'F', 5, 'VIP', 0.00, 'active'),
 (66, 17, 'F', 6, 'VIP', 0.00, 'active'),
@@ -484,7 +522,7 @@ INSERT INTO `seats` (`id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `
 (92, 17, 'H', 8, 'normal', NULL, 'active'),
 (93, 17, 'H', 9, 'normal', NULL, 'active'),
 (94, 17, 'H', 10, 'normal', NULL, 'active'),
-(95, 17, 'H', 11, 'normal', NULL, 'active'),
+(95, 17, 'H', 11, 'normal', 0.00, 'available'),
 (96, 17, 'H', 12, 'normal', NULL, 'active'),
 (97, 17, 'I', 1, 'normal', 0.00, 'inactive'),
 (98, 17, 'I', 2, 'normal', 0.00, 'active'),
@@ -513,17 +551,17 @@ INSERT INTO `seats` (`id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `
 (121, 18, 'A', 1, 'normal', NULL, 'active'),
 (122, 18, 'A', 2, 'normal', NULL, 'active'),
 (123, 18, 'A', 3, 'normal', NULL, 'active'),
-(124, 18, 'A', 4, 'normal', NULL, 'active'),
-(125, 18, 'A', 5, 'normal', NULL, 'active'),
-(126, 18, 'A', 6, 'normal', NULL, 'active'),
-(127, 18, 'A', 7, 'normal', NULL, 'active'),
-(128, 18, 'A', 8, 'normal', NULL, 'active'),
-(129, 18, 'A', 9, 'normal', NULL, 'active'),
-(130, 18, 'A', 10, 'normal', NULL, 'active'),
-(131, 18, 'A', 11, 'normal', NULL, 'active'),
-(132, 18, 'A', 12, 'normal', NULL, 'active'),
-(133, 18, 'A', 13, 'normal', NULL, 'active'),
-(134, 18, 'A', 14, 'normal', NULL, 'active'),
+(124, 18, 'A', 4, 'vip', 0.00, 'available'),
+(125, 18, 'A', 5, 'vip', 0.00, 'available'),
+(126, 18, 'A', 6, 'vip', 0.00, 'available'),
+(127, 18, 'A', 7, 'vip', 0.00, 'available'),
+(128, 18, 'A', 8, 'vip', 0.00, 'available'),
+(129, 18, 'A', 9, 'vip', 0.00, 'available'),
+(130, 18, 'A', 10, 'vip', 0.00, 'available'),
+(131, 18, 'A', 11, 'vip', 0.00, 'available'),
+(132, 18, 'A', 12, 'vip', 0.00, 'available'),
+(133, 18, 'A', 13, 'vip', 0.00, 'available'),
+(134, 18, 'A', 14, 'vip', 0.00, 'available'),
 (135, 18, 'A', 15, 'normal', NULL, 'active'),
 (136, 18, 'A', 16, 'normal', NULL, 'active'),
 (137, 18, 'A', 17, 'normal', NULL, 'active'),
@@ -640,20 +678,6 @@ INSERT INTO `seats` (`id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `
 (248, 18, 'H', 9, 'normal', NULL, 'active'),
 (249, 18, 'H', 10, 'normal', NULL, 'active'),
 (250, 18, 'H', 11, 'normal', NULL, 'active'),
-(587, 22, '1', 1, 'normal', NULL, 'active'),
-(588, 22, '2', 1, 'normal', NULL, 'active'),
-(589, 22, '3', 1, 'normal', NULL, 'active'),
-(590, 22, '4', 1, 'normal', NULL, 'active'),
-(591, 22, '5', 1, 'normal', NULL, 'active'),
-(592, 22, '6', 1, 'normal', NULL, 'active'),
-(593, 22, '7', 1, 'normal', NULL, 'active'),
-(594, 22, '8', 1, 'normal', NULL, 'active'),
-(595, 22, '9', 1, 'normal', NULL, 'active'),
-(596, 22, '10', 1, 'normal', NULL, 'active'),
-(597, 22, '11', 1, 'normal', NULL, 'active'),
-(598, 22, '12', 1, 'normal', NULL, 'active'),
-(599, 22, '13', 1, 'normal', NULL, 'active'),
-(600, 22, '14', 1, 'normal', NULL, 'active'),
 (601, 19, 'A', 1, 'normal', NULL, 'active'),
 (602, 19, 'B', 1, 'normal', NULL, 'active'),
 (603, 19, 'C', 1, 'normal', NULL, 'active'),
@@ -923,7 +947,477 @@ INSERT INTO `seats` (`id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `
 (1017, 21, 'J', 9, 'normal', 0.00, 'available'),
 (1018, 21, 'J', 10, 'normal', 0.00, 'available'),
 (1019, 21, 'J', 11, 'normal', 0.00, 'available'),
-(1020, 21, 'J', 12, 'normal', 0.00, 'available');
+(1020, 21, 'J', 12, 'normal', 0.00, 'available'),
+(1021, 23, 'A', 1, 'normal', 0.00, 'available'),
+(1022, 23, 'A', 2, 'normal', 0.00, 'available'),
+(1023, 23, 'A', 3, 'normal', 0.00, 'available'),
+(1024, 23, 'A', 4, 'normal', 0.00, 'available'),
+(1025, 23, 'A', 5, 'normal', 0.00, 'available'),
+(1026, 23, 'A', 6, 'normal', 0.00, 'available'),
+(1027, 23, 'A', 7, 'normal', 0.00, 'available'),
+(1028, 23, 'A', 8, 'normal', 0.00, 'available'),
+(1029, 23, 'A', 9, 'normal', 0.00, 'available'),
+(1030, 23, 'A', 10, 'normal', 0.00, 'available'),
+(1031, 23, 'A', 11, 'normal', 0.00, 'available'),
+(1032, 23, 'A', 12, 'normal', 0.00, 'available'),
+(1033, 23, 'A', 13, 'normal', 0.00, 'available'),
+(1034, 23, 'A', 14, 'normal', 0.00, 'available'),
+(1035, 23, 'A', 15, 'normal', 0.00, 'available'),
+(1036, 23, 'B', 1, 'normal', 0.00, 'available'),
+(1037, 23, 'B', 2, 'normal', 0.00, 'available'),
+(1038, 23, 'B', 3, 'normal', 0.00, 'available'),
+(1039, 23, 'B', 4, 'normal', 0.00, 'available'),
+(1040, 23, 'B', 5, 'normal', 0.00, 'available'),
+(1041, 23, 'B', 6, 'normal', 0.00, 'available'),
+(1042, 23, 'B', 7, 'normal', 0.00, 'available'),
+(1043, 23, 'B', 8, 'normal', 0.00, 'available'),
+(1044, 23, 'B', 9, 'normal', 0.00, 'available'),
+(1045, 23, 'B', 10, 'normal', 0.00, 'available'),
+(1046, 23, 'B', 11, 'normal', 0.00, 'available'),
+(1047, 23, 'B', 12, 'normal', 0.00, 'available'),
+(1048, 23, 'B', 13, 'normal', 0.00, 'available'),
+(1049, 23, 'B', 14, 'normal', 0.00, 'available'),
+(1050, 23, 'B', 15, 'normal', 0.00, 'available'),
+(1051, 23, 'C', 1, 'normal', 0.00, 'available'),
+(1052, 23, 'C', 2, 'normal', 0.00, 'available'),
+(1053, 23, 'C', 3, 'normal', 0.00, 'available'),
+(1054, 23, 'C', 4, 'normal', 0.00, 'available'),
+(1055, 23, 'C', 5, 'normal', 0.00, 'available'),
+(1056, 23, 'C', 6, 'normal', 0.00, 'available'),
+(1057, 23, 'C', 7, 'normal', 0.00, 'available'),
+(1058, 23, 'C', 8, 'normal', 0.00, 'available'),
+(1059, 23, 'C', 9, 'normal', 0.00, 'available'),
+(1060, 23, 'C', 10, 'normal', 0.00, 'available'),
+(1061, 23, 'C', 11, 'normal', 0.00, 'available'),
+(1062, 23, 'C', 12, 'normal', 0.00, 'available'),
+(1063, 23, 'C', 13, 'normal', 0.00, 'available'),
+(1064, 23, 'C', 14, 'normal', 0.00, 'available'),
+(1065, 23, 'C', 15, 'normal', 0.00, 'available'),
+(1066, 23, 'D', 1, 'normal', 0.00, 'available'),
+(1067, 23, 'D', 2, 'normal', 0.00, 'available'),
+(1068, 23, 'D', 3, 'vip', 10000.00, 'available'),
+(1069, 23, 'D', 4, 'normal', 0.00, 'maintenance'),
+(1070, 23, 'D', 5, 'normal', 0.00, 'maintenance'),
+(1071, 23, 'D', 6, 'normal', 0.00, 'available'),
+(1072, 23, 'D', 7, 'normal', 0.00, 'available'),
+(1073, 23, 'D', 8, 'normal', 0.00, 'available'),
+(1074, 23, 'D', 9, 'normal', 0.00, 'available'),
+(1075, 23, 'D', 10, 'normal', 0.00, 'available'),
+(1076, 23, 'D', 11, 'normal', 0.00, 'available'),
+(1077, 23, 'D', 12, 'normal', 0.00, 'available'),
+(1078, 23, 'D', 13, 'normal', 0.00, 'available'),
+(1079, 23, 'D', 14, 'normal', 0.00, 'available'),
+(1080, 23, 'D', 15, 'normal', 0.00, 'available'),
+(1081, 23, 'E', 1, 'normal', 0.00, 'available'),
+(1082, 23, 'E', 2, 'normal', 0.00, 'available'),
+(1083, 23, 'E', 3, 'normal', 0.00, 'available'),
+(1084, 23, 'E', 4, 'normal', 0.00, 'available'),
+(1085, 23, 'E', 5, 'normal', 0.00, 'available'),
+(1086, 23, 'E', 6, 'normal', 0.00, 'available'),
+(1087, 23, 'E', 7, 'normal', 0.00, 'available'),
+(1088, 23, 'E', 8, 'normal', 0.00, 'available'),
+(1089, 23, 'E', 9, 'normal', 0.00, 'available'),
+(1090, 23, 'E', 10, 'normal', 0.00, 'available'),
+(1091, 23, 'E', 11, 'normal', 0.00, 'available'),
+(1092, 23, 'E', 12, 'normal', 0.00, 'available'),
+(1093, 23, 'E', 13, 'normal', 0.00, 'available'),
+(1094, 23, 'E', 14, 'normal', 0.00, 'available'),
+(1095, 23, 'E', 15, 'normal', 0.00, 'available'),
+(1096, 23, 'F', 1, 'normal', 0.00, 'available'),
+(1097, 23, 'F', 2, 'normal', 0.00, 'available'),
+(1098, 23, 'F', 3, 'normal', 0.00, 'available'),
+(1099, 23, 'F', 4, 'normal', 0.00, 'available'),
+(1100, 23, 'F', 5, 'normal', 0.00, 'available'),
+(1101, 23, 'F', 6, 'normal', 0.00, 'available'),
+(1102, 23, 'F', 7, 'normal', 0.00, 'available'),
+(1103, 23, 'F', 8, 'normal', 0.00, 'available'),
+(1104, 23, 'F', 9, 'normal', 0.00, 'available'),
+(1105, 23, 'F', 10, 'normal', 0.00, 'available'),
+(1106, 23, 'F', 11, 'normal', 0.00, 'available'),
+(1107, 23, 'F', 12, 'normal', 0.00, 'available'),
+(1108, 23, 'F', 13, 'normal', 0.00, 'available'),
+(1109, 23, 'F', 14, 'normal', 0.00, 'available'),
+(1110, 23, 'F', 15, 'normal', 0.00, 'available'),
+(1111, 23, 'G', 1, 'normal', 0.00, 'available'),
+(1112, 23, 'G', 2, 'normal', 0.00, 'available'),
+(1113, 23, 'G', 3, 'normal', 0.00, 'available'),
+(1114, 23, 'G', 4, 'normal', 0.00, 'available'),
+(1115, 23, 'G', 5, 'normal', 0.00, 'available'),
+(1116, 23, 'G', 6, 'normal', 0.00, 'available'),
+(1117, 23, 'G', 7, 'normal', 0.00, 'available'),
+(1118, 23, 'G', 8, 'normal', 0.00, 'available'),
+(1119, 23, 'G', 9, 'normal', 0.00, 'available'),
+(1120, 23, 'G', 10, 'normal', 0.00, 'available'),
+(1121, 23, 'G', 11, 'normal', 0.00, 'available'),
+(1122, 23, 'G', 12, 'normal', 0.00, 'available'),
+(1123, 23, 'G', 13, 'normal', 0.00, 'available'),
+(1124, 23, 'G', 14, 'normal', 0.00, 'available'),
+(1125, 23, 'G', 15, 'normal', 0.00, 'available'),
+(1126, 23, 'H', 1, 'normal', 0.00, 'available'),
+(1127, 23, 'H', 2, 'normal', 0.00, 'available'),
+(1128, 23, 'H', 3, 'normal', 0.00, 'available'),
+(1129, 23, 'H', 4, 'normal', 0.00, 'available'),
+(1130, 23, 'H', 5, 'normal', 0.00, 'available'),
+(1131, 23, 'H', 6, 'normal', 0.00, 'available'),
+(1132, 23, 'H', 7, 'normal', 0.00, 'available'),
+(1133, 23, 'H', 8, 'normal', 0.00, 'available'),
+(1134, 23, 'H', 9, 'normal', 0.00, 'available'),
+(1135, 23, 'H', 10, 'normal', 0.00, 'available'),
+(1136, 23, 'H', 11, 'normal', 0.00, 'available'),
+(1137, 23, 'H', 12, 'normal', 0.00, 'available'),
+(1138, 23, 'H', 13, 'normal', 0.00, 'available'),
+(1139, 23, 'H', 14, 'normal', 0.00, 'available'),
+(1140, 23, 'H', 15, 'normal', 0.00, 'available'),
+(1141, 23, 'I', 1, 'normal', 0.00, 'available'),
+(1142, 23, 'I', 2, 'normal', 0.00, 'available'),
+(1143, 23, 'I', 3, 'normal', 0.00, 'available'),
+(1144, 23, 'I', 4, 'normal', 0.00, 'available'),
+(1145, 23, 'I', 5, 'normal', 0.00, 'available'),
+(1146, 23, 'I', 6, 'normal', 0.00, 'available'),
+(1147, 23, 'I', 7, 'normal', 0.00, 'available'),
+(1148, 23, 'I', 8, 'normal', 0.00, 'available'),
+(1149, 23, 'I', 9, 'normal', 0.00, 'available'),
+(1150, 23, 'I', 10, 'normal', 0.00, 'available'),
+(1151, 23, 'I', 11, 'normal', 0.00, 'available'),
+(1152, 23, 'I', 12, 'normal', 0.00, 'available'),
+(1153, 23, 'I', 13, 'normal', 0.00, 'available'),
+(1154, 23, 'I', 14, 'normal', 0.00, 'available'),
+(1155, 23, 'I', 15, 'normal', 0.00, 'available'),
+(1156, 23, 'J', 1, 'normal', 0.00, 'available'),
+(1157, 23, 'J', 2, 'normal', 0.00, 'available'),
+(1158, 23, 'J', 3, 'normal', 0.00, 'available'),
+(1159, 23, 'J', 4, 'normal', 0.00, 'available'),
+(1160, 23, 'J', 5, 'normal', 0.00, 'available'),
+(1161, 23, 'J', 6, 'normal', 0.00, 'available'),
+(1162, 23, 'J', 7, 'normal', 0.00, 'available'),
+(1163, 23, 'J', 8, 'normal', 0.00, 'available'),
+(1164, 23, 'J', 9, 'normal', 0.00, 'available'),
+(1165, 23, 'J', 10, 'normal', 0.00, 'available'),
+(1166, 23, 'J', 11, 'normal', 0.00, 'available'),
+(1167, 23, 'J', 12, 'normal', 0.00, 'available'),
+(1168, 23, 'J', 13, 'normal', 0.00, 'available'),
+(1169, 23, 'J', 14, 'normal', 0.00, 'available'),
+(1170, 23, 'J', 15, 'normal', 0.00, 'available'),
+(1321, 22, 'A', 1, 'normal', 0.00, 'available'),
+(1322, 22, 'A', 2, 'normal', 0.00, 'available'),
+(1323, 22, 'A', 3, 'normal', 0.00, 'available'),
+(1324, 22, 'A', 4, 'normal', 0.00, 'available'),
+(1325, 22, 'A', 5, 'normal', 0.00, 'available'),
+(1326, 22, 'A', 6, 'normal', 0.00, 'available'),
+(1327, 22, 'A', 7, 'normal', 0.00, 'available'),
+(1328, 22, 'A', 8, 'normal', 0.00, 'available'),
+(1329, 22, 'A', 9, 'normal', 0.00, 'available'),
+(1330, 22, 'A', 10, 'normal', 0.00, 'available'),
+(1331, 22, 'A', 11, 'normal', 0.00, 'available'),
+(1332, 22, 'A', 12, 'normal', 0.00, 'available'),
+(1333, 22, 'A', 13, 'normal', 0.00, 'available'),
+(1334, 22, 'A', 14, 'normal', 0.00, 'available'),
+(1335, 22, 'A', 15, 'normal', 0.00, 'available'),
+(1336, 22, 'B', 1, 'normal', 0.00, 'available'),
+(1337, 22, 'B', 2, 'normal', 0.00, 'available'),
+(1338, 22, 'B', 3, 'normal', 0.00, 'available'),
+(1339, 22, 'B', 4, 'normal', 0.00, 'available'),
+(1340, 22, 'B', 5, 'normal', 0.00, 'available'),
+(1341, 22, 'B', 6, 'normal', 0.00, 'available'),
+(1342, 22, 'B', 7, 'normal', 0.00, 'available'),
+(1343, 22, 'B', 8, 'normal', 0.00, 'available'),
+(1344, 22, 'B', 9, 'normal', 0.00, 'available'),
+(1345, 22, 'B', 10, 'normal', 0.00, 'available'),
+(1346, 22, 'B', 11, 'normal', 0.00, 'available'),
+(1347, 22, 'B', 12, 'normal', 0.00, 'available'),
+(1348, 22, 'B', 13, 'normal', 0.00, 'available'),
+(1349, 22, 'B', 14, 'normal', 0.00, 'available'),
+(1350, 22, 'B', 15, 'normal', 0.00, 'available'),
+(1351, 22, 'C', 1, 'normal', 0.00, 'available'),
+(1352, 22, 'C', 2, 'normal', 0.00, 'available'),
+(1353, 22, 'C', 3, 'normal', 0.00, 'available'),
+(1354, 22, 'C', 4, 'normal', 0.00, 'available'),
+(1355, 22, 'C', 5, 'normal', 0.00, 'available'),
+(1356, 22, 'C', 6, 'normal', 0.00, 'available'),
+(1357, 22, 'C', 7, 'normal', 0.00, 'available'),
+(1358, 22, 'C', 8, 'normal', 0.00, 'available'),
+(1359, 22, 'C', 9, 'normal', 0.00, 'available'),
+(1360, 22, 'C', 10, 'normal', 0.00, 'available'),
+(1361, 22, 'C', 11, 'normal', 0.00, 'available'),
+(1362, 22, 'C', 12, 'normal', 0.00, 'available'),
+(1363, 22, 'C', 13, 'normal', 0.00, 'available'),
+(1364, 22, 'C', 14, 'normal', 0.00, 'available'),
+(1365, 22, 'C', 15, 'normal', 0.00, 'available'),
+(1366, 22, 'D', 1, 'normal', 0.00, 'available'),
+(1367, 22, 'D', 2, 'normal', 0.00, 'available'),
+(1368, 22, 'D', 3, 'normal', 0.00, 'available'),
+(1369, 22, 'D', 4, 'normal', 0.00, 'available'),
+(1370, 22, 'D', 5, 'normal', 0.00, 'available'),
+(1371, 22, 'D', 6, 'normal', 0.00, 'available'),
+(1372, 22, 'D', 7, 'normal', 0.00, 'available'),
+(1373, 22, 'D', 8, 'normal', 0.00, 'available'),
+(1374, 22, 'D', 9, 'normal', 0.00, 'available'),
+(1375, 22, 'D', 10, 'normal', 0.00, 'available'),
+(1376, 22, 'D', 11, 'normal', 0.00, 'available'),
+(1377, 22, 'D', 12, 'normal', 0.00, 'available'),
+(1378, 22, 'D', 13, 'normal', 0.00, 'available'),
+(1379, 22, 'D', 14, 'normal', 0.00, 'available'),
+(1380, 22, 'D', 15, 'normal', 0.00, 'available'),
+(1381, 22, 'E', 1, 'normal', 0.00, 'available'),
+(1382, 22, 'E', 2, 'normal', 0.00, 'available'),
+(1383, 22, 'E', 3, 'normal', 0.00, 'available'),
+(1384, 22, 'E', 4, 'normal', 0.00, 'available'),
+(1385, 22, 'E', 5, 'normal', 0.00, 'available'),
+(1386, 22, 'E', 6, 'normal', 0.00, 'available'),
+(1387, 22, 'E', 7, 'normal', 0.00, 'available'),
+(1388, 22, 'E', 8, 'normal', 0.00, 'available'),
+(1389, 22, 'E', 9, 'normal', 0.00, 'available'),
+(1390, 22, 'E', 10, 'normal', 0.00, 'available'),
+(1391, 22, 'E', 11, 'normal', 0.00, 'available'),
+(1392, 22, 'E', 12, 'normal', 0.00, 'available'),
+(1393, 22, 'E', 13, 'normal', 0.00, 'available'),
+(1394, 22, 'E', 14, 'normal', 0.00, 'available'),
+(1395, 22, 'E', 15, 'normal', 0.00, 'available'),
+(1396, 22, 'F', 1, 'normal', 0.00, 'available'),
+(1397, 22, 'F', 2, 'normal', 0.00, 'available'),
+(1398, 22, 'F', 3, 'normal', 0.00, 'available'),
+(1399, 22, 'F', 4, 'normal', 0.00, 'available'),
+(1400, 22, 'F', 5, 'normal', 0.00, 'available'),
+(1401, 22, 'F', 6, 'normal', 0.00, 'available'),
+(1402, 22, 'F', 7, 'normal', 0.00, 'available'),
+(1403, 22, 'F', 8, 'normal', 0.00, 'available'),
+(1404, 22, 'F', 9, 'normal', 0.00, 'available'),
+(1405, 22, 'F', 10, 'normal', 0.00, 'available'),
+(1406, 22, 'F', 11, 'normal', 0.00, 'available'),
+(1407, 22, 'F', 12, 'normal', 0.00, 'available'),
+(1408, 22, 'F', 13, 'normal', 0.00, 'available'),
+(1409, 22, 'F', 14, 'normal', 0.00, 'available'),
+(1410, 22, 'F', 15, 'normal', 0.00, 'available'),
+(1411, 22, 'G', 1, 'normal', 0.00, 'available'),
+(1412, 22, 'G', 2, 'normal', 0.00, 'available'),
+(1413, 22, 'G', 3, 'normal', 0.00, 'available'),
+(1414, 22, 'G', 4, 'normal', 0.00, 'available'),
+(1415, 22, 'G', 5, 'normal', 0.00, 'available'),
+(1416, 22, 'G', 6, 'normal', 0.00, 'available'),
+(1417, 22, 'G', 7, 'normal', 0.00, 'available'),
+(1418, 22, 'G', 8, 'normal', 0.00, 'available'),
+(1419, 22, 'G', 9, 'normal', 0.00, 'available'),
+(1420, 22, 'G', 10, 'normal', 0.00, 'available'),
+(1421, 22, 'G', 11, 'normal', 0.00, 'available'),
+(1422, 22, 'G', 12, 'normal', 0.00, 'available'),
+(1423, 22, 'G', 13, 'normal', 0.00, 'available'),
+(1424, 22, 'G', 14, 'normal', 0.00, 'available'),
+(1425, 22, 'G', 15, 'normal', 0.00, 'available'),
+(1426, 22, 'H', 1, 'normal', 0.00, 'available'),
+(1427, 22, 'H', 2, 'normal', 0.00, 'available'),
+(1428, 22, 'H', 3, 'normal', 0.00, 'available'),
+(1429, 22, 'H', 4, 'normal', 0.00, 'available'),
+(1430, 22, 'H', 5, 'normal', 0.00, 'available'),
+(1431, 22, 'H', 6, 'normal', 0.00, 'available'),
+(1432, 22, 'H', 7, 'normal', 0.00, 'available'),
+(1433, 22, 'H', 8, 'normal', 0.00, 'available'),
+(1434, 22, 'H', 9, 'normal', 0.00, 'available'),
+(1435, 22, 'H', 10, 'normal', 0.00, 'available'),
+(1436, 22, 'H', 11, 'normal', 0.00, 'available'),
+(1437, 22, 'H', 12, 'normal', 0.00, 'available'),
+(1438, 22, 'H', 13, 'normal', 0.00, 'available'),
+(1439, 22, 'H', 14, 'normal', 0.00, 'available'),
+(1440, 22, 'H', 15, 'normal', 0.00, 'available'),
+(1441, 22, 'I', 1, 'normal', 0.00, 'available'),
+(1442, 22, 'I', 2, 'normal', 0.00, 'available'),
+(1443, 22, 'I', 3, 'normal', 0.00, 'available'),
+(1444, 22, 'I', 4, 'normal', 0.00, 'available'),
+(1445, 22, 'I', 5, 'normal', 0.00, 'available'),
+(1446, 22, 'I', 6, 'normal', 0.00, 'available'),
+(1447, 22, 'I', 7, 'normal', 0.00, 'available'),
+(1448, 22, 'I', 8, 'normal', 0.00, 'available'),
+(1449, 22, 'I', 9, 'normal', 0.00, 'available'),
+(1450, 22, 'I', 10, 'normal', 0.00, 'available'),
+(1451, 22, 'I', 11, 'normal', 0.00, 'available'),
+(1452, 22, 'I', 12, 'normal', 0.00, 'available'),
+(1453, 22, 'I', 13, 'normal', 0.00, 'available'),
+(1454, 22, 'I', 14, 'normal', 0.00, 'available'),
+(1455, 22, 'I', 15, 'normal', 0.00, 'available'),
+(1456, 22, 'J', 1, 'normal', 0.00, 'available'),
+(1457, 22, 'J', 2, 'normal', 0.00, 'available'),
+(1458, 22, 'J', 3, 'normal', 0.00, 'available'),
+(1459, 22, 'J', 4, 'normal', 0.00, 'available'),
+(1460, 22, 'J', 5, 'normal', 0.00, 'available'),
+(1461, 22, 'J', 6, 'normal', 0.00, 'available'),
+(1462, 22, 'J', 7, 'normal', 0.00, 'available'),
+(1463, 22, 'J', 8, 'normal', 0.00, 'available'),
+(1464, 22, 'J', 9, 'normal', 0.00, 'available'),
+(1465, 22, 'J', 10, 'normal', 0.00, 'available'),
+(1466, 22, 'J', 11, 'normal', 0.00, 'available'),
+(1467, 22, 'J', 12, 'normal', 0.00, 'available'),
+(1468, 22, 'J', 13, 'normal', 0.00, 'available'),
+(1469, 22, 'J', 14, 'normal', 0.00, 'available'),
+(1470, 22, 'J', 15, 'normal', 0.00, 'available'),
+(1621, 24, 'A', 1, 'normal', 0.00, 'available'),
+(1622, 24, 'A', 2, 'normal', 0.00, 'available'),
+(1623, 24, 'A', 3, 'normal', 0.00, 'available'),
+(1624, 24, 'A', 4, 'normal', 0.00, 'available'),
+(1625, 24, 'A', 5, 'normal', 0.00, 'available'),
+(1626, 24, 'A', 6, 'normal', 0.00, 'available'),
+(1627, 24, 'A', 7, 'normal', 0.00, 'available'),
+(1628, 24, 'A', 8, 'normal', 0.00, 'available'),
+(1629, 24, 'A', 9, 'normal', 0.00, 'available'),
+(1630, 24, 'A', 10, 'normal', 0.00, 'available'),
+(1631, 24, 'A', 11, 'normal', 0.00, 'available'),
+(1632, 24, 'A', 12, 'normal', 0.00, 'available'),
+(1633, 24, 'A', 13, 'normal', 0.00, 'available'),
+(1634, 24, 'A', 14, 'normal', 0.00, 'available'),
+(1635, 24, 'A', 15, 'normal', 0.00, 'available'),
+(1636, 24, 'A', 16, 'normal', 0.00, 'available'),
+(1637, 24, 'A', 17, 'normal', 0.00, 'available'),
+(1638, 24, 'B', 1, 'normal', 0.00, 'available'),
+(1639, 24, 'B', 2, 'normal', 0.00, 'available'),
+(1640, 24, 'B', 3, 'normal', 0.00, 'available'),
+(1641, 24, 'B', 4, 'normal', 0.00, 'available'),
+(1642, 24, 'B', 5, 'normal', 0.00, 'available'),
+(1643, 24, 'B', 6, 'normal', 0.00, 'available'),
+(1644, 24, 'B', 7, 'normal', 0.00, 'available'),
+(1645, 24, 'B', 8, 'normal', 0.00, 'available'),
+(1646, 24, 'B', 9, 'normal', 0.00, 'available'),
+(1647, 24, 'B', 10, 'normal', 0.00, 'available'),
+(1648, 24, 'B', 11, 'normal', 0.00, 'available'),
+(1649, 24, 'B', 12, 'normal', 0.00, 'available'),
+(1650, 24, 'B', 13, 'normal', 0.00, 'available'),
+(1651, 24, 'B', 14, 'normal', 0.00, 'available'),
+(1652, 24, 'B', 15, 'normal', 0.00, 'available'),
+(1653, 24, 'B', 16, 'normal', 0.00, 'available'),
+(1654, 24, 'B', 17, 'normal', 0.00, 'available'),
+(1655, 24, 'C', 1, 'normal', 0.00, 'available'),
+(1656, 24, 'C', 2, 'normal', 0.00, 'available'),
+(1657, 24, 'C', 3, 'normal', 0.00, 'available'),
+(1658, 24, 'C', 4, 'normal', 0.00, 'available'),
+(1659, 24, 'C', 5, 'normal', 0.00, 'available'),
+(1660, 24, 'C', 6, 'normal', 0.00, 'available'),
+(1661, 24, 'C', 7, 'normal', 0.00, 'available'),
+(1662, 24, 'C', 8, 'normal', 0.00, 'available'),
+(1663, 24, 'C', 9, 'normal', 0.00, 'available'),
+(1664, 24, 'C', 10, 'normal', 0.00, 'available'),
+(1665, 24, 'C', 11, 'normal', 0.00, 'available'),
+(1666, 24, 'C', 12, 'normal', 0.00, 'available'),
+(1667, 24, 'C', 13, 'normal', 0.00, 'available'),
+(1668, 24, 'C', 14, 'normal', 0.00, 'available'),
+(1669, 24, 'C', 15, 'normal', 0.00, 'available'),
+(1670, 24, 'C', 16, 'normal', 0.00, 'available'),
+(1671, 24, 'C', 17, 'normal', 0.00, 'available'),
+(1672, 24, 'D', 1, 'normal', 0.00, 'available'),
+(1673, 24, 'D', 2, 'normal', 0.00, 'available'),
+(1674, 24, 'D', 3, 'normal', 0.00, 'available'),
+(1675, 24, 'D', 4, 'normal', 0.00, 'available'),
+(1676, 24, 'D', 5, 'normal', 0.00, 'available'),
+(1677, 24, 'D', 6, 'normal', 0.00, 'available'),
+(1678, 24, 'D', 7, 'normal', 0.00, 'available'),
+(1679, 24, 'D', 8, 'normal', 0.00, 'available'),
+(1680, 24, 'D', 9, 'normal', 0.00, 'available'),
+(1681, 24, 'D', 10, 'normal', 0.00, 'available'),
+(1682, 24, 'D', 11, 'normal', 0.00, 'available'),
+(1683, 24, 'D', 12, 'normal', 0.00, 'available'),
+(1684, 24, 'D', 13, 'normal', 0.00, 'available'),
+(1685, 24, 'D', 14, 'normal', 0.00, 'available'),
+(1686, 24, 'D', 15, 'normal', 0.00, 'available'),
+(1687, 24, 'D', 16, 'normal', 0.00, 'available'),
+(1688, 24, 'D', 17, 'normal', 0.00, 'available'),
+(1689, 24, 'E', 1, 'normal', 0.00, 'available'),
+(1690, 24, 'E', 2, 'normal', 0.00, 'available'),
+(1691, 24, 'E', 3, 'normal', 0.00, 'available'),
+(1692, 24, 'E', 4, 'normal', 0.00, 'available'),
+(1693, 24, 'E', 5, 'normal', 0.00, 'available'),
+(1694, 24, 'E', 6, 'normal', 0.00, 'available'),
+(1695, 24, 'E', 7, 'normal', 0.00, 'available'),
+(1696, 24, 'E', 8, 'normal', 0.00, 'available'),
+(1697, 24, 'E', 9, 'normal', 0.00, 'available'),
+(1698, 24, 'E', 10, 'normal', 0.00, 'available'),
+(1699, 24, 'E', 11, 'normal', 0.00, 'available'),
+(1700, 24, 'E', 12, 'normal', 0.00, 'available'),
+(1701, 24, 'E', 13, 'normal', 0.00, 'available'),
+(1702, 24, 'E', 14, 'normal', 0.00, 'available'),
+(1703, 24, 'E', 15, 'normal', 0.00, 'available'),
+(1704, 24, 'E', 16, 'normal', 0.00, 'available'),
+(1705, 24, 'E', 17, 'normal', 0.00, 'available'),
+(1706, 24, 'F', 1, 'normal', 0.00, 'available'),
+(1707, 24, 'F', 2, 'normal', 0.00, 'available'),
+(1708, 24, 'F', 3, 'normal', 0.00, 'available'),
+(1709, 24, 'F', 4, 'normal', 0.00, 'available'),
+(1710, 24, 'F', 5, 'normal', 0.00, 'available'),
+(1711, 24, 'F', 6, 'normal', 0.00, 'available'),
+(1712, 24, 'F', 7, 'normal', 0.00, 'available'),
+(1713, 24, 'F', 8, 'normal', 0.00, 'available'),
+(1714, 24, 'F', 9, 'normal', 0.00, 'available'),
+(1715, 24, 'F', 10, 'normal', 0.00, 'available'),
+(1716, 24, 'F', 11, 'normal', 0.00, 'available'),
+(1717, 24, 'F', 12, 'normal', 0.00, 'available'),
+(1718, 24, 'F', 13, 'normal', 0.00, 'available'),
+(1719, 24, 'F', 14, 'normal', 0.00, 'available'),
+(1720, 24, 'F', 15, 'normal', 0.00, 'available'),
+(1721, 24, 'F', 16, 'normal', 0.00, 'available'),
+(1722, 24, 'F', 17, 'normal', 0.00, 'available'),
+(1723, 24, 'G', 1, 'normal', 0.00, 'available'),
+(1724, 24, 'G', 2, 'normal', 0.00, 'available'),
+(1725, 24, 'G', 3, 'normal', 0.00, 'available'),
+(1726, 24, 'G', 4, 'normal', 0.00, 'available'),
+(1727, 24, 'G', 5, 'normal', 0.00, 'available'),
+(1728, 24, 'G', 6, 'normal', 0.00, 'available'),
+(1729, 24, 'G', 7, 'normal', 0.00, 'available'),
+(1730, 24, 'G', 8, 'normal', 0.00, 'available'),
+(1731, 24, 'G', 9, 'normal', 0.00, 'available'),
+(1732, 24, 'G', 10, 'normal', 0.00, 'available'),
+(1733, 24, 'G', 11, 'normal', 0.00, 'available'),
+(1734, 24, 'G', 12, 'normal', 0.00, 'available'),
+(1735, 24, 'G', 13, 'normal', 0.00, 'available'),
+(1736, 24, 'G', 14, 'normal', 0.00, 'available'),
+(1737, 24, 'G', 15, 'normal', 0.00, 'available'),
+(1738, 24, 'G', 16, 'normal', 0.00, 'available'),
+(1739, 24, 'G', 17, 'normal', 0.00, 'available'),
+(1740, 24, 'H', 1, 'normal', 0.00, 'available'),
+(1741, 24, 'H', 2, 'normal', 0.00, 'available'),
+(1742, 24, 'H', 3, 'normal', 0.00, 'available'),
+(1743, 24, 'H', 4, 'normal', 0.00, 'available'),
+(1744, 24, 'H', 5, 'normal', 0.00, 'available'),
+(1745, 24, 'H', 6, 'normal', 0.00, 'available'),
+(1746, 24, 'H', 7, 'normal', 0.00, 'available'),
+(1747, 24, 'H', 8, 'normal', 0.00, 'available'),
+(1748, 24, 'H', 9, 'normal', 0.00, 'available'),
+(1749, 24, 'H', 10, 'normal', 0.00, 'available'),
+(1750, 24, 'H', 11, 'normal', 0.00, 'available'),
+(1751, 24, 'H', 12, 'normal', 0.00, 'available'),
+(1752, 24, 'H', 13, 'normal', 0.00, 'available'),
+(1753, 24, 'H', 14, 'normal', 0.00, 'available'),
+(1754, 24, 'H', 15, 'normal', 0.00, 'available'),
+(1755, 24, 'H', 16, 'normal', 0.00, 'available'),
+(1756, 24, 'H', 17, 'normal', 0.00, 'available'),
+(1757, 24, 'I', 1, 'normal', 0.00, 'available'),
+(1758, 24, 'I', 2, 'normal', 0.00, 'available'),
+(1759, 24, 'I', 3, 'normal', 0.00, 'available'),
+(1760, 24, 'I', 4, 'normal', 0.00, 'available'),
+(1761, 24, 'I', 5, 'normal', 0.00, 'available'),
+(1762, 24, 'I', 6, 'normal', 0.00, 'available'),
+(1763, 24, 'I', 7, 'normal', 0.00, 'available'),
+(1764, 24, 'I', 8, 'normal', 0.00, 'available'),
+(1765, 24, 'I', 9, 'normal', 0.00, 'available'),
+(1766, 24, 'I', 10, 'normal', 0.00, 'available'),
+(1767, 24, 'I', 11, 'normal', 0.00, 'available'),
+(1768, 24, 'I', 12, 'normal', 0.00, 'available'),
+(1769, 24, 'I', 13, 'normal', 0.00, 'available'),
+(1770, 24, 'I', 14, 'normal', 0.00, 'available'),
+(1771, 24, 'I', 15, 'normal', 0.00, 'available'),
+(1772, 24, 'I', 16, 'normal', 0.00, 'available'),
+(1773, 24, 'I', 17, 'normal', 0.00, 'available'),
+(1774, 24, 'J', 1, 'normal', 0.00, 'available'),
+(1775, 24, 'J', 2, 'normal', 0.00, 'available'),
+(1776, 24, 'J', 3, 'normal', 0.00, 'available'),
+(1777, 24, 'J', 4, 'normal', 0.00, 'available'),
+(1778, 24, 'J', 5, 'normal', 0.00, 'available'),
+(1779, 24, 'J', 6, 'normal', 0.00, 'available'),
+(1780, 24, 'J', 7, 'normal', 0.00, 'available'),
+(1781, 24, 'J', 8, 'normal', 0.00, 'available'),
+(1782, 24, 'J', 9, 'normal', 0.00, 'available'),
+(1783, 24, 'J', 10, 'normal', 0.00, 'available'),
+(1784, 24, 'J', 11, 'normal', 0.00, 'available'),
+(1785, 24, 'J', 12, 'normal', 0.00, 'available'),
+(1786, 24, 'J', 13, 'normal', 0.00, 'available'),
+(1787, 24, 'J', 14, 'normal', 0.00, 'available'),
+(1788, 24, 'J', 15, 'normal', 0.00, 'available'),
+(1789, 24, 'J', 16, 'normal', 0.00, 'available'),
+(1790, 24, 'J', 17, 'normal', 0.00, 'available');
 
 -- --------------------------------------------------------
 
@@ -948,14 +1442,54 @@ CREATE TABLE `showtimes` (
 --
 
 INSERT INTO `showtimes` (`id`, `movie_id`, `room_id`, `show_date`, `start_time`, `end_time`, `adult_price`, `student_price`, `format`) VALUES
-(1, 8, 17, '2025-11-18', '15:00:00', '16:30:00', 80000.00, 65000.00, '2D'),
-(2, 7, 18, '2025-11-17', '16:00:00', '17:00:00', 75000.00, 65000.00, '2D'),
-(3, 6, 19, '2025-11-19', '15:00:00', '17:00:00', 85000.00, 70000.00, '3D'),
-(4, 8, 17, '2025-11-18', '17:30:00', '19:32:00', 80000.00, 65000.00, '2D'),
-(5, 6, 18, '2025-11-17', '14:00:00', '16:00:00', 75000.00, 60000.00, '2D'),
-(6, 9, 19, '2025-11-17', '15:00:00', '17:13:00', 70000.00, 60000.00, '2D'),
-(7, 9, 17, '2025-11-18', '10:30:00', '12:43:00', 80000.00, 70000.00, '2D'),
-(8, 7, 21, '2025-11-18', '13:45:00', '15:45:00', 75000.00, 60000.00, '2D');
+(1, 8, 17, '2025-11-19', '15:00:00', '16:30:00', 80000.00, 65000.00, '2D'),
+(2, 7, 18, '2025-11-20', '16:00:00', '17:00:00', 75000.00, 65000.00, '2D'),
+(3, 6, 17, '2025-11-20', '15:00:00', '17:00:00', 85000.00, 70000.00, '3D'),
+(4, 8, 17, '2025-11-21', '17:30:00', '19:32:00', 80000.00, 65000.00, '2D'),
+(5, 6, 18, '2025-11-19', '14:00:00', '16:00:00', 75000.00, 60000.00, '2D'),
+(6, 9, 19, '2025-11-20', '15:00:00', '17:13:00', 70000.00, 60000.00, '2D'),
+(7, 9, 17, '2025-11-19', '10:30:00', '12:43:00', 80000.00, 70000.00, '2D'),
+(8, 7, 21, '2025-11-21', '13:45:00', '15:45:00', 75000.00, 60000.00, '2D'),
+(9, 9, 18, '2025-11-19', '09:30:00', '11:43:00', 80000.00, 70000.00, '2D');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ticket_prices`
+--
+
+CREATE TABLE `ticket_prices` (
+  `id` int NOT NULL,
+  `day_type` varchar(20) NOT NULL COMMENT 'weekday hoặc weekend',
+  `format` varchar(10) NOT NULL COMMENT '2D hoặc 3D',
+  `customer_type` varchar(20) NOT NULL COMMENT 'adult hoặc student',
+  `seat_type` varchar(20) NOT NULL COMMENT 'normal hoặc vip',
+  `base_price` decimal(10,2) NOT NULL COMMENT 'Giá cơ bản (VNĐ)',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `ticket_prices`
+--
+
+INSERT INTO `ticket_prices` (`id`, `day_type`, `format`, `customer_type`, `seat_type`, `base_price`, `created_at`, `updated_at`) VALUES
+(1, 'weekday', '2D', 'student', 'normal', 55000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(2, 'weekday', '2D', 'student', 'vip', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(3, 'weekday', '2D', 'adult', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(4, 'weekday', '2D', 'adult', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(5, 'weekday', '3D', 'student', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(6, 'weekday', '3D', 'student', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(7, 'weekday', '3D', 'adult', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(8, 'weekday', '3D', 'adult', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(9, 'weekend', '2D', 'student', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(10, 'weekend', '2D', 'student', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(11, 'weekend', '2D', 'adult', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(12, 'weekend', '2D', 'adult', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(13, 'weekend', '3D', 'student', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(14, 'weekend', '3D', 'student', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(15, 'weekend', '3D', 'adult', 'normal', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(16, 'weekend', '3D', 'adult', 'vip', 95000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50');
 
 -- --------------------------------------------------------
 
@@ -973,16 +1507,56 @@ CREATE TABLE `users` (
   `tier_id` int DEFAULT NULL,
   `total_spending` decimal(12,2) DEFAULT '0.00',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `role` varchar(20) DEFAULT 'customer' COMMENT 'Vai trò: admin, staff, customer'
+  `role` varchar(20) DEFAULT 'customer' COMMENT 'Vai trò: admin, staff, customer',
+  `status` varchar(20) DEFAULT 'active' COMMENT 'Trạng thái: active, banned'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_date`, `tier_id`, `total_spending`, `created_at`, `role`) VALUES
-(2, 'Duc anh', 'anp93005@gmail.com', '$2y$10$CWyRPSmpryxfnvWJk.WU6ee587peAVpJ2WM.gPnWxn1EURYPTorwe', '0386036692', '2025-10-28', NULL, 0.00, '2025-11-15 20:56:13', 'admin'),
-(3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$VaYpeaUFxGUKFgO3yq7xVe.qnTi4VRvnnxK4ZiLkysvEq2jvCVr8.', '0386036636', '2000-10-12', NULL, 0.00, '2025-11-15 21:17:27', 'customer');
+INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_date`, `tier_id`, `total_spending`, `created_at`, `role`, `status`) VALUES
+(2, 'Nguyễn Đức Anh', 'anp93005@gmail.com', '$2y$10$CWyRPSmpryxfnvWJk.WU6ee587peAVpJ2WM.gPnWxn1EURYPTorwe', '0386036692', '2025-10-28', NULL, 0.00, '2025-11-15 20:56:13', 'admin', 'active'),
+(3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$VaYpeaUFxGUKFgO3yq7xVe.qnTi4VRvnnxK4ZiLkysvEq2jvCVr8.', '0386036636', '2000-10-12', NULL, 1755000.00, '2025-11-15 21:17:27', 'customer', 'active'),
+(4, 'Bảo Châu', 'baochau06@gmail.com', '$2y$10$4msjaSiici7YXHciPSW0Cu/bYvTZuQRdlhm3ifOL4LTesvPmpzGxq', '0386036693', '2006-12-11', NULL, 0.00, '2025-11-18 22:28:02', 'staff', 'active');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vouchers`
+--
+
+CREATE TABLE `vouchers` (
+  `id` int NOT NULL,
+  `title` varchar(255) NOT NULL COMMENT 'Tiêu đề khuyến mãi',
+  `description` text COMMENT 'Mô tả chi tiết khuyến mãi',
+  `tag` varchar(50) DEFAULT 'general' COMMENT 'Loại khuyến mãi: general, flash, member, newuser, student, combo, etc.',
+  `code` varchar(50) DEFAULT NULL COMMENT 'Mã giảm giá (hiển thị cho người dùng)',
+  `discount_code_id` int DEFAULT NULL COMMENT 'ID mã giảm giá trong bảng discount_codes (liên kết với mã giảm giá thực tế)',
+  `benefits` text COMMENT 'Danh sách lợi ích (mỗi lợi ích cách nhau bởi dấu |)',
+  `period` varchar(255) DEFAULT NULL COMMENT 'Chuỗi hiển thị thời gian áp dụng (VD: "01/11/2025 - 31/12/2025")',
+  `image` varchar(255) DEFAULT NULL COMMENT 'Hình ảnh banner khuyến mãi',
+  `start_date` datetime DEFAULT NULL COMMENT 'Ngày bắt đầu',
+  `end_date` datetime DEFAULT NULL COMMENT 'Ngày kết thúc',
+  `status` varchar(20) DEFAULT 'active' COMMENT 'Trạng thái: active, inactive, ongoing, upcoming, ended',
+  `cta` varchar(100) DEFAULT 'Đặt vé ngay' COMMENT 'Text nút call-to-action',
+  `cta_link` varchar(255) DEFAULT NULL COMMENT 'Link khi click CTA (mặc định: trang đặt vé)',
+  `priority` int DEFAULT '0' COMMENT 'Độ ưu tiên hiển thị (số càng cao càng hiển thị trước)',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng quản lý voucher/khuyến mãi';
+
+--
+-- Dumping data for table `vouchers`
+--
+
+INSERT INTO `vouchers` (`id`, `title`, `description`, `tag`, `code`, `discount_code_id`, `benefits`, `period`, `image`, `start_date`, `end_date`, `status`, `cta`, `cta_link`, `priority`, `created_at`, `updated_at`) VALUES
+(1, 'Giảm 20% cho thành viên mới', 'Đăng ký tài khoản mới và nhận ngay 20% giảm giá cho lần đặt vé đầu tiên. Áp dụng cho tất cả các suất chiếu.', 'newuser', 'WELCOME20', NULL, 'Giảm 20% cho lần đặt vé đầu tiên|Áp dụng cho tất cả suất chiếu|Không giới hạn số lượng vé|Có thể kết hợp với ưu đãi khác', '01/11/2025 - 31/12/2025', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đăng ký ngay', NULL, 10, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(2, 'Flash Sale - Giảm 50% thứ 2 hàng tuần', 'Mỗi thứ 2 hàng tuần, giảm 50% cho tất cả vé xem phim. Chỉ áp dụng khi đặt vé online.', 'flash', 'MONDAY50', NULL, 'Giảm 50% cho tất cả vé|Chỉ áp dụng thứ 2 hàng tuần|Đặt vé online|Áp dụng cho tất cả phim', 'Mỗi thứ 2 hàng tuần', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đặt vé ngay', NULL, 9, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(3, 'Combo bắp nước - Mua 2 tặng 1', 'Mua 2 combo bắp nước, tặng ngay 1 combo. Áp dụng khi mua kèm vé xem phim.', 'combo', 'COMBO2+1', NULL, 'Mua 2 combo tặng 1|Áp dụng khi mua kèm vé|Combo size lớn|Áp dụng tất cả các ngày', '01/11/2025 - 31/12/2025', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Xem menu', NULL, 8, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(4, 'Ưu đãi sinh viên - Giảm 30%', 'Sinh viên được giảm 30% khi xuất trình thẻ sinh viên hợp lệ. Áp dụng cho tất cả suất chiếu.', 'student', 'STUDENT30', NULL, 'Giảm 30% cho sinh viên|Xuất trình thẻ sinh viên|Áp dụng tất cả suất chiếu|Không giới hạn số lần sử dụng', 'Áp dụng thường xuyên', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đặt vé ngay', NULL, 7, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(5, 'Thành viên VIP - Giảm 15% mỗi đơn', 'Thành viên hạng VIP được giảm 15% tự động cho mọi đơn đặt vé. Không cần nhập mã.', 'member', NULL, NULL, 'Giảm 15% tự động|Áp dụng cho mọi đơn hàng|Không cần nhập mã|Tích điểm thưởng', 'Áp dụng thường xuyên', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Nâng cấp VIP', NULL, 6, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(6, 'Black Friday - Giảm đến 70%', 'Chương trình Black Friday đặc biệt. Giảm giá lên đến 70% cho các suất chiếu được chọn.', 'flash', 'BLACKFRIDAY70', NULL, 'Giảm đến 70%|Áp dụng cho suất chiếu được chọn|Chỉ trong ngày Black Friday|Số lượng có hạn', '29/11/2025', NULL, '2025-11-29 00:00:00', '2025-11-29 23:59:59', 'upcoming', 'Sắp diễn ra', NULL, 5, '2025-11-20 22:14:09', '2025-11-20 22:14:09');
 
 --
 -- Indexes for dumped tables
@@ -1107,12 +1681,29 @@ ALTER TABLE `showtimes`
   ADD KEY `fk_showtimes_room` (`room_id`);
 
 --
+-- Indexes for table `ticket_prices`
+--
+ALTER TABLE `ticket_prices`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_price` (`day_type`,`format`,`customer_type`,`seat_type`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `fk_users_tiers` (`tier_id`);
+
+--
+-- Indexes for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_dates` (`start_date`,`end_date`),
+  ADD KEY `idx_discount_code` (`discount_code_id`),
+  ADD KEY `idx_tag` (`tag`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -1122,7 +1713,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `booking_items`
@@ -1170,7 +1761,7 @@ ALTER TABLE `invoices`
 -- AUTO_INCREMENT for table `movies`
 --
 ALTER TABLE `movies`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `movie_genres`
@@ -1182,43 +1773,55 @@ ALTER TABLE `movie_genres`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID quyền', AUTO_INCREMENT=73;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID quyền', AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `role_permissions`
 --
 ALTER TABLE `role_permissions`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID phân quyền', AUTO_INCREMENT=93;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID phân quyền', AUTO_INCREMENT=116;
 
 --
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `seats`
 --
 ALTER TABLE `seats`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1021;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1791;
 
 --
 -- AUTO_INCREMENT for table `showtimes`
 --
 ALTER TABLE `showtimes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `ticket_prices`
+--
+ALTER TABLE `ticket_prices`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -1291,6 +1894,12 @@ ALTER TABLE `showtimes`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `fk_users_tiers` FOREIGN KEY (`tier_id`) REFERENCES `customer_tiers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  ADD CONSTRAINT `fk_vouchers_discount_code` FOREIGN KEY (`discount_code_id`) REFERENCES `discount_codes` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

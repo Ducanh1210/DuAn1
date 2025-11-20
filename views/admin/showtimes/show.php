@@ -84,19 +84,13 @@
 
             <div class="col-md-6 mb-3">
               <div class="border-bottom pb-2">
-                <label class="text-muted small mb-1 d-block">Giá vé người lớn</label>
-                <span class="text-success fw-bold">
-                  <?= $showtime['adult_price'] ? number_format($showtime['adult_price'], 0, ',', '.') . ' đ' : 'N/A' ?>
-                </span>
-              </div>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <div class="border-bottom pb-2">
-                <label class="text-muted small mb-1 d-block">Giá vé học sinh</label>
-                <span class="text-info fw-bold">
-                  <?= $showtime['student_price'] ? number_format($showtime['student_price'], 0, ',', '.') . ' đ' : 'N/A' ?>
-                </span>
+                <label class="text-muted small mb-1 d-block">Giá vé</label>
+                <div>
+                  <a href="<?= BASE_URL ?>?act=ticket-prices" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-currency-exchange"></i> Xem bảng giá vé
+                  </a>
+                  <small class="text-muted d-block mt-1">Giá vé được quản lý tại Quản lý giá vé</small>
+                </div>
               </div>
             </div>
 
