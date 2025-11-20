@@ -76,6 +76,7 @@
     margin-top: 0;
     margin-bottom: 0;
     padding: 20px 0;
+    min-height: 80px;
   }
   
   .logo a {
@@ -97,26 +98,60 @@
   /* center nav */
   .nav-center {
     display: flex;
+    align-items: center;
     gap: 18px;
     background: var(--glass);
     padding: 10px 22px;
     border-radius: 30px;
     backdrop-filter: blur(6px);
+    line-height: 1.5;
+    min-height: 44px;
   }
   
   .nav-center a {
     color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 15px;
     padding: 6px 10px;
     border-radius: 6px;
     transition: 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.5;
   }
   
   .nav-center a:hover {
     color: #fff;
     background: rgba(255, 255, 255, 0.15);
+  }
+  
+  .nav-center a.active {
+    color: #ff6978 !important;
+    font-weight: 700;
+    background: rgba(255, 105, 120, 0.2);
+    position: relative;
+  }
+  
+  .nav-center a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background-color: #ff6978;
+    border-radius: 2px;
+  }
+  
+  .nav-center a.active:hover {
+    color: #ff5067 !important;
+    background: rgba(255, 105, 120, 0.25);
+  }
+  
+  .nav-center a.active:hover::after {
+    background-color: #ff5067;
   }
   
   /* ===== ACTION BUTTONS ===== */

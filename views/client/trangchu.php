@@ -29,13 +29,23 @@ if (session_status() === PHP_SESSION_NONE) {
                         <img src="<?= BASE_URL ?>/image/logokhongnen.png" alt="TicketHub Logo">
                     </a>
                 </div>
+                <?php
+                // Lấy trang hiện tại
+                $currentAct = $_GET['act'] ?? 'trangchu';
+                // Kiểm tra active cho từng menu item
+                $isTrangChu = in_array($currentAct, ['trangchu', '', 'movies']);
+                $isGioiThieu = ($currentAct === 'gioithieu');
+                $isLichChieu = ($currentAct === 'lichchieu');
+                $isGiaVe = ($currentAct === 'giave');
+                $isLienHe = ($currentAct === 'lienhe');
+                ?>
                 <div style="flex:1;display:flex;justify-content:center">
                     <nav class="nav-center">
-                        <a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a>
-                        <a href="<?= BASE_URL ?>?act=gioithieu">Giới Thiệu</a>
-                        <a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a>
-                        <a href="<?= BASE_URL ?>?act=giave">Giá Vé</a>
-                        <a href="<?= BASE_URL ?>?act=lienhe">Liên Hệ</a>
+                        <a href="<?= BASE_URL ?>?act=trangchu" class="<?= $isTrangChu ? 'active' : '' ?>">Trang Chủ</a>
+                        <a href="<?= BASE_URL ?>?act=gioithieu" class="<?= $isGioiThieu ? 'active' : '' ?>">Giới Thiệu</a>
+                        <a href="<?= BASE_URL ?>?act=lichchieu" class="<?= $isLichChieu ? 'active' : '' ?>">Lịch Chiếu</a>
+                        <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
+                        <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
                     </nav>
                 </div>
                 <div class="nav-actions">
