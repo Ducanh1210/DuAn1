@@ -198,6 +198,83 @@ h3.section-title {
   line-height: 1.6;
 }
 
+/* Booking details section */
+.booking-details-section {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detail-label {
+  min-width: 120px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.detail-value {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.detail-value.highlight-time {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.detail-value.seats-highlight {
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+.room-code {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.format-badge {
+  display: inline-block;
+  background: rgba(255, 75, 75, 0.15);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 75, 75, 0.3);
+}
+
+.ticket-type {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
 /* payment info table */
 .payment-table {
   width: 100%;
@@ -224,6 +301,66 @@ h3.section-title {
   background: transparent;
 }
 
+.table-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.seat-info-cell {
+  padding: 16px !important;
+}
+
+.seat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.seat-label {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.seat-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.seat-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.seat-tag.vip-tag {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #000;
+  font-weight: 700;
+}
+
+.seat-tag.adult-tag {
+  background: rgba(74, 158, 255, 0.2);
+  color: #4a9eff;
+  border: 1px solid rgba(74, 158, 255, 0.4);
+}
+
+.seat-tag.student-tag {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+
+.price-cell {
+  color: rgba(255, 255, 255, 0.95) !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+}
+
 /* right column: payment methods box */
 .side-card {
   background: linear-gradient(
@@ -243,13 +380,13 @@ h3.section-title {
 .method {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  transition: all 0.15s;
-  background: transparent;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.02);
 }
 .method:hover {
   transform: translateY(-4px);
@@ -257,17 +394,44 @@ h3.section-title {
 }
 .method.active {
   border-color: rgba(255, 75, 75, 0.9);
-  box-shadow: 0 14px 40px rgba(255, 75, 75, 0.06);
-  background: linear-gradient(90deg, rgba(255, 75, 75, 0.02), transparent);
+  border-width: 2px;
+  box-shadow: 0 8px 25px rgba(255, 75, 75, 0.2);
+  background: linear-gradient(90deg, rgba(255, 75, 75, 0.08), rgba(255, 75, 75, 0.02));
 }
 .method .logo {
-  width: 56px;
-  height: 28px;
+  width: 100px;
+  height: 50px;
+  min-width: 100px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   color: var(--muted-2);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.method .logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.method:hover .logo {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.method.active .logo {
+  background: rgba(255, 75, 75, 0.1);
+  border-color: rgba(255, 75, 75, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 75, 75, 0.15);
 }
 .method .txt {
   flex: 1;

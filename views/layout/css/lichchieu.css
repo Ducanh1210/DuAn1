@@ -30,6 +30,7 @@ body {
   padding: 20px 0;
   position: relative;
   z-index: 1000;
+  min-height: 80px;
 }
 
 .header-container {
@@ -38,6 +39,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 44px;
 }
 
 /* ===== LOGO ===== */
@@ -58,7 +60,10 @@ body {
 /* ===== MENU ===== */
 .menu {
   display: flex;
+  align-items: center;
   gap: 26px;
+  line-height: 1.5;
+  min-height: 44px;
 }
 
 .menu a {
@@ -67,12 +72,40 @@ body {
   font-size: 15px;
   font-weight: 500;
   transition: 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.5;
 }
 
 .menu a:hover {
   color: #ffffff;
   opacity: 1;
   transform: translateY(-2px);
+}
+
+.menu a.active {
+  color: #ff6978 !important;
+  font-weight: 700;
+  position: relative;
+}
+
+.menu a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ff6978;
+  border-radius: 2px;
+}
+
+.menu a.active:hover {
+  color: #ff5067 !important;
+}
+
+.menu a.active:hover::after {
+  background-color: #ff5067;
 }
 
 /* ===== ACTION BUTTONS ===== */

@@ -1,4 +1,8 @@
 <?php
+// Start session ngay từ đầu, trước mọi output
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -30,6 +34,7 @@ require_once('./controllers/CommentsController.php');
 require_once('./models/Comment.php');
 require_once('./controllers/BookingController.php');
 require_once('./models/Booking.php');
+require_once('./models/Payment.php');
 require_once('./controllers/ProfileController.php');
 //route
 
@@ -49,6 +54,8 @@ match ($act) {
     'my-bookings' => (new BookingController)->myBookings(),
     'payment' => (new BookingController)->payment(),
     'payment-process' => (new BookingController)->processPayment(),
+    'vnpay-return' => (new BookingController)->vnpayReturn(),
+    
 
     // Auth routes (Client)
     'dangky' => (new AuthController)->register(),

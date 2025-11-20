@@ -43,30 +43,59 @@ function formatPrice($price) {
                         <?= htmlspecialchars($movie['title'] ?? 'N/A') ?>
                     </div>
 
-                    <div style="height: 8px"></div>
-                    <div class="meta-grid">
-                        <div>
-                            <span class="k">Ngày giờ chiếu</span><br />
-                            <strong style="color: var(--accent)"><?= $formattedTime ?></strong>
-                            · <?= $formattedDate ?>
+                    <div style="height: 12px"></div>
+                    
+                    <!-- Thông tin chi tiết đặt vé -->
+                    <div class="booking-details-section">
+                        <div class="detail-row">
+                            <span class="detail-label">Rạp chiếu:</span>
+                            <span class="detail-value"><?= htmlspecialchars($cinema['name'] ?? 'N/A') ?></span>
                         </div>
-                        <div>
-                            <span class="k">Ghế</span><br />
-                            <?= htmlspecialchars($seatLabels) ?>
+                        <div class="detail-row">
+                            <span class="detail-label">Phòng chiếu:</span>
+                            <span class="detail-value">
+                                <?= htmlspecialchars($room['name'] ?? 'N/A') ?>
+                                <?php if (!empty($room['room_code'])): ?>
+                                    <span class="room-code">(<?= htmlspecialchars($room['room_code']) ?>)</span>
+                                <?php endif; ?>
+                            </span>
                         </div>
-                        <div>
-                            <span class="k">Định dạng</span><br />
-                            <?= htmlspecialchars($showtime['format'] ?? '2D') ?>
+                        <div class="detail-row">
+                            <span class="detail-label">Ngày chiếu:</span>
+                            <span class="detail-value"><?= $formattedDate ?></span>
                         </div>
-                        <div>
-                            <span class="k">Phòng chiếu</span><br />
-                            <?= htmlspecialchars($room['room_code'] ?? $room['name'] ?? 'N/A') ?>
+                        <div class="detail-row">
+                            <span class="detail-label">Giờ chiếu:</span>
+                            <span class="detail-value highlight-time">
+                                <?= $formattedTime ?>
+                                <?php if (!empty($showtime['end_time'])): ?>
+                                    - <?= date('H:i', strtotime($showtime['end_time'])) ?>
+                                <?php endif; ?>
+                            </span>
                         </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ghế đã chọn:</span>
+                            <span class="detail-value seats-highlight"><?= htmlspecialchars($seatLabels) ?></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Định dạng:</span>
+                            <span class="detail-value format-badge"><?= htmlspecialchars($showtime['format'] ?? '2D') ?></span>
+                        </div>
+                        <?php if (isset($adultCount) && isset($studentCount)): ?>
+                        <div class="detail-row">
+                            <span class="detail-label">Số lượng vé:</span>
+                            <span class="detail-value">
+                                <?php if ($adultCount > 0): ?>
+                                    <span class="ticket-type"><?= $adultCount ?> Người lớn</span>
+                                <?php endif; ?>
+                                <?php if ($studentCount > 0): ?>
+                                    <?php if ($adultCount > 0): ?>, <?php endif; ?>
+                                    <span class="ticket-type"><?= $studentCount ?> Sinh viên</span>
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                        <?php endif; ?>
                     </div>
-
-                    <p class="desc">
-                        <?= htmlspecialchars(substr($movie['description'] ?? '', 0, 150)) ?><?= strlen($movie['description'] ?? '') > 150 ? '...' : '' ?>
-                    </p>
                 </div>
             </div>
         </div>
@@ -86,9 +115,23 @@ function formatPrice($price) {
                 <tbody>
                     <?php foreach ($selectedSeats as $seat): ?>
                     <tr class="table-row">
-                        <td>Ghế (<?= htmlspecialchars($seat['label']) ?>)<?= $seat['type'] === 'vip' ? ' - VIP' : '' ?></td>
+                        <td class="seat-info-cell">
+                            <div class="seat-info">
+                                <span class="seat-label">Ghế <?= htmlspecialchars($seat['label']) ?></span>
+                                <div class="seat-tags">
+                                    <?php if ($seat['type'] === 'vip'): ?>
+                                        <span class="seat-tag vip-tag">VIP</span>
+                                    <?php endif; ?>
+                                    <?php if (isset($seat['customer_type'])): ?>
+                                        <span class="seat-tag <?= $seat['customer_type'] === 'adult' ? 'adult-tag' : 'student-tag' ?>">
+                                            <?= $seat['customer_type'] === 'adult' ? 'Người lớn' : 'Sinh viên' ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </td>
                         <td style="text-align: center">1</td>
-                        <td style="text-align: right"><?= formatPrice($seat['price']) ?></td>
+                        <td style="text-align: right" class="price-cell"><?= formatPrice($seat['price']) ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -104,7 +147,7 @@ function formatPrice($price) {
             <div class="methods" id="methods">
                 <label class="method" data-method="vietqr" tabindex="0">
                     <div class="logo">
-                        <img src="<?= BASE_URL ?>/image/vietqr.png" alt="VietQR" style="height: 24px" />
+                        <img src="<?= BASE_URL ?>/image/vietqr.png" alt="VietQR" />
                     </div>
                     <div class="txt">VietQR</div>
                     <input type="radio" name="pay" value="vietqr" style="display: none" />
@@ -112,7 +155,7 @@ function formatPrice($price) {
 
                 <label class="method" data-method="vnpay" tabindex="0">
                     <div class="logo">
-                        <img src="<?= BASE_URL ?>/image/vnpay.png" alt="VNPAY" style="height: 22px" />
+                        <img src="<?= BASE_URL ?>/image/vnpay.png" alt="VNPAY" />
                     </div>
                     <div class="txt">VNPAY</div>
                     <input type="radio" name="pay" value="vnpay" style="display: none" />
@@ -120,7 +163,7 @@ function formatPrice($price) {
 
                 <label class="method" data-method="viettel" tabindex="0">
                     <div class="logo">
-                        <img src="<?= BASE_URL ?>/image/viettel.png" alt="Viettel Money" style="height: 22px" />
+                        <img src="<?= BASE_URL ?>/image/viettel.png" alt="Viettel Money" />
                     </div>
                     <div class="txt">Viettel Money</div>
                     <input type="radio" name="pay" value="viettel" style="display: none" />
@@ -128,7 +171,7 @@ function formatPrice($price) {
 
                 <label class="method" data-method="momo" tabindex="0">
                     <div class="logo">
-                        <img src="<?= BASE_URL ?>/image/momo.png" alt="MoMo" style="height: 20px" />
+                        <img src="<?= BASE_URL ?>/image/momo.png" alt="MoMo" />
                     </div>
                     <div class="txt">MoMo</div>
                     <input type="radio" name="pay" value="momo" style="display: none" />
@@ -240,8 +283,14 @@ function formatPrice($price) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message || 'Thanh toán thành công!');
-                window.location.href = '<?= BASE_URL ?>?act=my-bookings';
+                if (data.payment_method === 'vnpay' && data.payment_url) {
+                    // Chuyển hướng đến VNPay
+                    window.location.href = data.payment_url;
+                } else {
+                    // Các phương thức thanh toán khác
+                    alert(data.message || 'Thanh toán thành công!');
+                    window.location.href = '<?= BASE_URL ?>?act=my-bookings';
+                }
             } else {
                 alert(data.message || 'Có lỗi xảy ra khi thanh toán.');
                 payBtn.disabled = false;
