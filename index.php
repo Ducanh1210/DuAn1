@@ -62,11 +62,12 @@ match ($act) {
     'payment-process' => (new BookingController)->processPayment(),
     'vnpay-return' => (new BookingController)->vnpayReturn(),
     
+
     // Auth routes (Client)
     'dangky' => (new AuthController)->register(),
     'dangnhap' => (new AuthController)->login(),
     'dangxuat' => (new AuthController)->logout(),
-    
+
     // Profile routes (Client)
     'profile' => (new ProfileController)->index(),
     'profile-update' => (new ProfileController)->update(),
