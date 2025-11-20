@@ -47,6 +47,12 @@ if (session_status() === PHP_SESSION_NONE) {
                         <a href="<?= BASE_URL ?>?act=khuyenmai" class="<?= $isKhuyenMai ? 'active' : '' ?>">Khuyến mãi</a>
                         <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
                         <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
+                        <a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a>
+                        <a href="<?= BASE_URL ?>?act=gioithieu">Giới Thiệu</a>
+                        <a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a>
+                        <a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a>
+                        <a href="<?= BASE_URL ?>?act=giave">Giá Vé</a>
+                        <a href="<?= BASE_URL ?>?act=lienhe">Liên Hệ</a>
                     </nav>
                 </div>
                 <div class="nav-actions">
@@ -223,7 +229,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <aside class="movies-right">
                     <div class="promo-header">
                         <h3 class="promo-title">Khuyến mãi</h3>
-                        <a class="view-all" href="#">Xem tất cả</a>
+                        <a class="view-all" href="<?= BASE_URL ?>?act=khuyenmai">Xem tất cả</a>
                     </div>
 
                     <div class="promo-carousel-wrapper" id="viewport">
@@ -304,11 +310,12 @@ if (session_status() === PHP_SESSION_NONE) {
                 <div class="col links">
                     <h4>Khám phá</h4>
                     <ul>
-                        <li><a href="#">Trang Chủ</a></li>
-                        <li><a href="#">Lịch Chiếu</a></li>
-                        <li><a href="#">Giá vé</a></li>
-                        <li><a href="#">Tin tức</a></li>
-                        <li><a href="#">Hỏi đáp</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=giave">Giá vé</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=tintuc">Tin tức</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=hoidap">Hỏi đáp</a></li>
                     </ul>
                 </div>
 
@@ -391,7 +398,7 @@ if (session_status() === PHP_SESSION_NONE) {
     document.getElementById('currentYear').textContent = new Date().getFullYear();
 
     // Search box toggle functionality
-    (function () {
+    (function() {
         const searchIcon = document.getElementById('searchIcon');
         const searchBox = document.getElementById('searchBox');
         const searchInput = document.getElementById('searchInput');
@@ -400,7 +407,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         // Toggle search box khi click vào icon
         if (searchIcon) {
-            searchIcon.addEventListener('click', function (e) {
+            searchIcon.addEventListener('click', function(e) {
                 e.stopPropagation();
                 searchBox.classList.add('active');
                 searchInput.focus();
@@ -408,7 +415,7 @@ if (session_status() === PHP_SESSION_NONE) {
         }
 
         // Đóng search box khi click bên ngoài
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             if (!searchBox.contains(e.target) && !searchIcon.contains(e.target)) {
                 searchBox.classList.remove('active');
             }
@@ -417,7 +424,7 @@ if (session_status() === PHP_SESSION_NONE) {
         // Xử lý khi nhấn Enter trong search input
         const searchForm = document.getElementById('searchForm');
         if (searchInput) {
-            searchInput.addEventListener('keypress', function (e) {
+            searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     if (searchForm) {
@@ -429,7 +436,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         // Xử lý khi click vào nút search
         if (searchBtn) {
-            searchBtn.addEventListener('click', function (e) {
+            searchBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (searchForm) {
                     searchForm.submit();
