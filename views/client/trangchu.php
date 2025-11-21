@@ -12,6 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang Chủ | TicketHub</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/notifications.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap"
         rel="stylesheet">
@@ -50,6 +51,25 @@ if (session_status() === PHP_SESSION_NONE) {
                    
                 </div>
                 <div class="nav-actions">
+                    <?php
+                    if (isset($_SESSION['user_id'])):
+                        $userName = htmlspecialchars($_SESSION['user_name'] ?? 'User');
+                    ?>
+                        <!-- Notifications for logged-in users - ĐẶT TRƯỚC SEARCH -->
+                        <div class="notification-wrapper">
+                            <i class="bi bi-bell notification-icon" id="clientNotificationIcon"></i>
+                            <span class="notification-badge" id="clientNotificationBadge" style="display: none;">0</span>
+                            <div class="notification-dropdown" id="clientNotificationDropdown" style="display: none;">
+                                <div class="notification-header">
+                                    <h6>Thông báo</h6>
+                                    <button class="btn-mark-all-read" id="clientMarkAllReadBtn">Đánh dấu tất cả đã đọc</button>
+                                </div>
+                                <div class="notification-list" id="clientNotificationList">
+                                    <div class="notification-empty">Không có thông báo mới</div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                     <div class="search-wrapper">
                         <i class="bi bi-search search-icon" id="searchIcon" title="Tìm kiếm"></i>
                         <div class="search-box" id="searchBox">
@@ -602,5 +622,151 @@ if (session_status() === PHP_SESSION_NONE) {
         window.addEventListener('resize', update);
     })();
 </script>
+
+<?php if (isset($_SESSION['user_id'])): ?>
+<script>
+    // Client-side notifications
+    (function() {
+        const notificationIcon = document.getElementById('clientNotificationIcon');
+        const notificationBadge = document.getElementById('clientNotificationBadge');
+        const notificationDropdown = document.getElementById('clientNotificationDropdown');
+        const notificationList = document.getElementById('clientNotificationList');
+        const markAllReadBtn = document.getElementById('clientMarkAllReadBtn');
+
+        function loadNotifications() {
+            fetch('<?= BASE_URL ?>?act=api-client-notifications&unread_only=true')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const notifications = data.notifications || [];
+                        updateNotificationBadge(data.unread_count || 0);
+                        renderNotifications(notifications);
+                    }
+                })
+                .catch(error => console.error('Error loading notifications:', error));
+        }
+
+        function updateNotificationBadge(count) {
+            if (count > 0) {
+                notificationBadge.textContent = count > 99 ? '99+' : count;
+                notificationBadge.style.display = 'block';
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+        }
+
+        function renderNotifications(notifications) {
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                return;
+            }
+
+            notificationList.innerHTML = notifications.map(notif => `
+                <div class="notification-item unread" data-id="${notif.id}">
+                    <div class="notification-content">
+                        <div class="notification-title">${notif.title}</div>
+                        <div class="notification-message">${notif.message}</div>
+                        <div class="notification-time">${formatTime(notif.created_at)}</div>
+                    </div>
+                    ${notif.related_id ? `<a href="<?= BASE_URL ?>?act=my-bookings" class="notification-link">Xem chi tiết</a>` : ''}
+                </div>
+            `).join('');
+
+            // Add click event to mark as read
+            notificationList.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Don't trigger if clicking the link
+                    if (e.target.tagName === 'A') return;
+                    
+                    const id = this.dataset.id;
+                    if (id) {
+                        markAsRead(id, this);
+                    }
+                });
+            });
+        }
+
+        function markAsRead(id, element) {
+            const formData = new FormData();
+            formData.append('id', id);
+            
+            fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-read', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateNotificationBadge(data.unread_count || 0);
+                        // Remove the notification item from list
+                        if (element) {
+                            element.remove();
+                        // If no more notifications, show empty message
+                        if (notificationList.children.length === 0) {
+                            notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                        }
+                        }
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+        }
+
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-all-read', {
+                    method: 'POST'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update badge to 0 (will hide it)
+                            updateNotificationBadge(0);
+                            // Clear all notifications from list immediately
+                            notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                        }
+                    })
+                    .catch(error => console.error('Error marking all as read:', error));
+            });
+        }
+
+        if (notificationIcon) {
+            notificationIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
+                    notificationDropdown.style.display = 'block';
+                    loadNotifications();
+                } else {
+                    notificationDropdown.style.display = 'none';
+                }
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (notificationDropdown && notificationIcon && 
+                !notificationDropdown.contains(e.target) && 
+                !notificationIcon.contains(e.target) &&
+                !e.target.closest('.notification-wrapper')) {
+                notificationDropdown.style.display = 'none';
+            }
+        });
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            if (diff < 60) return 'Vừa xong';
+            if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Load notifications on page load and refresh every 30 seconds
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
+    })();
+</script>
+<?php endif; ?>
 
 </html>

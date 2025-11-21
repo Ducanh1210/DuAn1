@@ -283,14 +283,14 @@ function formatPrice($price) {
         
         messageEl.innerHTML = '<span style="color: #ffc107;">Đang kiểm tra mã voucher...</span>';
         
-        // Kiểm tra voucher qua API
+        // Kiểm tra discount code qua API
         const url = '<?= BASE_URL ?>?act=check-voucher&code=' + encodeURIComponent(voucherCode) + '&total_amount=' + originalTotal;
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                if (data.success && (data.voucher || data.discount_code)) {
-                    // Ưu tiên dùng data.voucher, nếu không có thì dùng data.discount_code
-                    appliedVoucher = data.voucher || data.discount_code;
+                if (data.success && data.discount_code) {
+                    // Sử dụng data.discount_code
+                    appliedVoucher = data.discount_code;
                     messageEl.innerHTML = '<span style="color: #28a745;">✓ ' + (data.message || 'Áp dụng thành công! Giảm ' + appliedVoucher.discount_percent + '%') + '</span>';
                     updateTotals();
                 } else {

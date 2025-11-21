@@ -12,6 +12,7 @@ class BookingController
         require_once __DIR__ . '/../models/Room.php';
         require_once __DIR__ . '/../models/Movie.php';
         require_once __DIR__ . '/../models/Cinema.php';
+        require_once __DIR__ . '/../models/DiscountCode.php';
         $this->booking = new Booking();
     }
 
@@ -365,19 +366,18 @@ class BookingController
                 }
             }
 
-            // Xử lý voucher/discount code
+            // Xử lý discount code
             $discountId = null;
             $discountAmount = 0;
             $voucherCode = $_POST['voucher_code'] ?? '';
             
             if (!empty($voucherCode)) {
-                require_once __DIR__ . '/../models/Voucher.php';
-                $voucherModel = new Voucher();
-                $discountCode = $voucherModel->getDiscountCodeByVoucherCode($voucherCode);
+                $discountCodeModel = new DiscountCode();
+                $discountCode = $discountCodeModel->validateDiscountCode($voucherCode, $totalPrice);
                 
                 if ($discountCode && $discountCode['discount_percent'] > 0) {
                     $discountId = $discountCode['id'];
-                    $discountAmount = ($totalPrice * $discountCode['discount_percent']) / 100;
+                    $discountAmount = $discountCode['discount_amount'];
                 }
             }
 
@@ -536,7 +536,40 @@ class BookingController
         }
 
         try {
-            $this->booking->updateStatus($id, $status);
+            // Lấy thông tin booking trước khi cập nhật
+            $booking = $this->booking->find($id);
+            if (!$booking) {
+                echo json_encode(['success' => false, 'message' => 'Không tìm thấy đơn đặt vé']);
+                exit;
+            }
+
+            // Lấy trạng thái cũ trước khi cập nhật
+            $oldStatus = $booking['status'];
+            
+            // Cập nhật status
+            $updateResult = $this->booking->updateStatus($id, $status);
+            
+            if (!$updateResult) {
+                echo json_encode(['success' => false, 'message' => 'Không thể cập nhật trạng thái']);
+                exit;
+            }
+
+            // Lấy lại booking sau khi cập nhật để đảm bảo có dữ liệu mới nhất
+            $updatedBooking = $this->booking->find($id);
+
+            // Nếu status = 'paid' và trước đó chưa phải 'paid' (ví dụ: từ cancelled -> paid)
+            // Lưu ý: Nếu booking đã là 'paid' từ khi thanh toán thành công thì không cần cập nhật lại
+            if ($status === 'paid' && $oldStatus !== 'paid') {
+                // Cập nhật total_spending và tier_id của user (chỉ khi chưa được cập nhật)
+                $this->updateUserSpendingAndTier($booking['user_id'], $booking['final_amount']);
+
+                // Tạo notification cho user
+                $this->createUserNotification($id, $updatedBooking, 'paid');
+            } elseif ($status === 'cancelled' && $oldStatus !== 'cancelled') {
+                // Tạo notification cho user nếu bị hủy
+                $this->createUserNotification($id, $updatedBooking, 'cancelled');
+            }
+
             echo json_encode(['success' => true, 'message' => 'Cập nhật trạng thái thành công']);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
@@ -616,9 +649,9 @@ class BookingController
         $existingPayment = $payment->findByBookingId($bookingId);
 
         if ($isSuccess) {
-            // Thanh toán thành công
+            // Thanh toán thành công - cập nhật status thành 'paid' ngay lập tức
             $paymentStatus = 'paid';
-            $bookingStatus = 'paid';
+            $bookingStatus = 'paid'; // Thanh toán thành công ngay lập tức
 
             // Cập nhật payment
             if ($existingPayment) {
@@ -633,26 +666,32 @@ class BookingController
                     'method' => 'vnpay',
                     'transaction_code' => $callbackData['transaction_no'],
                     'total_amount' => $callbackData['amount'],
-                    'discount_amount' => 0,
-                    'final_amount' => $callbackData['amount'],
+                    'discount_amount' => $booking['discount_amount'] ?? 0,
+                    'final_amount' => $booking['final_amount'] ?? $callbackData['amount'],
                     'status' => $paymentStatus
                 ];
                 $payment->insert($paymentData);
             }
 
-            // Cập nhật booking status
+            // Cập nhật booking status thành 'paid'
             $this->booking->updateStatus($bookingId, $bookingStatus);
 
-            // Cập nhật total_spending và tier_id của user
+            // Cập nhật total_spending và tier_id của user ngay sau khi thanh toán thành công
             $this->updateUserSpendingAndTier($booking['user_id'], $booking['final_amount']);
+
+            // Lấy lại booking sau khi cập nhật để đảm bảo có dữ liệu mới nhất
+            $updatedBooking = $this->booking->find($bookingId);
+
+            // Tạo notification cho user khi thanh toán thành công
+            $this->createUserNotification($bookingId, $updatedBooking, 'paid');
 
             renderClient('client/payment-result.php', [
                 'success' => true,
-                'message' => 'Thanh toán thành công! Cảm ơn bạn đã đặt vé.',
+                'message' => 'Thanh toán thành công! Đơn đặt vé của bạn đã được xác nhận.',
                 'booking_id' => $bookingId,
-                'booking' => $booking,
-                'transaction_code' => $callbackData['transaction_no']
-            ], 'Thanh toán thành công');
+                'booking' => $updatedBooking,
+                'transactionCode' => $callbackData['transaction_no'] ?? null
+            ], 'Kết quả thanh toán');
         } else {
             // Thanh toán thất bại hoặc bị hủy
             $paymentStatus = 'failed';
@@ -753,6 +792,114 @@ class BookingController
         } catch (Exception $e) {
             error_log('Error getting tier: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Tạo notification cho admin khi có booking mới
+     */
+    private function createBookingNotification($bookingId, $booking)
+    {
+        try {
+            require_once __DIR__ . '/../models/Notification.php';
+            $notificationModel = new Notification();
+            
+            // Kiểm tra xem đã có thông báo CHƯA ĐỌC cho booking này chưa (tránh duplicate)
+            if ($notificationModel->existsForBooking($bookingId, null, 'Đơn đặt vé mới cần duyệt')) {
+                error_log('Unread notification already exists for booking ID: ' . $bookingId . ', skipping...');
+                return;
+            }
+            
+            // Lấy thông tin phim và showtime
+            $showtimeModel = new Showtime();
+            $showtime = $showtimeModel->find($booking['showtime_id']);
+            
+            $movieModel = new Movie();
+            $movie = $movieModel->find($showtime['movie_id'] ?? null);
+            
+            $movieTitle = $movie ? $movie['title'] : 'Phim';
+            $bookingCode = $booking['booking_code'] ?? 'N/A';
+            $finalAmount = number_format($booking['final_amount'] ?? 0, 0, ',', '.') . '₫';
+            
+            $notificationData = [
+                'type' => 'booking',
+                'title' => 'Đơn đặt vé mới cần duyệt',
+                'message' => "Đơn đặt vé {$bookingCode} - {$movieTitle} - Tổng tiền: {$finalAmount}",
+                'related_id' => $bookingId,
+                'user_id' => null, // NULL = notification cho admin
+                'is_read' => 0
+            ];
+            
+            $result = $notificationModel->insert($notificationData);
+            if (!$result) {
+                error_log('Failed to create admin notification for booking ID: ' . $bookingId);
+            } else {
+                error_log('Created admin notification ID: ' . $result . ' for booking ID: ' . $bookingId);
+            }
+        } catch (Exception $e) {
+            error_log('Error creating admin notification: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+        }
+    }
+
+    /**
+     * Tạo notification cho user khi booking được duyệt hoặc hủy
+     */
+    private function createUserNotification($bookingId, $booking, $status)
+    {
+        try {
+            require_once __DIR__ . '/../models/Notification.php';
+            $notificationModel = new Notification();
+            
+            // Kiểm tra user_id có tồn tại không
+            if (empty($booking['user_id'])) {
+                error_log('Cannot create user notification: booking has no user_id. Booking ID: ' . $bookingId);
+                return;
+            }
+            
+            // Kiểm tra xem đã có thông báo CHƯA ĐỌC cho booking này chưa (tránh duplicate)
+            $expectedTitle = ($status === 'paid') ? 'Đơn đặt vé đã được duyệt' : 'Đơn đặt vé bị hủy';
+            if ($notificationModel->existsForBooking($bookingId, $booking['user_id'], $expectedTitle)) {
+                error_log('Unread user notification already exists for booking ID: ' . $bookingId . ', skipping...');
+                return;
+            }
+            
+            // Lấy thông tin phim và showtime
+            $showtimeModel = new Showtime();
+            $showtime = $showtimeModel->find($booking['showtime_id']);
+            
+            $movieModel = new Movie();
+            $movie = $movieModel->find($showtime['movie_id'] ?? null);
+            
+            $movieTitle = $movie ? $movie['title'] : 'Phim';
+            $bookingCode = $booking['booking_code'] ?? 'N/A';
+            
+            if ($status === 'paid') {
+                $title = 'Đơn đặt vé đã được duyệt';
+                $message = "Đơn đặt vé {$bookingCode} - {$movieTitle} đã được duyệt thành công!";
+            } else {
+                $title = 'Đơn đặt vé bị hủy';
+                $message = "Đơn đặt vé {$bookingCode} - {$movieTitle} đã bị hủy.";
+            }
+            
+            $notificationData = [
+                'type' => 'booking',
+                'title' => $title,
+                'message' => $message,
+                'related_id' => $bookingId,
+                'user_id' => $booking['user_id'], // Notification cho user cụ thể
+                'is_read' => 0
+            ];
+            
+            $result = $notificationModel->insert($notificationData);
+            if (!$result) {
+                error_log('Failed to create user notification for booking ID: ' . $bookingId . ', user ID: ' . $booking['user_id']);
+            } else {
+                error_log('Created user notification ID: ' . $result . ' for user ID: ' . $booking['user_id'] . ', booking ID: ' . $bookingId);
+            }
+        } catch (Exception $e) {
+            error_log('Error creating user notification: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
         }
     }
 }

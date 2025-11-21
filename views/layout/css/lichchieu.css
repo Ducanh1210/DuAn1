@@ -372,10 +372,17 @@ body {
 /* PHẦN NỘI DUNG */
 .page {
   max-width: 1200px;
-  margin: 0 auto;
   padding: 40px 20px;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* Đảm bảo nội dung căn giữa và có padding 2 bên giống header */
+@media (min-width: 1240px) {
+  .page {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 
 /* Đảm bảo nội dung có cùng padding với header */
@@ -389,7 +396,8 @@ body {
   margin-bottom: 28px;
   width: 100%;
   max-width: 100%;
-  padding: 0;
+  padding: 0 0;
+  box-sizing: border-box;
 }
 .page-header h2 {
   display: inline-flex;
@@ -462,6 +470,8 @@ body {
   }
 }
 
+/* Responsive: Đảm bảo grid không tràn trên màn hình lớn - đã có ở trên */
+
 /* CARD */
 .movie-card {
   display: flex !important;
@@ -478,10 +488,10 @@ body {
   min-height: 140px !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   position: relative !important;
   flex: none !important;
-  max-width: none !important;
+  max-width: 100% !important;
 }
 
 .poster {
@@ -524,9 +534,10 @@ body {
   flex-direction: column !important;
   gap: 6px !important;
   min-width: 0 !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   width: 100% !important;
   position: relative !important;
+  max-width: 100% !important;
 }
 
 .info-link {
@@ -591,8 +602,15 @@ body {
   color: #fff !important;
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
-  display: block !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   text-transform: none !important;
+  max-width: 100% !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
 }
 
 .meta-lines {

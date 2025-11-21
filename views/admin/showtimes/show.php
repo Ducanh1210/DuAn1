@@ -90,7 +90,7 @@
                     <i class="bi bi-currency-exchange"></i> Xem bảng giá vé
                   </a>
                   <small class="text-muted d-block mt-1">Giá vé được quản lý tại Quản lý giá vé</small>
-                </div>
+            </div>
               </div>
             </div>
 

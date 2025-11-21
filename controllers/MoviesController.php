@@ -8,6 +8,7 @@ class MoviesController
     {
         $this->movie = new Movie();
         $this->genre = new Genre();
+        require_once __DIR__ . '/../models/DiscountCode.php';
     }
 
     /**
@@ -447,12 +448,76 @@ class MoviesController
             ['label' => 'Điểm thưởng đã tặng', 'value' => '3.2M']
         ];
 
+        // Lấy discount codes từ database
+        $discountCodeModel = new DiscountCode();
+        $discountCodes = $discountCodeModel->all();
+        
+        // Chuyển đổi discount codes thành format promotions
+        $dbPromotions = [];
+        foreach ($discountCodes as $dc) {
+            if ($dc['status'] === 'active') {
+                $dbPromotions[] = [
+                    'title' => 'Mã giảm giá: ' . $dc['code'],
+                    'tag' => 'general',
+                    'status' => 'ongoing',
+                    'period' => ($dc['start_date'] ?? '') . ' - ' . ($dc['end_date'] ?? ''),
+                    'description' => 'Giảm ' . $dc['discount_percent'] . '% cho đơn hàng của bạn.',
+                    'benefits' => [
+                        'Giảm ' . $dc['discount_percent'] . '% cho tổng đơn hàng',
+                        'Áp dụng cho tất cả suất chiếu',
+                        'Có hiệu lực từ ' . ($dc['start_date'] ?? '') . ' đến ' . ($dc['end_date'] ?? '')
+                    ],
+                    'code' => $dc['code'],
+                    'cta' => 'Sử dụng mã'
+                ];
+            }
+        }
+        
+        // Kết hợp promotions từ code và database
+        $allPromotions = array_merge($dbPromotions, $promotions);
+
         renderClient('client/khuyenmai.php', [
-            'promotions' => $promotions,
+            'promotions' => $allPromotions,
             'membershipBenefits' => $membershipBenefits,
             'faqs' => $faqs,
             'heroStats' => $heroStats
         ], 'Khuyến mãi');
+        exit;
+    }
+
+    /**
+     * API kiểm tra mã giảm giá (thay thế VoucherController->checkVoucher)
+     */
+    public function checkVoucher()
+    {
+        header('Content-Type: application/json');
+        
+        $code = $_GET['code'] ?? '';
+        $totalAmount = floatval($_GET['total_amount'] ?? 0);
+        
+        if (empty($code)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Vui lòng nhập mã giảm giá'
+            ]);
+            exit;
+        }
+        
+        $discountCodeModel = new DiscountCode();
+        $discount = $discountCodeModel->validateDiscountCode($code, $totalAmount);
+        
+        if ($discount) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Áp dụng thành công! Giảm ' . $discount['discount_percent'] . '%',
+                'discount_code' => $discount
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Mã giảm giá không hợp lệ hoặc đã hết hạn'
+            ]);
+        }
         exit;
     }
 
