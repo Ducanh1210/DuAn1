@@ -47,12 +47,6 @@ if (session_status() === PHP_SESSION_NONE) {
                         <a href="<?= BASE_URL ?>?act=khuyenmai" class="<?= $isKhuyenMai ? 'active' : '' ?>">Khuyến mãi</a>
                         <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
                         <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
-                        <a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a>
-                        <a href="<?= BASE_URL ?>?act=gioithieu">Giới Thiệu</a>
-                        <a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a>
-                        <a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a>
-                        <a href="<?= BASE_URL ?>?act=giave">Giá Vé</a>
-                        <a href="<?= BASE_URL ?>?act=lienhe">Liên Hệ</a>
                     </nav>
                 </div>
                 <div class="nav-actions">
