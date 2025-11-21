@@ -74,7 +74,7 @@ class AuthController
                     'total_spending' => 0.00
                 ];
                 $userId = $this->user->insert($data);
-                
+
                 // Sau khi đăng ký thành công, chuyển về trang đăng nhập
                 header('Location: ' . BASE_URL . '?act=dangnhap&registered=1&email=' . urlencode($data['email']));
                 exit;
@@ -107,7 +107,7 @@ class AuthController
 
             if (empty($errors)) {
                 $user = $this->user->findByEmail($email);
-                
+
                 if ($user && password_verify($password, $user['password'])) {
                     // Kiểm tra trạng thái tài khoản
                     $status = $user['status'] ?? 'active';
@@ -165,6 +165,3 @@ class AuthController
         exit;
     }
 }
-
-?>
-

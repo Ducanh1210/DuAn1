@@ -143,11 +143,28 @@ CREATE TABLE `customer_tiers` (
 CREATE TABLE `discount_codes` (
   `id` int NOT NULL,
   `code` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `apply_to` enum('ticket','food','combo') DEFAULT 'ticket',
   `discount_percent` int DEFAULT '0',
+  `max_discount` decimal(10,2) DEFAULT NULL,
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
-  `status` varchar(20) DEFAULT NULL
+  `description` text,
+  `benefits` json DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'active',
+  `cta` varchar(100) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `discount_codes`
+--
+
+INSERT INTO `discount_codes` (`id`, `code`, `title`, `apply_to`, `discount_percent`, `max_discount`, `start_date`, `end_date`, `description`, `benefits`, `status`, `cta`, `created_at`, `updated_at`) VALUES
+(1, 'MOVIEWEEK30', 'Movie Week 30%', 'ticket', 30, 60000.00, '2025-11-20', '2025-12-20', 'Giảm giá vé phim cho mọi suất chiếu từ thứ 2 đến thứ 5 khi đặt trên TicketHub.', '[\"Áp dụng tối đa 04 vé/đơn\", \"Thời gian: 10h - 22h\", \"Không áp dụng cho ghế Sweetbox\"]', 'active', 'Đặt vé giảm 30%', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(2, 'COMBOF&B40', 'Combo Bắp Nước 40%', 'food', 40, 80000.00, '2025-11-25', '2025-12-31', 'Ưu đãi combo bắp nước khi mua kèm vé trên TicketHub.', '[\"Áp dụng cho Combo L & XL\", \"Tặng thêm topping caramel\", \"Mã dùng tối đa 2 lần/tuần\"]', 'active', 'Mua combo ngay', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(3, 'DOUBLEJOY25', 'Double Joy Combo', 'combo', 25, 120000.00, '2025-12-01', '2026-01-10', 'Bộ đôi vé + combo bắp nước với giá ưu đãi cho gia đình và nhóm bạn.', '[\"Áp dụng cho ít nhất 02 vé\", \"Giữ ghế liền kề miễn phí\", \"Giảm thêm 5% khi thanh toán ví Momo\"]', 'upcoming', 'Giữ combo trước', '2025-11-20 15:00:00', '2025-11-20 15:00:00');
 
 -- --------------------------------------------------------
 

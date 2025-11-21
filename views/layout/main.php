@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="vi">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,6 +13,7 @@
   <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/main.css">
 
 </head>
+
 <body>
 
   <!-- SIDEBAR -->
@@ -58,6 +60,9 @@
     <a href="?act=bookings" class="<?= in_array($_GET['act'] ?? '', ['bookings', 'bookings-show', 'bookings-delete', 'bookings-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-ticket-perforated"></i><span class="label">Quản lý Đặt Vé</span>
     </a>
+    <a href="?act=discounts" class="<?= in_array($_GET['act'] ?? '', ['discounts', 'discounts-create', 'discounts-edit', 'discounts-delete']) ? 'active' : '' ?>">
+      <i class="bi bi-tag"></i><span class="label">Quản lý Mã Giảm Giá</span>
+    </a>
     <a href="?act=ticket-prices" class="<?= in_array($_GET['act'] ?? '', ['ticket-prices', 'ticket-prices-update']) ? 'active' : '' ?>">
       <i class="bi bi-cash-coin"></i><span class="label">Quản lý Giá Vé</span>
     </a>
@@ -80,54 +85,57 @@
       </button>
       <h5 class="fw-bold mb-0">
         <?php
-          $act = $_GET['act'] ?? 'Dashboard';
-          $titles = [
-            '/' => 'Danh sách phim',
-            'movies-create' => 'Thêm phim mới',
-            'movies-edit' => 'Sửa phim',
-            'movies-show' => 'Chi tiết phim',
-            'dashboard' => 'Dashboard',
-            'phim' => 'Quản lý Phim',
-            'theloai' => 'Quản lý Thể loại',
-            'genres' => 'Quản lý Thể loại',
-            'genres-create' => 'Thêm thể loại mới',
-            'genres-edit' => 'Sửa thể loại',
-            'showtimes' => 'Quản lý Lịch chiếu',
-            'showtimes-create' => 'Thêm lịch chiếu',
-            'showtimes-edit' => 'Sửa lịch chiếu',
-            'showtimes-show' => 'Chi tiết lịch chiếu',
-            'suatchieu' => 'Quản lý Suất chiếu',
-            'users' => 'Quản lý Người dùng',
-            'users-create' => 'Thêm người dùng',
-            'users-edit' => 'Sửa người dùng',
-            'users-show' => 'Chi tiết người dùng',
-            'permissions' => 'Quản lý Phân quyền',
-            'permissions-assign' => 'Phân quyền',
-            'nguoidung' => 'Quản lý Người dùng',
-            'rap' => 'Quản lý Rạp',
-            'cinemas' => 'Quản lý Rạp',
-            'cinemas-create' => 'Thêm rạp mới',
-            'cinemas-edit' => 'Sửa rạp',
-            'rooms' => 'Quản lý Phòng Chiếu',
-            'rooms-create' => 'Thêm phòng mới',
-            'rooms-edit' => 'Sửa phòng',
-            'rooms-show' => 'Chi tiết phòng',
-            'phongphim' => 'Quản lý phòng phim',
-            'seats' => 'Quản lý Ghế',
-            'seats-create' => 'Thêm ghế mới',
-            'seats-edit' => 'Sửa ghế',
-            'seats-show' => 'Chi tiết ghế',
-            'seats-seatmap' => 'Sơ đồ ghế',
-            'seats-generate' => 'Tạo sơ đồ ghế tự động',
-            'comments' => 'Quản lý bình luận',
-            'comments-show' => 'Chi tiết bình luận',
-            'binhluan' => 'Quản lý bình luận',
-            'bookings' => 'Quản lý đặt vé',
-            'bookings-show' => 'Chi tiết đặt vé',
-            'datve' => 'Quản lý đặt vé',
-            'thongke' => 'Thống kê'
-          ];
-          echo htmlspecialchars($titles[$act] ?? ucfirst($act));
+        $act = $_GET['act'] ?? 'Dashboard';
+        $titles = [
+          '/' => 'Danh sách phim',
+          'movies-create' => 'Thêm phim mới',
+          'movies-edit' => 'Sửa phim',
+          'movies-show' => 'Chi tiết phim',
+          'dashboard' => 'Dashboard',
+          'phim' => 'Quản lý Phim',
+          'theloai' => 'Quản lý Thể loại',
+          'genres' => 'Quản lý Thể loại',
+          'genres-create' => 'Thêm thể loại mới',
+          'genres-edit' => 'Sửa thể loại',
+          'showtimes' => 'Quản lý Lịch chiếu',
+          'showtimes-create' => 'Thêm lịch chiếu',
+          'showtimes-edit' => 'Sửa lịch chiếu',
+          'showtimes-show' => 'Chi tiết lịch chiếu',
+          'suatchieu' => 'Quản lý Suất chiếu',
+          'users' => 'Quản lý Người dùng',
+          'users-create' => 'Thêm người dùng',
+          'users-edit' => 'Sửa người dùng',
+          'users-show' => 'Chi tiết người dùng',
+          'permissions' => 'Quản lý Phân quyền',
+          'permissions-assign' => 'Phân quyền',
+          'nguoidung' => 'Quản lý Người dùng',
+          'rap' => 'Quản lý Rạp',
+          'cinemas' => 'Quản lý Rạp',
+          'cinemas-create' => 'Thêm rạp mới',
+          'cinemas-edit' => 'Sửa rạp',
+          'rooms' => 'Quản lý Phòng Chiếu',
+          'rooms-create' => 'Thêm phòng mới',
+          'rooms-edit' => 'Sửa phòng',
+          'rooms-show' => 'Chi tiết phòng',
+          'phongphim' => 'Quản lý phòng phim',
+          'seats' => 'Quản lý Ghế',
+          'seats-create' => 'Thêm ghế mới',
+          'seats-edit' => 'Sửa ghế',
+          'seats-show' => 'Chi tiết ghế',
+          'seats-seatmap' => 'Sơ đồ ghế',
+          'seats-generate' => 'Tạo sơ đồ ghế tự động',
+          'comments' => 'Quản lý bình luận',
+          'comments-show' => 'Chi tiết bình luận',
+          'binhluan' => 'Quản lý bình luận',
+          'bookings' => 'Quản lý đặt vé',
+          'bookings-show' => 'Chi tiết đặt vé',
+          'datve' => 'Quản lý đặt vé',
+          'discounts' => 'Quản lý mã giảm giá',
+          'discounts-create' => 'Thêm mã giảm giá mới',
+          'discounts-edit' => 'Sửa mã giảm giá',
+          'thongke' => 'Thống kê'
+        ];
+        echo htmlspecialchars($titles[$act] ?? ucfirst($act));
         ?>
       </h5>
     </div>
@@ -172,23 +180,23 @@
   <main id="main" class="main">
     <!-- Bắt đầu nội dung chính của trang -->
     <?php
-      // Include view động nếu có biến $viewPath
-      if (isset($GLOBALS['viewPath']) && !empty($GLOBALS['viewPath'])) {
-        $viewFile = __DIR__ . '/../' . $GLOBALS['viewPath'];
-        if (file_exists($viewFile)) {
-          include $viewFile;
-        } else {
-          echo '<div class="container-fluid"><div class="alert alert-danger">Không tìm thấy view: ' . htmlspecialchars($GLOBALS['viewPath']) . '</div></div>';
-        }
+    // Include view động nếu có biến $viewPath
+    if (isset($GLOBALS['viewPath']) && !empty($GLOBALS['viewPath'])) {
+      $viewFile = __DIR__ . '/../' . $GLOBALS['viewPath'];
+      if (file_exists($viewFile)) {
+        include $viewFile;
       } else {
-        // Nếu không có view, hiển thị nội dung mặc định
-        echo '<div class="container-fluid">
+        echo '<div class="container-fluid"><div class="alert alert-danger">Không tìm thấy view: ' . htmlspecialchars($GLOBALS['viewPath']) . '</div></div>';
+      }
+    } else {
+      // Nếu không có view, hiển thị nội dung mặc định
+      echo '<div class="container-fluid">
           <div class="card p-3">
             <h4>Chào mừng đến trang quản trị</h4>
             <p>Đặt nội dung của bạn ở đây. Đây là khu vực chính (main content).</p>
           </div>
         </div>';
-      }
+    }
     ?>
     <!-- Kết thúc nội dung chính -->
   </main>
@@ -197,7 +205,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    (function(){
+    (function() {
       const sidebar = document.getElementById('sidebar');
       const header = document.getElementById('header');
       const main = document.getElementById('main');
@@ -252,7 +260,7 @@
         if (!userDropdownToggle.contains(e.target) && !userDropdownMenu.contains(e.target)) {
           userDropdownMenu.classList.remove('show');
         }
-        
+
         // Close mobile sidebar when clicking outside
         if (window.matchMedia("(max-width: 991px)").matches) {
           if (!sidebar.contains(e.target) && !btn.contains(e.target) && sidebar.classList.contains('open')) {
@@ -283,4 +291,5 @@
     })();
   </script>
 </body>
+
 </html>

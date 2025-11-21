@@ -36,6 +36,8 @@ require_once('./controllers/BookingController.php');
 require_once('./models/Booking.php');
 require_once('./models/Payment.php');
 require_once('./controllers/ProfileController.php');
+require_once('./models/DiscountCode.php');
+require_once('./controllers/DiscountsController.php');
 require_once('./controllers/TicketPriceController.php');
 require_once('./models/TicketPrice.php');
 //route
@@ -48,6 +50,7 @@ match ($act) {
     'trangchu' => (new MoviesController)->trangchu(),
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
+    'khuyenmai' => (new MoviesController)->khuyenmai(),
     'giave' => (new TicketPriceController)->index(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
@@ -137,6 +140,11 @@ match ($act) {
     'bookings-delete' => (new BookingController)->deleteBooking(),
     'bookings-update-status' => (new BookingController)->updateStatus(),
 
+    // Discounts routes (Admin)
+    'discounts' => (new DiscountsController)->list(),
+    'discounts-create' => (new DiscountsController)->create(),
+    'discounts-edit' => (new DiscountsController)->edit(),
+    'discounts-delete' => (new DiscountsController)->delete(),
     // Ticket Prices routes (Admin)
     'ticket-prices' => (new TicketPriceController)->list(),
     'ticket-prices-edit' => (new TicketPriceController)->edit(),
