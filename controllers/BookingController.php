@@ -411,9 +411,10 @@ class BookingController
                 require_once __DIR__ . '/../commons/VNPay.php';
                 $vnpay = new VNPay();
                 
+                // Sử dụng finalAmount (sau khi giảm giá) thay vì totalPrice
                 $paymentUrl = $vnpay->createPaymentUrl([
                     'txn_ref' => $bookingId . '_' . time(),
-                    'amount' => $totalPrice,
+                    'amount' => $finalAmount, // Dùng finalAmount (đã trừ discount) thay vì totalPrice
                     'order_info' => 'Thanh toan dat ve xem phim - ' . $bookingCode
                 ]);
 
