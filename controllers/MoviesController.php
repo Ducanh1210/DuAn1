@@ -345,16 +345,6 @@ class MoviesController
     }
 
     /**
-     * Hiển thị trang giới thiệu (Client)
-     */
-    public function gioithieu()
-    {
-        // Include view client (không dùng layout chung)
-        require_once __DIR__ . '/../views/client/gioithieu.php';
-        exit; // Dừng lại để không render layout admin
-    }
-
-    /**
      * Hiển thị trang khuyến mãi (Client)
      */
     public function khuyenmai()
