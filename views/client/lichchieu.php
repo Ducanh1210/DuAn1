@@ -81,12 +81,16 @@
                         <div class="divider" aria-hidden="true"></div>
 
                         <div class="showtimes" role="group" aria-label="Lịch chiếu">
-                            <?php if (!empty($movie['showtimes'])): ?>
+                            <?php if (!empty($movie['showtimes']) && !empty($movie['showtime_ids'])): ?>
                                 <?php
                                 foreach ($movie['showtimes'] as $index => $time):
+                                    $showtimeId = $movie['showtime_ids'][$index] ?? null;
+                                    if (!$showtimeId) continue;
+                                    // Link đến trang chi tiết phim với ngày đã chọn
+                                    $movieDetailUrl = BASE_URL . '?act=movies&id=' . $movie['id'] . '&date=' . $selectedDate;
                                     ?>
-                                    <a class="time-btn" href="<?= $movieUrl ?>"
-                                        title="Xem chi tiết phim <?= htmlspecialchars($movie['title']) ?>">
+                                    <a class="time-btn" href="<?= $movieDetailUrl ?>"
+                                        title="Xem chi tiết phim và chọn ghế cho suất chiếu <?= date('H:i', strtotime($time)) ?>">
                                         <?= date('H:i', strtotime($time)) ?>
                                     </a>
                                 <?php endforeach; ?>

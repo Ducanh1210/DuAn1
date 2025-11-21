@@ -72,6 +72,42 @@ function isCustomer()
 function requireLogin()
 {
     if (!isLoggedIn()) {
+        // Lưu URL hiện tại để quay lại sau khi đăng nhập
+        // Khởi động session trước
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        // Lấy query string từ $_GET để đảm bảo có đầy đủ tham số
+        // Đây là cách đáng tin cậy nhất vì $_GET đã được PHP parse sẵn
+        $queryParams = $_GET ?? [];
+        
+        // Xây dựng lại URL đầy đủ từ $_GET
+        if (!empty($queryParams)) {
+            $queryString = http_build_query($queryParams);
+            $returnUrl = BASE_URL . '?' . $queryString;
+        } else {
+            // Nếu không có $_GET, lấy từ REQUEST_URI
+            $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+            if (!empty($requestUri)) {
+                // Parse REQUEST_URI để lấy query string
+                $parsed = parse_url($requestUri);
+                if (isset($parsed['query']) && !empty($parsed['query'])) {
+                    $returnUrl = BASE_URL . '?' . $parsed['query'];
+                } else {
+                    // Nếu không có query string trong REQUEST_URI, dùng BASE_URL
+                    $returnUrl = BASE_URL;
+                }
+            } else {
+                $returnUrl = BASE_URL;
+            }
+        }
+        
+        // Lưu vào session - đảm bảo chỉ lưu khi có URL hợp lệ
+        if (!empty($returnUrl)) {
+            $_SESSION['return_url'] = $returnUrl;
+        }
+        
         header('Location: ' . BASE_URL . '?act=dangnhap');
         exit;
     }

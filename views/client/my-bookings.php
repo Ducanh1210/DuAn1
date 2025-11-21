@@ -4,94 +4,92 @@
   </header>
 
   <section class="bookings-list">
-    <?php if (!empty($data)): ?>
-      <?php foreach ($data as $booking): ?>
-        <div class="booking-card">
-          <div class="booking-header">
-            <div class="booking-info">
-              <h3><?= htmlspecialchars($booking['movie_title'] ?? 'N/A') ?></h3>
-              <p class="booking-code">Mã đặt vé: <strong><?= htmlspecialchars($booking['booking_code'] ?? 'N/A') ?></strong></p>
-            </div>
-            <div class="booking-status">
-              <?php
-              $statusClass = 'secondary';
-              $statusText = 'N/A';
-              switch($booking['status'] ?? '') {
-                case 'pending':
-                  $statusClass = 'warning';
-                  $statusText = 'Chờ xử lý';
-                  break;
-                case 'confirmed':
-                  $statusClass = 'info';
-                  $statusText = 'Đã xác nhận';
-                  break;
-                case 'paid':
-                  $statusClass = 'success';
-                  $statusText = 'Đã thanh toán';
-                  break;
-                case 'cancelled':
-                  $statusClass = 'danger';
-                  $statusText = 'Đã hủy';
-                  break;
-              }
-              ?>
-              <span class="status-badge status-<?= $statusClass ?>"><?= $statusText ?></span>
-            </div>
-          </div>
-
-          <div class="booking-body">
-            <div class="booking-poster">
-              <?php if (!empty($booking['movie_image'])): ?>
-                <img src="<?= BASE_URL . '/' . $booking['movie_image'] ?>" 
-                     alt="<?= htmlspecialchars($booking['movie_title'] ?? '') ?>">
-              <?php else: ?>
-                <img src="<?= BASE_URL ?>/image/logo.png" alt="Poster">
-              <?php endif; ?>
-            </div>
-
-            <div class="booking-details">
-              <div class="detail-row">
-                <span class="label">Rạp:</span>
-                <span class="value"><?= htmlspecialchars($booking['cinema_name'] ?? 'N/A') ?></span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Phòng:</span>
-                <span class="value"><?= htmlspecialchars($booking['room_name'] ?? 'N/A') ?> (<?= htmlspecialchars($booking['room_code'] ?? '') ?>)</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Ngày chiếu:</span>
-                <span class="value"><?= $booking['show_date'] ? date('d/m/Y', strtotime($booking['show_date'])) : 'N/A' ?></span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Giờ chiếu:</span>
-                <span class="value">
-                  <?= $booking['start_time'] ? date('H:i', strtotime($booking['start_time'])) : 'N/A' ?>
-                  <?php if (!empty($booking['end_time'])): ?>
-                    - <?= date('H:i', strtotime($booking['end_time'])) ?>
+    <?php if (!empty($bookings)): ?>
+      <div class="table-container">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th>Mã đặt vé</th>
+              <th>Tên phim</th>
+              <th>Rạp</th>
+              <th>Phòng</th>
+              <th>Ngày chiếu</th>
+              <th>Giờ chiếu</th>
+              <th>Ghế</th>
+              <th>Định dạng</th>
+              <th>Ngày đặt</th>
+              <th>Trạng thái</th>
+              <th>Tổng tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($bookings as $booking): ?>
+              <tr>
+                <td class="booking-code-cell">
+                  <strong><?= htmlspecialchars($booking['booking_code'] ?? 'N/A') ?></strong>
+                </td>
+                <td class="movie-title-cell">
+                  <div class="movie-info">
+                    <?php if (!empty($booking['movie_image'])): ?>
+                      <img src="<?= BASE_URL . '/' . $booking['movie_image'] ?>" 
+                           alt="<?= htmlspecialchars($booking['movie_title'] ?? '') ?>"
+                           class="movie-poster-small">
+                    <?php endif; ?>
+                    <span><?= htmlspecialchars($booking['movie_title'] ?? 'N/A') ?></span>
+                  </div>
+                </td>
+                <td><?= htmlspecialchars($booking['cinema_name'] ?? 'N/A') ?></td>
+                <td>
+                  <?= htmlspecialchars($booking['room_name'] ?? 'N/A') ?>
+                  <?php if (!empty($booking['room_code'])): ?>
+                    <br><small class="room-code">(<?= htmlspecialchars($booking['room_code']) ?>)</small>
                   <?php endif; ?>
-                </span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Ghế:</span>
-                <span class="value"><strong><?= htmlspecialchars($booking['booked_seats'] ?? 'N/A') ?></strong></span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Định dạng:</span>
-                <span class="value"><?= htmlspecialchars($booking['showtime_format'] ?? '2D') ?></span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Ngày đặt:</span>
-                <span class="value"><?= $booking['booking_date'] ? date('d/m/Y H:i', strtotime($booking['booking_date'])) : 'N/A' ?></span>
-              </div>
-            </div>
-
-            <div class="booking-price">
-              <div class="price-label">Tổng tiền</div>
-              <div class="price-value"><?= $booking['final_amount'] ? number_format($booking['final_amount'], 0, ',', '.') . ' đ' : 'N/A' ?></div>
-            </div>
-          </div>
-        </div>
-      <?php endforeach; ?>
+                </td>
+                <td><?= !empty($booking['show_date']) ? date('d/m/Y', strtotime($booking['show_date'])) : 'N/A' ?></td>
+                <td>
+                  <?= !empty($booking['start_time']) ? date('H:i', strtotime($booking['start_time'])) : 'N/A' ?>
+                  <?php if (!empty($booking['end_time'])): ?>
+                    <br><small>- <?= date('H:i', strtotime($booking['end_time'])) ?></small>
+                  <?php endif; ?>
+                </td>
+                <td class="seats-cell">
+                  <strong><?= htmlspecialchars($booking['booked_seats'] ?? 'N/A') ?></strong>
+                </td>
+                <td><?= htmlspecialchars($booking['showtime_format'] ?? '2D') ?></td>
+                <td><?= !empty($booking['booking_date']) ? date('d/m/Y H:i', strtotime($booking['booking_date'])) : 'N/A' ?></td>
+                <td>
+                  <?php
+                  $statusClass = 'secondary';
+                  $statusText = 'N/A';
+                  switch($booking['status'] ?? '') {
+                    case 'pending':
+                      $statusClass = 'warning';
+                      $statusText = 'Chờ xử lý';
+                      break;
+                    case 'confirmed':
+                      $statusClass = 'info';
+                      $statusText = 'Đã xác nhận';
+                      break;
+                    case 'paid':
+                      $statusClass = 'success';
+                      $statusText = 'Đã thanh toán';
+                      break;
+                    case 'cancelled':
+                      $statusClass = 'danger';
+                      $statusText = 'Đã hủy';
+                      break;
+                  }
+                  ?>
+                  <span class="status-badge status-<?= $statusClass ?>"><?= $statusText ?></span>
+                </td>
+                <td class="price-cell">
+                  <strong><?= !empty($booking['final_amount']) ? number_format($booking['final_amount'], 0, ',', '.') . ' đ' : 'N/A' ?></strong>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Pagination -->
       <?php if (isset($pagination) && $pagination['totalPages'] > 1): ?>
@@ -128,45 +126,137 @@
 
 <style>
 .bookings-list {
-  max-width: 1000px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 20px;
+  overflow-x: auto;
 }
 
-.booking-card {
+.table-container {
+  width: 100%;
+  overflow-x: auto;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 20px;
-  margin-bottom: 20px;
 }
 
-.booking-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1400px;
+  background: transparent;
 }
 
-.booking-info h3 {
+.bookings-table thead {
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.bookings-table th {
+  padding: 15px 12px;
+  text-align: left;
   color: #fff;
-  font-size: 20px;
-  margin: 0 0 8px 0;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.booking-code {
-  color: rgba(255, 255, 255, 0.7);
+.bookings-table th:last-child {
+  border-right: none;
+}
+
+.bookings-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.bookings-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.01);
+}
+
+.bookings-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.bookings-table td {
+  padding: 15px 12px;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
-  margin: 0;
+  vertical-align: middle;
+  border-right: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.bookings-table td:last-child {
+  border-right: none;
+}
+
+.booking-code-cell {
+  font-family: 'Courier New', monospace;
+  color: #4a9eff !important;
+  font-weight: 600;
+}
+
+.booking-code-cell strong {
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.movie-title-cell {
+  min-width: 200px;
+}
+
+.movie-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.movie-poster-small {
+  width: 50px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.movie-info span {
+  flex: 1;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.room-code {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.seats-cell {
+  font-weight: 600;
+  color: #ffd700 !important;
+}
+
+.price-cell {
+  color: #ff6978 !important;
+  font-size: 15px;
+  text-align: right;
+  font-weight: 700;
 }
 
 .status-badge {
+  display: inline-block;
   padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 90px;
 }
 
 .status-warning {
@@ -192,56 +282,6 @@
 .status-secondary {
   background: #6c757d;
   color: #fff;
-}
-
-.booking-body {
-  display: grid;
-  grid-template-columns: 120px 1fr auto;
-  gap: 20px;
-  align-items: start;
-}
-
-.booking-poster img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.booking-details {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.detail-row {
-  display: flex;
-  gap: 10px;
-}
-
-.detail-row .label {
-  color: rgba(255, 255, 255, 0.6);
-  min-width: 100px;
-}
-
-.detail-row .value {
-  color: #fff;
-}
-
-.booking-price {
-  text-align: right;
-}
-
-.price-label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.price-value {
-  color: #ff6978;
-  font-size: 24px;
-  font-weight: bold;
 }
 
 .pagination-nav {
@@ -309,14 +349,43 @@
   transform: translateY(-2px);
 }
 
-@media (max-width: 768px) {
-  .booking-body {
-    grid-template-columns: 1fr;
+/* Responsive */
+@media (max-width: 1200px) {
+  .bookings-table {
+    min-width: 1200px;
   }
   
-  .booking-price {
-    text-align: left;
-    margin-top: 15px;
+  .bookings-table th,
+  .bookings-table td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    padding: 10px;
+  }
+  
+  .bookings-table {
+    min-width: 1000px;
+  }
+  
+  .bookings-table th,
+  .bookings-table td {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+  
+  .movie-poster-small {
+    width: 40px;
+    height: 56px;
+  }
+  
+  .status-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: 70px;
   }
 }
 </style>

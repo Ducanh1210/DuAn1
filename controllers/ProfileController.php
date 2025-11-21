@@ -33,6 +33,19 @@ class ProfileController
             exit;
         }
 
+        // Tính lại total_spending từ các booking đã thanh toán (để đảm bảo dữ liệu chính xác)
+        $actualSpending = $this->calculateTotalSpending($userId);
+        if ($actualSpending !== floatval($user['total_spending'] ?? 0)) {
+            // Cập nhật total_spending và tier_id nếu khác
+            $tierId = $this->getTierBySpending($actualSpending);
+            $this->user->update($userId, [
+                'total_spending' => $actualSpending,
+                'tier_id' => $tierId
+            ]);
+            // Lấy lại thông tin user sau khi cập nhật
+            $user = $this->user->find($userId);
+        }
+
         // Lấy thông tin tier
         $tier = null;
         if ($user['tier_id']) {
@@ -42,15 +55,19 @@ class ProfileController
         // Lấy tất cả tiers để hiển thị thông tin
         $allTiers = $this->getAllTiers();
 
-        // Tính điểm thưởng từ total_spending (1 điểm = 1000 VNĐ)
-        $rewardPoints = floor($user['total_spending'] / 1000);
-        
-        // Tính điểm cần để lên hạng tiếp theo
-        $nextTier = $this->getNextTier($user['total_spending']);
-        $pointsToNextTier = $nextTier ? ($nextTier['spending_min'] - $user['total_spending']) / 1000 : 0;
-
         // Lấy lịch sử điểm thưởng (từ bookings)
         $rewardHistory = $this->getRewardHistory($userId);
+        
+        // Tính tổng điểm từ lịch sử tích điểm (tổng tất cả points_earned)
+        $rewardPoints = 0;
+        foreach ($rewardHistory as $reward) {
+            $rewardPoints += (int)($reward['points_earned'] ?? 0);
+        }
+        
+        // Tính điểm cần để lên hạng tiếp theo dựa trên total_spending
+        // (vì tier dựa trên tổng chi tiêu, không phải điểm)
+        $nextTier = $this->getNextTier($user['total_spending']);
+        $pointsToNextTier = $nextTier ? ($nextTier['spending_min'] - $user['total_spending']) / 1000 : 0;
 
         // Lấy lịch sử mua vé
         $bookingResult = $this->booking->getByUser($userId);
@@ -282,6 +299,47 @@ class ProfileController
             return $stmt->fetchAll();
         } catch (Exception $e) {
             return [];
+        }
+    }
+
+    /**
+     * Tính tổng chi tiêu từ các booking đã thanh toán
+     */
+    private function calculateTotalSpending($userId)
+    {
+        try {
+            $sql = "SELECT SUM(final_amount) as total 
+                    FROM bookings 
+                    WHERE user_id = :user_id 
+                    AND status IN ('paid', 'confirmed')";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':user_id' => $userId]);
+            $result = $stmt->fetch();
+            return floatval($result['total'] ?? 0);
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Lấy tier_id phù hợp dựa trên total_spending
+     */
+    private function getTierBySpending($totalSpending)
+    {
+        try {
+            // Lấy tier cao nhất mà user đủ điều kiện
+            $sql = "SELECT id FROM customer_tiers 
+                    WHERE spending_min <= :spending 
+                    AND (spending_max IS NULL OR spending_max >= :spending)
+                    ORDER BY spending_min DESC 
+                    LIMIT 1";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':spending' => $totalSpending]);
+            $tier = $stmt->fetch();
+            
+            return $tier ? $tier['id'] : null;
+        } catch (Exception $e) {
+            return null;
         }
     }
 }

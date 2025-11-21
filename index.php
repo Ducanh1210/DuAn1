@@ -1,4 +1,8 @@
 <?php
+// Start session ngay từ đầu, trước mọi output
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -30,9 +34,12 @@ require_once('./controllers/CommentsController.php');
 require_once('./models/Comment.php');
 require_once('./controllers/BookingController.php');
 require_once('./models/Booking.php');
+require_once('./models/Payment.php');
 require_once('./controllers/ProfileController.php');
 require_once('./models/DiscountCode.php');
 require_once('./controllers/DiscountsController.php');
+require_once('./controllers/TicketPriceController.php');
+require_once('./models/TicketPrice.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -44,12 +51,15 @@ match ($act) {
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
     'khuyenmai' => (new MoviesController)->khuyenmai(),
+    'giave' => (new TicketPriceController)->index(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
     'api-seats' => (new BookingController)->getSeatsApi(),
     'my-bookings' => (new BookingController)->myBookings(),
     'payment' => (new BookingController)->payment(),
     'payment-process' => (new BookingController)->processPayment(),
+    'vnpay-return' => (new BookingController)->vnpayReturn(),
+    
 
     // Auth routes (Client)
     'dangky' => (new AuthController)->register(),
@@ -135,6 +145,10 @@ match ($act) {
     'discounts-create' => (new DiscountsController)->create(),
     'discounts-edit' => (new DiscountsController)->edit(),
     'discounts-delete' => (new DiscountsController)->delete(),
+    // Ticket Prices routes (Admin)
+    'ticket-prices' => (new TicketPriceController)->list(),
+    'ticket-prices-edit' => (new TicketPriceController)->edit(),
+    'ticket-prices-update' => (new TicketPriceController)->update(),
 
     default => notFound(),
 };

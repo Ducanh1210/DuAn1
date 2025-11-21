@@ -195,51 +195,103 @@ $firstName = isset($nameParts[1]) ? $nameParts[1] : '';
         </div>
 
       <?php elseif ($tab === 'bookings'): ?>
-        <!-- Tab: Lịch sử mua vé -->
+        <!-- Tab: Lịch sử đặt vé -->
         <div class="bookings-tab">
+          <h2 class="bookings-title">
+            <span class="dot" aria-hidden="true"></span> Lịch sử đặt vé
+          </h2>
+          
           <?php if (!empty($bookingHistory)): ?>
-            <table class="bookings-table">
-              <thead>
-                <tr>
-                  <th>Ngày giao dịch</th>
-                  <th>Tên phim</th>
-                  <th>Số vé</th>
-                  <th>Số tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach ($bookingHistory as $booking): ?>
-                  <?php
-                  // Tính số vé từ booked_seats (đếm số ghế)
-                  $bookedSeats = $booking['booked_seats'] ?? '';
-                  $ticketCount = 0;
-                  if (!empty($bookedSeats)) {
-                    // Tách các ghế bằng dấu phẩy và đếm
-                    $seatsArray = explode(',', $bookedSeats);
-                    $ticketCount = count(array_filter($seatsArray));
-                  }
-                  
-                  // Ngày giao dịch (booking_date)
-                  $transactionDate = $booking['booking_date'] ? date('d/m/Y H:i', strtotime($booking['booking_date'])) : 'N/A';
-                  
-                  // Tên phim
-                  $movieTitle = htmlspecialchars($booking['movie_title'] ?? 'N/A');
-                  
-                  // Số tiền
-                  $amount = isset($booking['final_amount']) && $booking['final_amount'] ? number_format($booking['final_amount'], 0, ',', '.') . ' đ' : '0 đ';
-                  ?>
+            <div class="bookings-table-wrapper">
+              <table class="bookings-table">
+                <thead>
                   <tr>
-                    <td><?= $transactionDate ?></td>
-                    <td><?= $movieTitle ?></td>
-                    <td><?= $ticketCount ?></td>
-                    <td><?= $amount ?></td>
+                    <th>ID</th>
+                    <th>Mã đặt vé</th>
+                    <th>Phim</th>
+                    <th>Rạp/Phòng chiếu</th>
+                    <th>Ngày chiếu</th>
+                    <th>Giờ chiếu</th>
+                    <th>Ghế</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày đặt</th>
                   </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  <?php foreach ($bookingHistory as $index => $booking): ?>
+                    <?php
+                    // Format dữ liệu
+                    $movieTitle = htmlspecialchars($booking['movie_title'] ?? 'N/A');
+                    $bookingCode = htmlspecialchars($booking['booking_code'] ?? 'N/A');
+                    $movieImage = !empty($booking['movie_image']) ? BASE_URL . '/' . $booking['movie_image'] : BASE_URL . '/image/logo.png';
+                    $cinemaName = htmlspecialchars($booking['cinema_name'] ?? 'N/A');
+                    $roomName = htmlspecialchars($booking['room_name'] ?? 'N/A');
+                    $roomCode = htmlspecialchars($booking['room_code'] ?? '');
+                    $showDate = $booking['show_date'] ? date('d/m/Y', strtotime($booking['show_date'])) : 'N/A';
+                    $startTime = $booking['start_time'] ? date('H:i', strtotime($booking['start_time'])) : 'N/A';
+                    $bookedSeats = htmlspecialchars($booking['booked_seats'] ?? 'N/A');
+                    $bookingDate = $booking['booking_date'] ? date('d/m/Y', strtotime($booking['booking_date'])) : 'N/A';
+                    $bookingTime = $booking['booking_date'] ? date('H:i', strtotime($booking['booking_date'])) : '';
+                    $totalAmount = isset($booking['final_amount']) && $booking['final_amount'] ? number_format($booking['final_amount'], 0, ',', '.') : '0';
+                    
+                    // Status badge
+                    $statusClass = 'pending';
+                    $statusText = 'Chờ xử lý';
+                    switch($booking['status'] ?? '') {
+                      case 'paid':
+                        $statusClass = 'paid';
+                        $statusText = 'Đã thanh toán';
+                        break;
+                      case 'confirmed':
+                        $statusClass = 'confirmed';
+                        $statusText = 'Đã xác nhận';
+                        break;
+                      case 'cancelled':
+                        $statusClass = 'cancelled';
+                        $statusText = 'Đã hủy';
+                        break;
+                    }
+                    ?>
+                    <tr>
+                      <td><?= $booking['id'] ?? ($index + 1) ?></td>
+                      <td><strong class="booking-code-cell"><?= $bookingCode ?></strong></td>
+                      <td>
+                        <div class="movie-cell">
+                          <img src="<?= $movieImage ?>" alt="<?= $movieTitle ?>" class="movie-poster-small" />
+                          <span class="movie-title-cell"><?= strtoupper($movieTitle) ?></span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="cinema-cell">
+                          <span class="cinema-name"><?= $cinemaName ?></span>
+                          <span class="room-name"><?= $roomName ?><?= $roomCode ? ' (' . $roomCode . ')' : '' ?></span>
+                        </div>
+                      </td>
+                      <td><?= $showDate ?></td>
+                      <td><?= $startTime ?></td>
+                      <td class="seats-cell"><?= $bookedSeats ?></td>
+                      <td><strong class="total-amount-cell"><?= $totalAmount ?> đ</strong></td>
+                      <td>
+                        <span class="booking-status-badge <?= $statusClass ?>"><?= $statusText ?></span>
+                      </td>
+                      <td>
+                        <div class="booking-date-cell">
+                          <span><?= $bookingDate ?></span>
+                          <?php if ($bookingTime): ?>
+                            <span class="booking-time"><?= $bookingTime ?></span>
+                          <?php endif; ?>
+                        </div>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
           <?php else: ?>
             <div class="empty-state">
-              <p>Không có dữ liệu</p>
+              <i class="bi bi-ticket-perforated" style="font-size: 48px; margin-bottom: 16px; display: block; color: rgba(255, 255, 255, 0.3);"></i>
+              <p>Bạn chưa có lịch sử đặt vé nào.</p>
             </div>
           <?php endif; ?>
         </div>

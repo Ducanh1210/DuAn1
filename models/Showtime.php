@@ -108,7 +108,14 @@ class Showtime
     public function find($id)
     {
         try {
-            $sql = "SELECT showtimes.*, 
+            // Lấy format từ showtimes trước, đảm bảo không bị override bởi movies.format
+            $sql = "SELECT showtimes.id,
+                    showtimes.movie_id,
+                    showtimes.room_id,
+                    showtimes.show_date,
+                    showtimes.start_time,
+                    showtimes.end_time,
+                    showtimes.format,
                     movies.title AS movie_title,
                     movies.duration AS movie_duration,
                     movies.image AS movie_image,
@@ -161,6 +168,7 @@ class Showtime
     {
         try {
             $sql = "SELECT showtimes.*, 
+                    showtimes.format AS format,
                     rooms.name AS room_name,
                     rooms.room_code AS room_code,
                     cinemas.name AS cinema_name
@@ -188,6 +196,7 @@ class Showtime
     {
         try {
             $sql = "SELECT showtimes.*, 
+                    showtimes.format AS format,
                     movies.title AS movie_title,
                     movies.duration AS movie_duration,
                     movies.image AS movie_image,
@@ -297,8 +306,6 @@ class Showtime
                 show_date,
                 start_time,
                 end_time,
-                adult_price,
-                student_price,
                 format
             ) VALUES (
                 :movie_id,
@@ -306,8 +313,6 @@ class Showtime
                 :show_date,
                 :start_time,
                 :end_time,
-                :adult_price,
-                :student_price,
                 :format
             )";
             $stmt = $this->conn->prepare($sql);
@@ -317,8 +322,6 @@ class Showtime
                 ':show_date' => $data['show_date'] ?? null,
                 ':start_time' => $data['start_time'] ?? null,
                 ':end_time' => $data['end_time'] ?? null,
-                ':adult_price' => $data['adult_price'] ?? null,
-                ':student_price' => $data['student_price'] ?? null,
                 ':format' => $data['format'] ?? null
             ]);
             return $this->conn->lastInsertId();
@@ -339,8 +342,6 @@ class Showtime
                 show_date = :show_date,
                 start_time = :start_time,
                 end_time = :end_time,
-                adult_price = :adult_price,
-                student_price = :student_price,
                 format = :format
                 WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
@@ -351,8 +352,6 @@ class Showtime
                 ':show_date' => $data['show_date'] ?? null,
                 ':start_time' => $data['start_time'] ?? null,
                 ':end_time' => $data['end_time'] ?? null,
-                ':adult_price' => $data['adult_price'] ?? null,
-                ':student_price' => $data['student_price'] ?? null,
                 ':format' => $data['format'] ?? null
             ]);
             return true;
@@ -458,14 +457,7 @@ class Showtime
             }
         }
 
-        // Validate price
-        if (!empty($data['adult_price']) && (!is_numeric($data['adult_price']) || $data['adult_price'] < 0)) {
-            $errors['adult_price'] = 'Giá vé người lớn không hợp lệ';
-        }
-
-        if (!empty($data['student_price']) && (!is_numeric($data['student_price']) || $data['student_price'] < 0)) {
-            $errors['student_price'] = 'Giá vé học sinh không hợp lệ';
-        }
+        // Giá vé được quản lý tại bảng ticket_prices, không cần validate ở đây
 
         // Check conflict
         if (!empty($data['room_id']) && !empty($data['show_date']) && 

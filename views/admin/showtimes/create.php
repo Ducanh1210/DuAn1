@@ -115,26 +115,10 @@
           </div>
 
           <div class="col-md-6">
-            <div class="mb-3">
-              <label for="adult_price" class="form-label">Giá vé người lớn (VNĐ) <span class="text-danger">*</span></label>
-              <input type="number" name="adult_price" id="adult_price" 
-                     class="form-control <?= !empty($errors['adult_price']) ? 'is-invalid' : '' ?>" 
-                     min="0" step="1000" 
-                     value="<?= htmlspecialchars($_POST['adult_price'] ?? '') ?>" >
-              <?php if (!empty($errors['adult_price'])): ?>
-                <div class="text-danger small mt-1"><?= $errors['adult_price'] ?></div>
-              <?php endif; ?>
-            </div>
-
-            <div class="mb-3">
-              <label for="student_price" class="form-label">Giá vé học sinh (VNĐ) <span class="text-danger">*</span></label>
-              <input type="number" name="student_price" id="student_price" 
-                     class="form-control <?= !empty($errors['student_price']) ? 'is-invalid' : '' ?>" 
-                     min="0" step="1000" 
-                     value="<?= htmlspecialchars($_POST['student_price'] ?? '') ?>" >
-              <?php if (!empty($errors['student_price'])): ?>
-                <div class="text-danger small mt-1"><?= $errors['student_price'] ?></div>
-              <?php endif; ?>
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i> 
+              <strong>Lưu ý:</strong> Giá vé được quản lý tại <a href="<?= BASE_URL ?>?act=ticket-prices" class="alert-link">Quản lý giá vé</a>. 
+              Giá sẽ tự động được tính dựa trên ngày chiếu, định dạng phim và loại khách hàng.
             </div>
 
             <div class="mb-3">
@@ -273,8 +257,6 @@
     const showDate = document.getElementById('show_date').value;
     const startTime = document.getElementById('start_time').value;
     const endTime = document.getElementById('end_time').value;
-    const adultPrice = document.getElementById('adult_price').value;
-    const studentPrice = document.getElementById('student_price').value;
     const format = document.getElementById('format').value;
 
     if (!movieId || movieId === '') {
@@ -319,17 +301,6 @@
       return false;
     }
 
-    if (!adultPrice || adultPrice === '' || parseFloat(adultPrice) < 0) {
-      alert('Vui lòng nhập giá vé người lớn hợp lệ!');
-      document.getElementById('adult_price').focus();
-      return false;
-    }
-
-    if (!studentPrice || studentPrice === '' || parseFloat(studentPrice) < 0) {
-      alert('Vui lòng nhập giá vé học sinh hợp lệ!');
-      document.getElementById('student_price').focus();
-      return false;
-    }
 
     if (!format || format === '') {
       alert('Vui lòng chọn định dạng!');

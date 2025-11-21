@@ -122,16 +122,18 @@ class AuthController
                         $_SESSION['user_email'] = $user['email'];
                         $_SESSION['user_name'] = $user['full_name'];
                         $_SESSION['user_role'] = $user['role'] ?? 'customer';
-
-                        // Kiểm tra return_url nếu có (ví dụ: từ trang thanh toán)
+                        
+                        // Kiểm tra return_url nếu có (từ trang chọn ghế, thanh toán, v.v.)
                         if (isset($_SESSION['return_url']) && !empty($_SESSION['return_url'])) {
-                            $returnUrl = $_SESSION['return_url'];
+                            $returnUrl = trim($_SESSION['return_url']);
+                            // Xóa return_url khỏi session trước khi redirect
                             unset($_SESSION['return_url']);
+                            // Redirect về URL đã lưu
                             header('Location: ' . $returnUrl);
                             exit;
                         }
-
-                        // Redirect theo role
+                        
+                        // Nếu không có return_url, redirect theo role
                         if (in_array($_SESSION['user_role'], ['admin', 'staff'])) {
                             header('Location: ' . BASE_URL . '?act=dashboard');
                         } else {

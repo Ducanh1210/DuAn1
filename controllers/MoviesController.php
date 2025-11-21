@@ -697,6 +697,14 @@ class MoviesController
     }
 
     /**
+     * Hiển thị trang giới thiệu
+     */
+    public function gioithieu()
+    {
+        renderClient('client/gioithieu.php', [], 'Giới Thiệu');
+    }
+
+    /**
      * Lấy tên thứ trong tuần bằng tiếng Việt
      */
     private function getDayNameVietnamese($dayOfWeek)
