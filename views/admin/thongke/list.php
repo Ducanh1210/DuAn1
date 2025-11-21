@@ -18,8 +18,8 @@ $to   = $to   ?? date('Y-m-d');
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Thống kê — Danh sách</h3>
     <div class="btn-group">
-      <a href="?act=stats&mode=days" class="btn btn-sm <?= $mode === 'days' ? 'btn-primary' : 'btn-outline-primary' ?>">Theo ngày</a>
-      <a href="?act=stats&mode=bookings" class="btn btn-sm <?= $mode === 'bookings' ? 'btn-primary' : 'btn-outline-primary' ?>">Chi tiết đặt vé</a>
+      <a href="#" class="btn btn-sm <?= $mode === 'days' ? 'btn-primary' : 'btn-outline-primary' ?>">Theo ngày</a>
+      <a href="#" class="btn btn-sm <?= $mode === 'bookings' ? 'btn-primary' : 'btn-outline-primary' ?>">Chi tiết đặt vé</a>
     </div>
   </div>
 

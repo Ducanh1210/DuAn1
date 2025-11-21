@@ -33,6 +33,8 @@ require_once('./models/Booking.php');
 require_once('./controllers/ProfileController.php');
 require_once('./controllers/StatsController.php');
 require_once('./models/Stats.php');
+require_once('./controllers/ContactController.php');
+
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -129,6 +131,11 @@ match ($act) {
     'stats-data' => (new StatsController)->data(),
     'thongke' => (new StatsController)->list(),
     'thongke-show' => (new StatsController)->show(),
+
+    // Contact (Client)
+    'lienhe' => (new ContactController)->showForm(),
+    'lienhe-submit' => (new ContactController)->submit(),
+
 
 
     default => notFound(),
