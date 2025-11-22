@@ -355,7 +355,7 @@ class MoviesController
         $discounts = array_map(function ($record) {
             return [
                 'title' => $record['title'],
-                'tag' => $record['apply_to'] ?? 'ticket',
+                'tag' => 'ticket', // All discounts apply to tickets only
                 'status' => $record['status'] ?? 'active',
                 'period' => $this->formatDiscountPeriod(
                     $record['start_date'] ?? null,
@@ -404,10 +404,10 @@ class MoviesController
             ],
         ];
 
+        // All discount codes are for tickets only
+        $totalDiscounts = $stats['total'] ?? 0;
         $heroStats = [
-            ['label' => 'Mã vé phim', 'value' => (string)($stats['ticket'] ?? 0)],
-            ['label' => 'Ưu đãi đồ ăn', 'value' => (string)($stats['food'] ?? 0)],
-            ['label' => 'Combo đặc biệt', 'value' => (string)($stats['combo'] ?? 0)]
+            ['label' => 'Mã vé phim', 'value' => (string)$totalDiscounts]
         ];
 
         renderClient('client/khuyenmai.php', [

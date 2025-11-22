@@ -138,6 +138,7 @@ CREATE TABLE `customer_tiers` (
 
 --
 -- Table structure for table `discount_codes`
+-- Note: All discount codes apply to tickets only. Food discounts are not supported.
 --
 
 CREATE TABLE `discount_codes` (

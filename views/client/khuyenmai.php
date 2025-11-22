@@ -61,6 +61,7 @@ $tagLabels = [
                     <article class="promo-card" data-status="<?= $status ?>">
                         <div class="card-head">
                             <span class="promo-tag tag-<?= $tag ?>">
+                                <i class="bi bi-ticket-perforated"></i>
                                 <?= htmlspecialchars($tagLabels[$discount['tag']] ?? ucfirst($discount['tag'])) ?>
                             </span>
                             <span class="promo-status status-<?= $status ?>">
@@ -68,37 +69,22 @@ $tagLabels = [
                             </span>
                         </div>
                         <h3><?= htmlspecialchars($discount['title']) ?></h3>
-                        <p class="desc"><?= htmlspecialchars($discount['description']) ?></p>
-                        <?php if (!empty($discount['benefits'])): ?>
-                            <ul class="benefits">
-                                <?php foreach ($discount['benefits'] as $benefit): ?>
-                                    <li>
-                                        <i class="bi bi-check2-circle"></i>
-                                        <span><?= htmlspecialchars($benefit) ?></span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
+                        <?php if (!empty($discount['code'])): ?>
+                            <div class="code-section">
+                                <button class="code-btn" data-code="<?= htmlspecialchars($discount['code']) ?>">
+                                    <span><?= htmlspecialchars($discount['code']) ?></span>
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                                <span class="code-hint">Nhập mã khi thanh toán</span>
+                            </div>
                         <?php endif; ?>
                         <div class="meta">
                             <span class="period">
                                 <i class="bi bi-calendar-event"></i>
                                 <?= htmlspecialchars($discount['period']) ?>
                             </span>
-                            <?php if (!empty($discount['code'])): ?>
-                                <button class="code-btn" data-code="<?= htmlspecialchars($discount['code']) ?>">
-                                    <span><?= htmlspecialchars($discount['code']) ?></span>
-                                    <i class="bi bi-copy"></i>
-                                </button>
-                            <?php endif; ?>
                         </div>
-                        <div class="promo-actions">
-                            <a class="btn-primary" href="<?= BASE_URL ?>?act=datve"><?= htmlspecialchars($discount['cta']) ?></a>
-                            <?php if ($discount['status'] === 'upcoming'): ?>
-                                <span class="hint">Nhấn nhận thông báo khi ưu đãi mở</span>
-                            <?php else: ?>
-                                <span class="hint">Nhập mã ở bước thanh toán để áp dụng</span>
-                            <?php endif; ?>
-                        </div>
+                        <a class="btn-primary" href="<?= BASE_URL ?>?act=datve"><?= htmlspecialchars($discount['cta']) ?></a>
                     </article>
                 <?php endforeach; ?>
             </div>
