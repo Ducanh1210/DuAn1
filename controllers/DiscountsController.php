@@ -85,7 +85,6 @@ class DiscountsController
                 $data = [
                     'code' => strtoupper(trim($_POST['code'])),
                     'title' => trim($_POST['title']),
-                    'apply_to' => $_POST['apply_to'] ?? 'ticket',
                     'discount_percent' => (float)$_POST['discount_percent'],
                     'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],
@@ -187,7 +186,6 @@ class DiscountsController
                 $data = [
                     'code' => strtoupper(trim($_POST['code'])),
                     'title' => trim($_POST['title']),
-                    'apply_to' => $_POST['apply_to'] ?? 'ticket',
                     'discount_percent' => (float)$_POST['discount_percent'],
                     'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],

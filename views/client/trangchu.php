@@ -21,7 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <body>
     <!-- phần menu -->
-    <section class="hero">
+    <section class="hero" style="background-image: url('<?= BASE_URL ?>/image/banner1.jpg');">
         <div class="container">
             <div class="navbar">
                 <div class="logo">
@@ -461,7 +461,7 @@ if (session_status() === PHP_SESSION_NONE) {
     })();
 
     // Promo Carousel - Tự động chạy và hỗ trợ vuốt (mỗi trang 3 ảnh)
-    (function(){
+    (function() {
         // ======= Thay ảnh ở đây =======
         const imagePaths = [
             '<?= BASE_URL ?>/image/banner1.jpg',
@@ -476,8 +476,8 @@ if (session_status() === PHP_SESSION_NONE) {
         const perPage = 3; // số ảnh trên 1 trang
         const pages = [];
 
-        for(let i=0; i<imagePaths.length; i+=perPage){
-            pages.push(imagePaths.slice(i, i+perPage));
+        for (let i = 0; i < imagePaths.length; i += perPage) {
+            pages.push(imagePaths.slice(i, i + perPage));
         }
 
         const track = document.getElementById('track');
@@ -515,31 +515,34 @@ if (session_status() === PHP_SESSION_NONE) {
         let pageIndex = 0;
         let autoTimer = null;
 
-        function update(){
+        function update() {
             track.style.transform = `translateX(-${pageIndex * 100}%)`;
             dotElems.forEach(d => d.classList.remove('active'));
-            if(dotElems[pageIndex]) dotElems[pageIndex].classList.add('active');
+            if (dotElems[pageIndex]) dotElems[pageIndex].classList.add('active');
         }
 
-        function goToPage(i){
+        function goToPage(i) {
             pageIndex = ((i % totalPages) + totalPages) % totalPages;
             update();
             restartAuto();
         }
 
         // auto-play (theo page)
-        function startAuto(){
+        function startAuto() {
             stopAuto();
             autoTimer = setInterval(() => {
                 goToPage(pageIndex + 1);
             }, 3500);
         }
 
-        function stopAuto(){
-            if(autoTimer){ clearInterval(autoTimer); autoTimer = null; }
+        function stopAuto() {
+            if (autoTimer) {
+                clearInterval(autoTimer);
+                autoTimer = null;
+            }
         }
 
-        function restartAuto(){
+        function restartAuto() {
             stopAuto();
             startAuto();
         }
@@ -552,10 +555,12 @@ if (session_status() === PHP_SESSION_NONE) {
             stopAuto();
             isDragging = true;
             startX = e.touches[0].clientX;
-        }, {passive:true});
+        }, {
+            passive: true
+        });
 
         viewport.addEventListener('touchend', (e) => {
-            if(!isDragging) return;
+            if (!isDragging) return;
             const endX = e.changedTouches[0].clientX;
             handleSwipe(startX, endX);
             isDragging = false;
@@ -570,19 +575,19 @@ if (session_status() === PHP_SESSION_NONE) {
         });
 
         window.addEventListener('mouseup', (e) => {
-            if(!isDragging) return;
+            if (!isDragging) return;
             const endX = e.clientX;
             handleSwipe(startX, endX);
             isDragging = false;
             restartAuto();
         });
 
-        function handleSwipe(start, end){
+        function handleSwipe(start, end) {
             const diff = end - start;
             const threshold = 40; // px để tính là swipe
-            if(diff < -threshold){
+            if (diff < -threshold) {
                 goToPage(pageIndex + 1);
-            } else if(diff > threshold){
+            } else if (diff > threshold) {
                 goToPage(pageIndex - 1);
             } else {
                 // small movement -> no change

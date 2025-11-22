@@ -347,16 +347,6 @@ class MoviesController
     }
 
     /**
-     * Hiển thị trang giới thiệu (Client)
-     */
-    public function gioithieu()
-    {
-        // Include view client (không dùng layout chung)
-        require_once __DIR__ . '/../views/client/gioithieu.php';
-        exit; // Dừng lại để không render layout admin
-    }
-
-    /**
      * Hiển thị trang khuyến mãi (Client)
      */
     public function khuyenmai()
@@ -365,8 +355,8 @@ class MoviesController
         $discounts = array_map(function ($record) {
             return [
                 'title' => $record['title'],
-                'tag' => $record['apply_to'] ?? 'ticket',
                 'status' => $record['status'] ?? 'active',
+                'discount_percent' => $record['discount_percent'] ?? 0,
                 'period' => $this->formatDiscountPeriod(
                     $record['start_date'] ?? null,
                     $record['end_date'] ?? null,
@@ -402,7 +392,7 @@ class MoviesController
         $faqs = [
             [
                 'question' => 'Làm sao để nhận mã khuyến mãi?',
-                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm “Sao chép mã”. Mã sẽ lưu trong ví voucher và tự áp dụng ở bước thanh toán.'
+                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm "Sao chép mã". Mã sẽ được lưu và bạn có thể áp dụng ở bước thanh toán.'
             ],
             [
                 'question' => 'Tôi có thể dùng nhiều mã trong cùng một đơn?',
@@ -415,9 +405,7 @@ class MoviesController
         ];
 
         $heroStats = [
-            ['label' => 'Mã vé phim', 'value' => (string)($stats['ticket'] ?? 0)],
-            ['label' => 'Ưu đãi đồ ăn', 'value' => (string)($stats['food'] ?? 0)],
-            ['label' => 'Combo đặc biệt', 'value' => (string)($stats['combo'] ?? 0)]
+            ['label' => 'Mã giảm giá', 'value' => (string)($stats['total'] ?? 0)]
         ];
 
         renderClient('client/khuyenmai.php', [
@@ -697,11 +685,12 @@ class MoviesController
     }
 
     /**
-     * Hiển thị trang giới thiệu
+     * Hiển thị trang giới thiệu (Client)
      */
     public function gioithieu()
     {
         renderClient('client/gioithieu.php', [], 'Giới Thiệu');
+        exit;
     }
 
     /**

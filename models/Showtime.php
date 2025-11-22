@@ -41,22 +41,22 @@ class Showtime
     {
         try {
             $offset = ($page - 1) * $perPage;
-            
+
             // Xây dựng WHERE clause
             $whereClause = "";
             $params = [];
-            
+
             if ($date) {
                 $whereClause = "WHERE showtimes.show_date = :date";
                 $params[':date'] = $date;
             }
-            
+
             // Lấy tổng số bản ghi
             $countSql = "SELECT COUNT(*) as total FROM showtimes $whereClause";
             $countStmt = $this->conn->prepare($countSql);
             $countStmt->execute($params);
             $total = $countStmt->fetch()['total'];
-            
+
             // Lấy dữ liệu phân trang (sắp xếp: ngày tăng dần, giờ tăng dần, ID tăng dần)
             $sql = "SELECT showtimes.*, 
                     movies.title AS movie_title,
@@ -73,7 +73,7 @@ class Showtime
                     ORDER BY showtimes.show_date ASC, showtimes.start_time ASC, showtimes.id ASC
                     LIMIT :limit OFFSET :offset";
             $stmt = $this->conn->prepare($sql);
-            
+
             // Bind params
             foreach ($params as $key => $value) {
                 $stmt->bindValue($key, $value);
@@ -82,7 +82,7 @@ class Showtime
             $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
             $stmt->execute();
             $data = $stmt->fetchAll();
-            
+
             return [
                 'data' => $data,
                 'total' => $total,
@@ -216,17 +216,17 @@ class Showtime
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
                     WHERE showtimes.show_date = :date
                     AND movies.status = 'active'";
-            
+
             $params = [':date' => $date];
-            
+
             // Lọc theo rạp nếu có
             if (!empty($cinemaId)) {
                 $sql .= " AND rooms.cinema_id = :cinema_id";
                 $params[':cinema_id'] = $cinemaId;
             }
-            
+
             $sql .= " ORDER BY movies.title ASC, showtimes.start_time ASC";
-            
+
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchAll();
@@ -247,16 +247,16 @@ class Showtime
                     FROM showtimes
                     LEFT JOIN movies ON showtimes.movie_id = movies.id
                     WHERE showtimes.room_id = :room_id";
-            
+
             $params = [':room_id' => $room_id];
-            
+
             if ($date) {
                 $sql .= " AND showtimes.show_date = :date";
                 $params[':date'] = $date;
             }
-            
+
             $sql .= " ORDER BY showtimes.show_date ASC, showtimes.start_time ASC";
-            
+
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchAll();
@@ -325,8 +325,43 @@ class Showtime
                 ':format' => $data['format'] ?? null
             ]);
             return $this->conn->lastInsertId();
+        } catch (PDOException $e) {
+            // Handle primary key violation (AUTO_INCREMENT issue)
+            if ($e->getCode() == 'HY000' && strpos($e->getMessage(), "doesn't have a default value") !== false) {
+                // Fix AUTO_INCREMENT by resetting it to the next available ID
+                try {
+                    $maxIdSql = "SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM showtimes";
+                    $maxIdStmt = $this->conn->prepare($maxIdSql);
+                    $maxIdStmt->execute();
+                    $result = $maxIdStmt->fetch();
+                    $nextId = $result['next_id'] ?? 1;
+
+                    $resetSql = "ALTER TABLE showtimes AUTO_INCREMENT = :next_id";
+                    $resetStmt = $this->conn->prepare($resetSql);
+                    $resetStmt->execute([':next_id' => $nextId]);
+
+                    // Retry the insert
+                    $stmt = $this->conn->prepare($sql);
+                    $stmt->execute([
+                        ':movie_id' => $data['movie_id'] ?? null,
+                        ':room_id' => $data['room_id'] ?? null,
+                        ':show_date' => $data['show_date'] ?? null,
+                        ':start_time' => $data['start_time'] ?? null,
+                        ':end_time' => $data['end_time'] ?? null,
+                        ':format' => $data['format'] ?? null
+                    ]);
+
+                    return $this->conn->lastInsertId();
+                } catch (Exception $retryException) {
+                    debug($retryException);
+                    return false;
+                }
+            }
+            debug($e);
+            return false;
         } catch (Exception $e) {
             debug($e);
+            return false;
         }
     }
 
@@ -389,11 +424,11 @@ class Showtime
                         OR (start_time < :end_time AND end_time >= :end_time)
                         OR (start_time >= :start_time AND end_time <= :end_time)
                     )";
-            
+
             if ($exclude_id) {
                 $sql .= " AND id != :exclude_id";
             }
-            
+
             $stmt = $this->conn->prepare($sql);
             $params = [
                 ':room_id' => $room_id,
@@ -401,11 +436,11 @@ class Showtime
                 ':start_time' => $start_time,
                 ':end_time' => $end_time
             ];
-            
+
             if ($exclude_id) {
                 $params[':exclude_id'] = $exclude_id;
             }
-            
+
             $stmt->execute($params);
             $result = $stmt->fetch();
             return $result['count'] > 0;
@@ -460,11 +495,18 @@ class Showtime
         // Giá vé được quản lý tại bảng ticket_prices, không cần validate ở đây
 
         // Check conflict
-        if (!empty($data['room_id']) && !empty($data['show_date']) && 
-            !empty($data['start_time']) && !empty($data['end_time'])) {
+        if (
+            !empty($data['room_id']) && !empty($data['show_date']) &&
+            !empty($data['start_time']) && !empty($data['end_time'])
+        ) {
             $exclude_id = $isUpdate && isset($data['id']) ? $data['id'] : null;
-            if ($this->checkConflict($data['room_id'], $data['show_date'], 
-                $data['start_time'], $data['end_time'], $exclude_id)) {
+            if ($this->checkConflict(
+                $data['room_id'],
+                $data['show_date'],
+                $data['start_time'],
+                $data['end_time'],
+                $exclude_id
+            )) {
                 $errors['conflict'] = 'Lịch chiếu bị trùng với suất chiếu khác trong cùng phòng';
             }
         }
@@ -494,6 +536,3 @@ class Showtime
         }
     }
 }
-
-?>
-

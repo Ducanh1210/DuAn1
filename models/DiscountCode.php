@@ -35,27 +35,22 @@ class DiscountCode
     }
 
     /**
-     * Thống kê số lượng mã theo phạm vi áp dụng
+     * Thống kê số lượng mã giảm giá
      */
     public function getStats()
     {
         try {
-            $sql = "SELECT apply_to, COUNT(*) AS total
+            $sql = "SELECT COUNT(*) AS total
                     FROM discount_codes
-                    WHERE status IN ('active', 'upcoming')
-                    GROUP BY apply_to";
+                    WHERE status IN ('active', 'upcoming')";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            $rows = $stmt->fetchAll();
+            $result = $stmt->fetch();
 
-            $stats = ['ticket' => 0, 'food' => 0, 'combo' => 0];
-            foreach ($rows as $row) {
-                $stats[$row['apply_to']] = (int)$row['total'];
-            }
-            $stats['total'] = array_sum($stats);
-            return $stats;
+            $total = (int)($result['total'] ?? 0);
+            return ['total' => $total];
         } catch (Exception $e) {
-            return ['ticket' => 0, 'food' => 0, 'combo' => 0, 'total' => 0];
+            return ['total' => 0];
         }
     }
 
@@ -117,15 +112,14 @@ class DiscountCode
                 : null;
 
             $sql = "INSERT INTO discount_codes 
-                    (code, title, apply_to, discount_percent, max_discount, start_date, end_date, description, benefits, status, cta) 
+                    (code, title, discount_percent, max_discount, start_date, end_date, description, benefits, status, cta) 
                     VALUES 
-                    (:code, :title, :apply_to, :discount_percent, :max_discount, :start_date, :end_date, :description, :benefits, :status, :cta)";
+                    (:code, :title, :discount_percent, :max_discount, :start_date, :end_date, :description, :benefits, :status, :cta)";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
                 ':code' => $data['code'],
                 ':title' => $data['title'],
-                ':apply_to' => $data['apply_to'] ?? 'ticket',
                 ':discount_percent' => $data['discount_percent'] ?? 0,
                 ':max_discount' => $data['max_discount'] ?? null,
                 ':start_date' => $data['start_date'] ?? null,
@@ -157,7 +151,6 @@ class DiscountCode
                     $stmt->execute([
                         ':code' => $data['code'],
                         ':title' => $data['title'],
-                        ':apply_to' => $data['apply_to'] ?? 'ticket',
                         ':discount_percent' => $data['discount_percent'] ?? 0,
                         ':max_discount' => $data['max_discount'] ?? null,
                         ':start_date' => $data['start_date'] ?? null,
@@ -195,7 +188,6 @@ class DiscountCode
             $sql = "UPDATE discount_codes SET 
                     code = :code,
                     title = :title,
-                    apply_to = :apply_to,
                     discount_percent = :discount_percent,
                     max_discount = :max_discount,
                     start_date = :start_date,
@@ -211,7 +203,6 @@ class DiscountCode
                 ':id' => $id,
                 ':code' => $data['code'],
                 ':title' => $data['title'],
-                ':apply_to' => $data['apply_to'] ?? 'ticket',
                 ':discount_percent' => $data['discount_percent'] ?? 0,
                 ':max_discount' => $data['max_discount'] ?? null,
                 ':start_date' => $data['start_date'] ?? null,

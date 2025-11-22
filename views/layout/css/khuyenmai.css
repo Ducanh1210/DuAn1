@@ -81,8 +81,21 @@
 
 .promo-grid .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+@media (min-width: 768px) {
+    .promo-grid .grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .promo-grid .grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 24px;
+    }
 }
 
 .promo-card {
@@ -115,6 +128,121 @@
     opacity: 0.4;
 }
 
+/* Card đơn giản - mới */
+.promo-card-simple {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.promo-card-simple:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(244, 61, 94, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(244, 61, 94, 0.15);
+}
+
+.card-simple-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-simple-code {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0;
+}
+
+.code-btn-large {
+    border: 2px solid rgba(244, 61, 94, 0.4);
+    background: rgba(244, 61, 94, 0.1);
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    width: 100%;
+    justify-content: center;
+}
+
+.code-btn-large:hover {
+    background: rgba(244, 61, 94, 0.2);
+    border-color: rgba(244, 61, 94, 0.6);
+    transform: scale(1.02);
+}
+
+.code-btn-large.copied {
+    background: rgba(74, 222, 128, 0.2);
+    border-color: rgba(74, 222, 128, 0.6);
+}
+
+.code-btn-large .code-text {
+    font-family: 'Courier New', monospace;
+}
+
+.card-simple-discount {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 0;
+}
+
+.discount-percent {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f43d5e, #ff796c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+.discount-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-simple-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    line-height: 1.4;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-simple-period {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.65);
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .card-head {
     display: flex;
     justify-content: space-between;
@@ -130,19 +258,9 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.tag-combo {
-    color: #ffc857;
-    border-color: rgba(255, 200, 87, 0.4);
-}
-
 .tag-ticket {
     color: #5be7c4;
     border-color: rgba(91, 231, 196, 0.4);
-}
-
-.tag-food {
-    color: #f8a1d1;
-    border-color: rgba(248, 161, 209, 0.4);
 }
 
 .promo-status {
@@ -160,6 +278,7 @@
     border-radius: 50%;
 }
 
+.status-active::before,
 .status-ongoing::before {
     background: #4ade80;
 }
@@ -170,6 +289,25 @@
 
 .status-ended::before {
     background: #94a3b8;
+}
+
+.promo-status {
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.promo-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.status-active {
+    color: rgba(74, 222, 128, 0.9);
 }
 
 .promo-card h3 {
