@@ -1477,7 +1477,7 @@ INSERT INTO `showtimes` (`id`, `movie_id`, `room_id`, `show_date`, `start_time`,
 --
 
 CREATE TABLE `ticket_prices` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `day_type` varchar(20) NOT NULL COMMENT 'weekday hoặc weekend',
   `format` varchar(10) NOT NULL COMMENT '2D hoặc 3D',
   `customer_type` varchar(20) NOT NULL COMMENT 'adult hoặc student',
@@ -1841,7 +1841,7 @@ ALTER TABLE `showtimes`
 -- AUTO_INCREMENT for table `ticket_prices`
 --
 ALTER TABLE `ticket_prices`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT for table `users`
