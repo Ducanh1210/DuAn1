@@ -145,7 +145,6 @@ match ($act) {
     'discounts-create' => (new DiscountsController)->create(),
     'discounts-edit' => (new DiscountsController)->edit(),
     'discounts-delete' => (new DiscountsController)->delete(),
-    'validate-discount' => (new DiscountsController)->validateDiscount(),
     // Ticket Prices routes (Admin)
     'ticket-prices' => (new TicketPriceController)->list(),
     'ticket-prices-edit' => (new TicketPriceController)->edit(),

@@ -178,31 +178,10 @@ function formatPrice($price) {
                 </label>
             </div>
 
-            <div class="discount-section" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                <label for="discountCode" style="display: block; margin-bottom: 8px; font-weight: 600;">Mã giảm giá</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" 
-                           id="discountCode" 
-                           placeholder="Nhập mã giảm giá" 
-                           style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; text-transform: uppercase;"
-                           maxlength="20">
-                    <button type="button" 
-                            id="applyDiscountBtn" 
-                            style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Áp dụng
-                    </button>
-                </div>
-                <div id="discountMessage" style="margin-top: 8px; font-size: 14px;"></div>
-            </div>
-
             <div class="costs" id="costs">
                 <div class="cost-row">
                     <div>Thanh toán</div>
                     <div id="subtotal"><?= formatPrice($totalPrice) ?></div>
-                </div>
-                <div class="cost-row" id="discountRow" style="display: none;">
-                    <div>Giảm giá</div>
-                    <div id="discountAmount" style="color: #28a745;">-0đ</div>
                 </div>
                 <div class="cost-row">
                     <div>Phí</div>
@@ -240,33 +219,14 @@ function formatPrice($price) {
     // Numeric values (VND)
     let subtotal = <?= $totalPrice ?>;
     let fee = 0;
-    let discountAmount = 0;
-    let appliedDiscountCode = null;
-    const seatCount = <?= count($selectedSeats) ?>;
-    const showDate = '<?= $showDate ?>';
-    const movieId = <?= $movie['id'] ?? 'null' ?>;
     
     function fmt(v) {
         return new Intl.NumberFormat("vi-VN").format(v) + "đ";
     }
     
-    function updateTotals() {
-        subtotalEl.textContent = fmt(subtotal);
-        feeEl.textContent = fmt(fee);
-        const total = subtotal + fee - discountAmount;
-        grandEl.textContent = fmt(total);
-        
-        // Show/hide discount row
-        const discountRow = document.getElementById('discountRow');
-        if (discountAmount > 0) {
-            discountRow.style.display = 'flex';
-            document.getElementById('discountAmount').textContent = '-' + fmt(discountAmount);
-        } else {
-            discountRow.style.display = 'none';
-        }
-    }
-    
-    updateTotals();
+    subtotalEl.textContent = fmt(subtotal);
+    feeEl.textContent = fmt(fee);
+    grandEl.textContent = fmt(subtotal + fee);
 
     let selectedMethod = null;
     methods.forEach((m) => {
@@ -285,7 +245,8 @@ function formatPrice($price) {
         else if (selectedMethod === "vietqr") fee = 0;
         else if (selectedMethod === "momo") fee = 0;
         else fee = 0;
-        updateTotals();
+        feeEl.textContent = fmt(fee);
+        grandEl.textContent = fmt(subtotal + fee);
         updatePayState();
     }
 
@@ -314,9 +275,6 @@ function formatPrice($price) {
         formData.append('seats', '<?= htmlspecialchars($seatIds) ?>');
         formData.append('seat_labels', '<?= htmlspecialchars($seatLabels) ?>');
         formData.append('payment_method', selectedMethod);
-        if (appliedDiscountCode) {
-            formData.append('discount_code', appliedDiscountCode);
-        }
         
         fetch('<?= BASE_URL ?>?act=payment-process', {
             method: 'POST',
@@ -351,68 +309,4 @@ function formatPrice($price) {
     if (methods.length > 0) {
         selectMethod(methods[0]);
     }
-
-    // Discount code functionality
-    const discountCodeInput = document.getElementById('discountCode');
-    const applyDiscountBtn = document.getElementById('applyDiscountBtn');
-    const discountMessage = document.getElementById('discountMessage');
-
-    function applyDiscountCode() {
-        const code = discountCodeInput.value.trim().toUpperCase();
-        if (!code) {
-            discountMessage.textContent = 'Vui lòng nhập mã giảm giá';
-            discountMessage.style.color = '#dc3545';
-            return;
-        }
-
-        applyDiscountBtn.disabled = true;
-        applyDiscountBtn.textContent = 'Đang kiểm tra...';
-
-        fetch('<?= BASE_URL ?>?act=validate-discount', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                code: code,
-                seat_count: seatCount,
-                show_date: showDate,
-                movie_id: movieId || ''
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.valid) {
-                discountAmount = Math.round(subtotal * data.discount_percent / 100);
-                appliedDiscountCode = code;
-                discountMessage.textContent = data.message || 'Áp dụng mã giảm giá thành công!';
-                discountMessage.style.color = '#28a745';
-                discountCodeInput.style.borderColor = '#28a745';
-                updateTotals();
-            } else {
-                discountAmount = 0;
-                appliedDiscountCode = null;
-                discountMessage.textContent = data.message || 'Mã giảm giá không hợp lệ';
-                discountMessage.style.color = '#dc3545';
-                discountCodeInput.style.borderColor = '#dc3545';
-                updateTotals();
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            discountMessage.textContent = 'Có lỗi xảy ra khi kiểm tra mã giảm giá';
-            discountMessage.style.color = '#dc3545';
-        })
-        .finally(() => {
-            applyDiscountBtn.disabled = false;
-            applyDiscountBtn.textContent = 'Áp dụng';
-        });
-    }
-
-    applyDiscountBtn.addEventListener('click', applyDiscountCode);
-    discountCodeInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            applyDiscountCode();
-        }
-    });
 </script>

@@ -16,6 +16,7 @@
                             <th>ID</th>
                             <th>Mã giảm giá</th>
                             <th>Tiêu đề</th>
+                            <th>Áp dụng cho</th>
                             <th>Giảm giá</th>
                             <th>Thời gian</th>
                             <th>Trạng thái</th>
@@ -34,7 +35,12 @@
                                 ];
                                 $status = $statusLabels[$item['status']] ?? ['label' => $item['status'], 'class' => 'secondary'];
 
-                                // Discount codes are only for tickets
+                                $applyToLabels = [
+                                    'ticket' => 'Vé phim',
+                                    'food' => 'Đồ ăn & đồ uống',
+                                    'combo' => 'Combo vé + F&B'
+                                ];
+                                $applyTo = $applyToLabels[$item['apply_to']] ?? $item['apply_to'];
 
                                 $startDate = !empty($item['start_date']) ? date('d/m/Y', strtotime($item['start_date'])) : '-';
                                 $endDate = !empty($item['end_date']) ? date('d/m/Y', strtotime($item['end_date'])) : '-';
@@ -44,7 +50,13 @@
                                     <td><strong class="text-primary"><?= htmlspecialchars($item['code']) ?></strong></td>
                                     <td><?= htmlspecialchars($item['title']) ?></td>
                                     <td>
+                                        <span class="badge bg-secondary"><?= htmlspecialchars($applyTo) ?></span>
+                                    </td>
+                                    <td>
                                         <strong><?= number_format($item['discount_percent'], 0) ?>%</strong>
+                                        <?php if (!empty($item['max_discount'])): ?>
+                                            <br><small class="text-muted">Tối đa: <?= number_format($item['max_discount'], 0) ?>đ</small>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <small>

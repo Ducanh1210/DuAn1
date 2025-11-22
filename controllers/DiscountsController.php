@@ -49,6 +49,10 @@ class DiscountsController
                 $errors['discount_percent'] = "Phần trăm giảm giá phải là số từ 0 đến 100";
             }
 
+            if (!empty($_POST['max_discount']) && !is_numeric($_POST['max_discount'])) {
+                $errors['max_discount'] = "Giá trị giảm tối đa phải là số";
+            }
+
             if (empty(trim($_POST['start_date'] ?? ''))) {
                 $errors['start_date'] = "Bạn vui lòng chọn ngày bắt đầu";
             }
@@ -81,7 +85,9 @@ class DiscountsController
                 $data = [
                     'code' => strtoupper(trim($_POST['code'])),
                     'title' => trim($_POST['title']),
+                    'apply_to' => $_POST['apply_to'] ?? 'ticket',
                     'discount_percent' => (float)$_POST['discount_percent'],
+                    'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],
                     'end_date' => $_POST['end_date'],
                     'description' => trim($_POST['description'] ?? ''),
@@ -145,6 +151,10 @@ class DiscountsController
                 $errors['discount_percent'] = "Phần trăm giảm giá phải là số từ 0 đến 100";
             }
 
+            if (!empty($_POST['max_discount']) && !is_numeric($_POST['max_discount'])) {
+                $errors['max_discount'] = "Giá trị giảm tối đa phải là số";
+            }
+
             if (empty(trim($_POST['start_date'] ?? ''))) {
                 $errors['start_date'] = "Bạn vui lòng chọn ngày bắt đầu";
             }
@@ -177,7 +187,9 @@ class DiscountsController
                 $data = [
                     'code' => strtoupper(trim($_POST['code'])),
                     'title' => trim($_POST['title']),
+                    'apply_to' => $_POST['apply_to'] ?? 'ticket',
                     'discount_percent' => (float)$_POST['discount_percent'],
+                    'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],
                     'end_date' => $_POST['end_date'],
                     'description' => trim($_POST['description'] ?? ''),
@@ -217,46 +229,6 @@ class DiscountsController
         }
 
         header('Location: ' . BASE_URL . '?act=discounts');
-        exit;
-    }
-
-    /**
-     * Validate discount code (API endpoint)
-     */
-    public function validateDiscount()
-    {
-        header('Content-Type: application/json');
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['valid' => false, 'message' => 'Phương thức không hợp lệ']);
-            exit;
-        }
-
-        $code = $_POST['code'] ?? '';
-        $seatCount = isset($_POST['seat_count']) ? (int)$_POST['seat_count'] : 0;
-        $showDate = $_POST['show_date'] ?? date('Y-m-d');
-        $movieId = isset($_POST['movie_id']) && $_POST['movie_id'] ? (int)$_POST['movie_id'] : null;
-
-        if (empty($code)) {
-            echo json_encode(['valid' => false, 'message' => 'Vui lòng nhập mã giảm giá']);
-            exit;
-        }
-
-        $result = $this->discountCode->validateDiscountCode($code, $seatCount, $showDate, $movieId);
-
-        if ($result['valid']) {
-            echo json_encode([
-                'valid' => true,
-                'message' => $result['message'],
-                'discount_percent' => $result['discount']['discount_percent'],
-                'discount_id' => $result['discount']['id']
-            ]);
-        } else {
-            echo json_encode([
-                'valid' => false,
-                'message' => $result['message']
-            ]);
-        }
         exit;
     }
 }

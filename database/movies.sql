@@ -138,14 +138,15 @@ CREATE TABLE `customer_tiers` (
 
 --
 -- Table structure for table `discount_codes`
--- Note: All discount codes apply to tickets only. Food discounts are not supported.
 --
 
 CREATE TABLE `discount_codes` (
   `id` int NOT NULL,
   `code` varchar(50) NOT NULL,
   `title` varchar(255) NOT NULL,
+  `apply_to` enum('ticket','food','combo') DEFAULT 'ticket',
   `discount_percent` int DEFAULT '0',
+  `max_discount` decimal(10,2) DEFAULT NULL,
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `description` text,
@@ -160,12 +161,10 @@ CREATE TABLE `discount_codes` (
 -- Dumping data for table `discount_codes`
 --
 
-INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_date`, `end_date`, `description`, `benefits`, `status`, `cta`, `created_at`, `updated_at`) VALUES
-(1, 'WEEKEND25', 'Giảm giá cuối tuần 25%', 25, '2025-11-01', '2025-12-31', 'Ưu đãi đặc biệt cho các suất chiếu cuối tuần (Thứ 6, Thứ 7, Chủ nhật). Áp dụng cho tất cả phim và tất cả rạp.', '[\"Áp dụng cho suất chiếu cuối tuần\", \"Giảm 25% cho mọi vé\", \"Không giới hạn số lượng vé\", \"Áp dụng cho tất cả phim\"]', 'active', 'Đặt vé cuối tuần', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', '2025-11-20 15:00:00', '2025-11-20 15:00:00');
+INSERT INTO `discount_codes` (`id`, `code`, `title`, `apply_to`, `discount_percent`, `max_discount`, `start_date`, `end_date`, `description`, `benefits`, `status`, `cta`, `created_at`, `updated_at`) VALUES
+(1, 'MOVIEWEEK30', 'Movie Week 30%', 'ticket', 30, 60000.00, '2025-11-20', '2025-12-20', 'Giảm giá vé phim cho mọi suất chiếu từ thứ 2 đến thứ 5 khi đặt trên TicketHub.', '[\"Áp dụng tối đa 04 vé/đơn\", \"Thời gian: 10h - 22h\", \"Không áp dụng cho ghế Sweetbox\"]', 'active', 'Đặt vé giảm 30%', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(2, 'COMBOF&B40', 'Combo Bắp Nước 40%', 'food', 40, 80000.00, '2025-11-25', '2025-12-31', 'Ưu đãi combo bắp nước khi mua kèm vé trên TicketHub.', '[\"Áp dụng cho Combo L & XL\", \"Tặng thêm topping caramel\", \"Mã dùng tối đa 2 lần/tuần\"]', 'active', 'Mua combo ngay', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(3, 'DOUBLEJOY25', 'Double Joy Combo', 'combo', 25, 120000.00, '2025-12-01', '2026-01-10', 'Bộ đôi vé + combo bắp nước với giá ưu đãi cho gia đình và nhóm bạn.', '[\"Áp dụng cho ít nhất 02 vé\", \"Giữ ghế liền kề miễn phí\", \"Giảm thêm 5% khi thanh toán ví Momo\"]', 'upcoming', 'Giữ combo trước', '2025-11-20 15:00:00', '2025-11-20 15:00:00');
 
 -- --------------------------------------------------------
 
@@ -1477,7 +1476,7 @@ INSERT INTO `showtimes` (`id`, `movie_id`, `room_id`, `show_date`, `start_time`,
 --
 
 CREATE TABLE `ticket_prices` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `day_type` varchar(20) NOT NULL COMMENT 'weekday hoặc weekend',
   `format` varchar(10) NOT NULL COMMENT '2D hoặc 3D',
   `customer_type` varchar(20) NOT NULL COMMENT 'adult hoặc student',
@@ -1491,38 +1490,23 @@ CREATE TABLE `ticket_prices` (
 -- Dumping data for table `ticket_prices`
 --
 
--- Insert giá vé mặc định
--- Giá cơ bản: Sinh viên 60k, Người lớn 70k (ghế thường)
--- VIP: +10k, 3D: +10k
--- Weekday (2-5): -5k, Weekend (6-7-CN): +5k
-
--- Thứ 2-5 (weekday) - giảm 5k
--- 2D
-INSERT INTO `ticket_prices` (`day_type`, `format`, `customer_type`, `seat_type`, `base_price`) VALUES
-('weekday', '2D', 'student', 'normal', 55000),  -- 60k - 5k
-('weekday', '2D', 'student', 'vip', 65000),      -- 60k + 10k - 5k
-('weekday', '2D', 'adult', 'normal', 65000),     -- 70k - 5k
-('weekday', '2D', 'adult', 'vip', 75000),        -- 70k + 10k - 5k
--- 3D (+10k)
-('weekday', '3D', 'student', 'normal', 65000),   -- 60k + 10k - 5k
-('weekday', '3D', 'student', 'vip', 75000),       -- 60k + 10k + 10k - 5k
-('weekday', '3D', 'adult', 'normal', 75000),     -- 70k + 10k - 5k
-('weekday', '3D', 'adult', 'vip', 85000)         -- 70k + 10k + 10k - 5k
-ON DUPLICATE KEY UPDATE `base_price` = VALUES(`base_price`);
-
--- Thứ 6-7-CN và ngày lễ (weekend) - tăng 5k
--- 2D
-INSERT INTO `ticket_prices` (`day_type`, `format`, `customer_type`, `seat_type`, `base_price`) VALUES
-('weekend', '2D', 'student', 'normal', 65000),  -- 60k + 5k
-('weekend', '2D', 'student', 'vip', 75000),      -- 60k + 10k + 5k
-('weekend', '2D', 'adult', 'normal', 75000),     -- 70k + 5k
-('weekend', '2D', 'adult', 'vip', 85000),        -- 70k + 10k + 5k
--- 3D (+10k)
-('weekend', '3D', 'student', 'normal', 75000),   -- 60k + 10k + 5k
-('weekend', '3D', 'student', 'vip', 85000),       -- 60k + 10k + 10k + 5k
-('weekend', '3D', 'adult', 'normal', 85000),     -- 70k + 10k + 5k
-('weekend', '3D', 'adult', 'vip', 95000)         -- 70k + 10k + 10k + 5k
-ON DUPLICATE KEY UPDATE `base_price` = VALUES(`base_price`);
+INSERT INTO `ticket_prices` (`id`, `day_type`, `format`, `customer_type`, `seat_type`, `base_price`, `created_at`, `updated_at`) VALUES
+(1, 'weekday', '2D', 'student', 'normal', 55000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(2, 'weekday', '2D', 'student', 'vip', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(3, 'weekday', '2D', 'adult', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(4, 'weekday', '2D', 'adult', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(5, 'weekday', '3D', 'student', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(6, 'weekday', '3D', 'student', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(7, 'weekday', '3D', 'adult', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(8, 'weekday', '3D', 'adult', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(9, 'weekend', '2D', 'student', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(10, 'weekend', '2D', 'student', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(11, 'weekend', '2D', 'adult', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(12, 'weekend', '2D', 'adult', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(13, 'weekend', '3D', 'student', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(14, 'weekend', '3D', 'student', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(15, 'weekend', '3D', 'adult', 'normal', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
+(16, 'weekend', '3D', 'adult', 'vip', 95000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50');
 
 -- --------------------------------------------------------
 
@@ -1554,6 +1538,42 @@ INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_dat
 (4, 'Bảo Châu', 'baochau06@gmail.com', '$2y$10$4msjaSiici7YXHciPSW0Cu/bYvTZuQRdlhm3ifOL4LTesvPmpzGxq', '0386036693', '2006-12-11', NULL, 0.00, '2025-11-18 22:28:02', 'staff', 'active');
 
 -- --------------------------------------------------------
+
+--
+-- Table structure for table `vouchers`
+--
+
+CREATE TABLE `vouchers` (
+  `id` int NOT NULL,
+  `title` varchar(255) NOT NULL COMMENT 'Tiêu đề khuyến mãi',
+  `description` text COMMENT 'Mô tả chi tiết khuyến mãi',
+  `tag` varchar(50) DEFAULT 'general' COMMENT 'Loại khuyến mãi: general, flash, member, newuser, student, combo, etc.',
+  `code` varchar(50) DEFAULT NULL COMMENT 'Mã giảm giá (hiển thị cho người dùng)',
+  `discount_code_id` int DEFAULT NULL COMMENT 'ID mã giảm giá trong bảng discount_codes (liên kết với mã giảm giá thực tế)',
+  `benefits` text COMMENT 'Danh sách lợi ích (mỗi lợi ích cách nhau bởi dấu |)',
+  `period` varchar(255) DEFAULT NULL COMMENT 'Chuỗi hiển thị thời gian áp dụng (VD: "01/11/2025 - 31/12/2025")',
+  `image` varchar(255) DEFAULT NULL COMMENT 'Hình ảnh banner khuyến mãi',
+  `start_date` datetime DEFAULT NULL COMMENT 'Ngày bắt đầu',
+  `end_date` datetime DEFAULT NULL COMMENT 'Ngày kết thúc',
+  `status` varchar(20) DEFAULT 'active' COMMENT 'Trạng thái: active, inactive, ongoing, upcoming, ended',
+  `cta` varchar(100) DEFAULT 'Đặt vé ngay' COMMENT 'Text nút call-to-action',
+  `cta_link` varchar(255) DEFAULT NULL COMMENT 'Link khi click CTA (mặc định: trang đặt vé)',
+  `priority` int DEFAULT '0' COMMENT 'Độ ưu tiên hiển thị (số càng cao càng hiển thị trước)',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng quản lý voucher/khuyến mãi';
+
+--
+-- Dumping data for table `vouchers`
+--
+
+INSERT INTO `vouchers` (`id`, `title`, `description`, `tag`, `code`, `discount_code_id`, `benefits`, `period`, `image`, `start_date`, `end_date`, `status`, `cta`, `cta_link`, `priority`, `created_at`, `updated_at`) VALUES
+(1, 'Giảm 20% cho thành viên mới', 'Đăng ký tài khoản mới và nhận ngay 20% giảm giá cho lần đặt vé đầu tiên. Áp dụng cho tất cả các suất chiếu.', 'newuser', 'WELCOME20', NULL, 'Giảm 20% cho lần đặt vé đầu tiên|Áp dụng cho tất cả suất chiếu|Không giới hạn số lượng vé|Có thể kết hợp với ưu đãi khác', '01/11/2025 - 31/12/2025', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đăng ký ngay', NULL, 10, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(2, 'Flash Sale - Giảm 50% thứ 2 hàng tuần', 'Mỗi thứ 2 hàng tuần, giảm 50% cho tất cả vé xem phim. Chỉ áp dụng khi đặt vé online.', 'flash', 'MONDAY50', NULL, 'Giảm 50% cho tất cả vé|Chỉ áp dụng thứ 2 hàng tuần|Đặt vé online|Áp dụng cho tất cả phim', 'Mỗi thứ 2 hàng tuần', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đặt vé ngay', NULL, 9, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(3, 'Combo bắp nước - Mua 2 tặng 1', 'Mua 2 combo bắp nước, tặng ngay 1 combo. Áp dụng khi mua kèm vé xem phim.', 'combo', 'COMBO2+1', NULL, 'Mua 2 combo tặng 1|Áp dụng khi mua kèm vé|Combo size lớn|Áp dụng tất cả các ngày', '01/11/2025 - 31/12/2025', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Xem menu', NULL, 8, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(4, 'Ưu đãi sinh viên - Giảm 30%', 'Sinh viên được giảm 30% khi xuất trình thẻ sinh viên hợp lệ. Áp dụng cho tất cả suất chiếu.', 'student', 'STUDENT30', NULL, 'Giảm 30% cho sinh viên|Xuất trình thẻ sinh viên|Áp dụng tất cả suất chiếu|Không giới hạn số lần sử dụng', 'Áp dụng thường xuyên', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đặt vé ngay', NULL, 7, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(5, 'Thành viên VIP - Giảm 15% mỗi đơn', 'Thành viên hạng VIP được giảm 15% tự động cho mọi đơn đặt vé. Không cần nhập mã.', 'member', NULL, NULL, 'Giảm 15% tự động|Áp dụng cho mọi đơn hàng|Không cần nhập mã|Tích điểm thưởng', 'Áp dụng thường xuyên', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Nâng cấp VIP', NULL, 6, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
+(6, 'Black Friday - Giảm đến 70%', 'Chương trình Black Friday đặc biệt. Giảm giá lên đến 70% cho các suất chiếu được chọn.', 'flash', 'BLACKFRIDAY70', NULL, 'Giảm đến 70%|Áp dụng cho suất chiếu được chọn|Chỉ trong ngày Black Friday|Số lượng có hạn', '29/11/2025', NULL, '2025-11-29 00:00:00', '2025-11-29 23:59:59', 'upcoming', 'Sắp diễn ra', NULL, 5, '2025-11-20 22:14:09', '2025-11-20 22:14:09');
 
 --
 -- Indexes for dumped tables
@@ -1693,6 +1713,16 @@ ALTER TABLE `users`
   ADD KEY `fk_users_tiers` (`tier_id`);
 
 --
+-- Indexes for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_dates` (`start_date`,`end_date`),
+  ADD KEY `idx_discount_code` (`discount_code_id`),
+  ADD KEY `idx_tag` (`tag`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -1796,13 +1826,19 @@ ALTER TABLE `showtimes`
 -- AUTO_INCREMENT for table `ticket_prices`
 --
 ALTER TABLE `ticket_prices`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -1876,22 +1912,11 @@ ALTER TABLE `showtimes`
 ALTER TABLE `users`
   ADD CONSTRAINT `fk_users_tiers` FOREIGN KEY (`tier_id`) REFERENCES `customer_tiers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
--- --------------------------------------------------------
-
 --
--- Script sửa format của showtimes để khớp với format của phim
--- Cập nhật format của showtimes dựa trên format của phim
--- Phim 3D/IMAX/4DX -> showtime format = '3D'
--- Phim 2D -> showtime format = '2D'
+-- Constraints for table `vouchers`
 --
-UPDATE showtimes s
-INNER JOIN movies m ON s.movie_id = m.id
-SET s.format = 
-    CASE 
-        WHEN UPPER(TRIM(m.format)) IN ('3D', 'IMAX', '4DX') THEN '3D'
-        ELSE '2D'
-    END;
-
+ALTER TABLE `vouchers`
+  ADD CONSTRAINT `fk_vouchers_discount_code` FOREIGN KEY (`discount_code_id`) REFERENCES `discount_codes` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

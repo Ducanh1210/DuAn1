@@ -35,117 +35,28 @@ class DiscountCode
     }
 
     /**
-     * Thống kê số lượng mã giảm giá
+     * Thống kê số lượng mã theo phạm vi áp dụng
      */
     public function getStats()
     {
         try {
-            $sql = "SELECT COUNT(*) AS total
+            $sql = "SELECT apply_to, COUNT(*) AS total
                     FROM discount_codes
-                    WHERE status IN ('active', 'upcoming')";
+                    WHERE status IN ('active', 'upcoming')
+                    GROUP BY apply_to";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            $result = $stmt->fetch();
+            $rows = $stmt->fetchAll();
 
-            return ['total' => (int)($result['total'] ?? 0)];
+            $stats = ['ticket' => 0, 'food' => 0, 'combo' => 0];
+            foreach ($rows as $row) {
+                $stats[$row['apply_to']] = (int)$row['total'];
+            }
+            $stats['total'] = array_sum($stats);
+            return $stats;
         } catch (Exception $e) {
-            return ['total' => 0];
+            return ['ticket' => 0, 'food' => 0, 'combo' => 0, 'total' => 0];
         }
-    }
-
-    /**
-     * Lấy mã giảm giá theo code
-     */
-    public function findByCode($code)
-    {
-        try {
-            $sql = "SELECT * FROM discount_codes WHERE code = :code";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute([':code' => strtoupper(trim($code))]);
-            $row = $stmt->fetch();
-
-            if ($row) {
-                $row['benefits'] = !empty($row['benefits'])
-                    ? json_decode($row['benefits'], true)
-                    : [];
-            }
-
-            return $row;
-        } catch (Exception $e) {
-            debug($e);
-            return null;
-        }
-    }
-
-    /**
-     * Kiểm tra mã giảm giá có hợp lệ không dựa trên điều kiện
-     * @param string $code Mã giảm giá
-     * @param int $seatCount Số lượng ghế đã chọn
-     * @param string $showDate Ngày chiếu (Y-m-d)
-     * @param int|null $movieId ID phim (cho special screening)
-     * @return array ['valid' => bool, 'message' => string, 'discount' => array|null]
-     */
-    public function validateDiscountCode($code, $seatCount, $showDate, $movieId = null)
-    {
-        $discount = $this->findByCode($code);
-
-        if (!$discount) {
-            return ['valid' => false, 'message' => 'Mã giảm giá không tồn tại', 'discount' => null];
-        }
-
-        // Kiểm tra trạng thái
-        if ($discount['status'] !== 'active') {
-            return ['valid' => false, 'message' => 'Mã giảm giá không còn hiệu lực', 'discount' => null];
-        }
-
-        // Kiểm tra ngày hiệu lực
-        $today = date('Y-m-d');
-        if ($discount['start_date'] && $today < $discount['start_date']) {
-            return ['valid' => false, 'message' => 'Mã giảm giá chưa có hiệu lực', 'discount' => null];
-        }
-        if ($discount['end_date'] && $today > $discount['end_date']) {
-            return ['valid' => false, 'message' => 'Mã giảm giá đã hết hạn', 'discount' => null];
-        }
-
-        // Kiểm tra điều kiện theo code
-        $codeUpper = strtoupper($discount['code']);
-
-        // COUPLE20 - cần ít nhất 2 ghế
-        if (strpos($codeUpper, 'COUPLE') !== false) {
-            if ($seatCount < 2) {
-                return ['valid' => false, 'message' => 'Mã này chỉ áp dụng khi mua từ 2 vé trở lên', 'discount' => null];
-            }
-        }
-
-        // FAMILY35 - cần ít nhất 3 ghế
-        if (strpos($codeUpper, 'FAMILY') !== false) {
-            if ($seatCount < 3) {
-                return ['valid' => false, 'message' => 'Mã này chỉ áp dụng khi mua từ 3 vé trở lên', 'discount' => null];
-            }
-        }
-
-        // WEEKEND25 - chỉ áp dụng cuối tuần (Thứ 6, 7, CN)
-        if (strpos($codeUpper, 'WEEKEND') !== false) {
-            $dayOfWeek = date('w', strtotime($showDate)); // 0 = CN, 6 = Thứ 7
-            if ($dayOfWeek != 0 && $dayOfWeek != 5 && $dayOfWeek != 6) {
-                return ['valid' => false, 'message' => 'Mã này chỉ áp dụng cho suất chiếu cuối tuần', 'discount' => null];
-            }
-        }
-
-        // HOLIDAY30 - kiểm tra trong khoảng ngày lễ
-        if (strpos($codeUpper, 'HOLIDAY') !== false) {
-            if ($discount['start_date'] && $showDate < $discount['start_date']) {
-                return ['valid' => false, 'message' => 'Mã này chỉ áp dụng trong dịp lễ', 'discount' => null];
-            }
-            if ($discount['end_date'] && $showDate > $discount['end_date']) {
-                return ['valid' => false, 'message' => 'Mã này chỉ áp dụng trong dịp lễ', 'discount' => null];
-            }
-        }
-
-        // PREMIERE40 - có thể kiểm tra thêm movieId nếu cần
-        // Hiện tại chỉ kiểm tra ngày hiệu lực
-
-        return ['valid' => true, 'message' => 'Mã giảm giá hợp lệ', 'discount' => $discount];
     }
 
     /**
@@ -206,15 +117,17 @@ class DiscountCode
                 : null;
 
             $sql = "INSERT INTO discount_codes 
-                    (code, title, discount_percent, start_date, end_date, description, benefits, status, cta) 
+                    (code, title, apply_to, discount_percent, max_discount, start_date, end_date, description, benefits, status, cta) 
                     VALUES 
-                    (:code, :title, :discount_percent, :start_date, :end_date, :description, :benefits, :status, :cta)";
+                    (:code, :title, :apply_to, :discount_percent, :max_discount, :start_date, :end_date, :description, :benefits, :status, :cta)";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
                 ':code' => $data['code'],
                 ':title' => $data['title'],
+                ':apply_to' => $data['apply_to'] ?? 'ticket',
                 ':discount_percent' => $data['discount_percent'] ?? 0,
+                ':max_discount' => $data['max_discount'] ?? null,
                 ':start_date' => $data['start_date'] ?? null,
                 ':end_date' => $data['end_date'] ?? null,
                 ':description' => $data['description'] ?? null,
@@ -244,7 +157,9 @@ class DiscountCode
                     $stmt->execute([
                         ':code' => $data['code'],
                         ':title' => $data['title'],
+                        ':apply_to' => $data['apply_to'] ?? 'ticket',
                         ':discount_percent' => $data['discount_percent'] ?? 0,
+                        ':max_discount' => $data['max_discount'] ?? null,
                         ':start_date' => $data['start_date'] ?? null,
                         ':end_date' => $data['end_date'] ?? null,
                         ':description' => $data['description'] ?? null,
@@ -280,7 +195,9 @@ class DiscountCode
             $sql = "UPDATE discount_codes SET 
                     code = :code,
                     title = :title,
+                    apply_to = :apply_to,
                     discount_percent = :discount_percent,
+                    max_discount = :max_discount,
                     start_date = :start_date,
                     end_date = :end_date,
                     description = :description,
@@ -294,7 +211,9 @@ class DiscountCode
                 ':id' => $id,
                 ':code' => $data['code'],
                 ':title' => $data['title'],
+                ':apply_to' => $data['apply_to'] ?? 'ticket',
                 ':discount_percent' => $data['discount_percent'] ?? 0,
+                ':max_discount' => $data['max_discount'] ?? null,
                 ':start_date' => $data['start_date'] ?? null,
                 ':end_date' => $data['end_date'] ?? null,
                 ':description' => $data['description'] ?? null,

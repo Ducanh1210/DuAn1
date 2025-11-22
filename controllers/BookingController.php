@@ -365,29 +365,6 @@ class BookingController
                 }
             }
 
-            // Xử lý mã giảm giá
-            $discountCode = $_POST['discount_code'] ?? null;
-            $discountId = null;
-            $discountAmount = 0;
-            $finalAmount = $totalPrice;
-
-            if ($discountCode) {
-                require_once __DIR__ . '/../models/DiscountCode.php';
-                $discountCodeModel = new DiscountCode();
-                $seatCount = count($seatIdArray);
-                $showDate = $showtime['show_date'] ?? date('Y-m-d');
-                $movieId = $showtime['movie_id'] ?? null;
-
-                $validation = $discountCodeModel->validateDiscountCode($discountCode, $seatCount, $showDate, $movieId);
-                
-                if ($validation['valid'] && $validation['discount']) {
-                    $discount = $validation['discount'];
-                    $discountId = $discount['id'];
-                    $discountAmount = round($totalPrice * $discount['discount_percent'] / 100);
-                    $finalAmount = $totalPrice - $discountAmount;
-                }
-            }
-
             // Tạo booking
             $bookingCode = 'BK' . time() . rand(1000, 9999);
             $bookingData = [
@@ -395,11 +372,10 @@ class BookingController
                 'showtime_id' => $showtimeId,
                 'room_id' => $showtime['room_id'],
                 'cinema_id' => $showtime['cinema_id'] ?? null,
-                'discount_id' => $discountId,
                 'booked_seats' => $seatLabels,
                 'total_amount' => $totalPrice,
-                'discount_amount' => $discountAmount,
-                'final_amount' => $finalAmount,
+                'discount_amount' => 0,
+                'final_amount' => $totalPrice,
                 'status' => 'pending',
                 'booking_code' => $bookingCode
             ];
@@ -418,7 +394,7 @@ class BookingController
                 
                 $paymentUrl = $vnpay->createPaymentUrl([
                     'txn_ref' => $bookingId . '_' . time(),
-                    'amount' => $finalAmount,
+                    'amount' => $totalPrice,
                     'order_info' => 'Thanh toan dat ve xem phim - ' . $bookingCode
                 ]);
 

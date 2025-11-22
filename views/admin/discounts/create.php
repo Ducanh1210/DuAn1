@@ -55,6 +55,42 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="mb-3">
+                  <label for="apply_to" class="form-label">Áp dụng cho <span class="text-danger">*</span></label>
+                  <select name="apply_to" 
+                          id="apply_to" 
+                          class="form-select <?= !empty($errors['apply_to']) ? 'is-invalid' : '' ?>" 
+                          required>
+                    <option value="ticket" <?= ($_POST['apply_to'] ?? 'ticket') === 'ticket' ? 'selected' : '' ?>>Vé phim</option>
+                    <option value="food" <?= ($_POST['apply_to'] ?? '') === 'food' ? 'selected' : '' ?>>Đồ ăn & đồ uống</option>
+                    <option value="combo" <?= ($_POST['apply_to'] ?? '') === 'combo' ? 'selected' : '' ?>>Combo vé + F&B</option>
+                  </select>
+                  <?php if (!empty($errors['apply_to'])): ?>
+                    <div class="text-danger small mt-1"><?= $errors['apply_to'] ?></div>
+                  <?php endif; ?>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="status" class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                  <select name="status" 
+                          id="status" 
+                          class="form-select <?= !empty($errors['status']) ? 'is-invalid' : '' ?>" 
+                          required>
+                    <option value="active" <?= ($_POST['status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Đang hoạt động</option>
+                    <option value="upcoming" <?= ($_POST['status'] ?? '') === 'upcoming' ? 'selected' : '' ?>>Sắp diễn ra</option>
+                    <option value="inactive" <?= ($_POST['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Đã tắt</option>
+                  </select>
+                  <?php if (!empty($errors['status'])): ?>
+                    <div class="text-danger small mt-1"><?= $errors['status'] ?></div>
+                  <?php endif; ?>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
                   <label for="discount_percent" class="form-label">Phần trăm giảm giá (%) <span class="text-danger">*</span></label>
                   <input type="number" 
                          name="discount_percent" 
@@ -74,17 +110,18 @@
 
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label for="status" class="form-label">Trạng thái <span class="text-danger">*</span></label>
-                  <select name="status" 
-                          id="status" 
-                          class="form-select <?= !empty($errors['status']) ? 'is-invalid' : '' ?>" 
-                          required>
-                    <option value="active" <?= ($_POST['status'] ?? 'active') === 'active' ? 'selected' : '' ?>>Đang hoạt động</option>
-                    <option value="upcoming" <?= ($_POST['status'] ?? '') === 'upcoming' ? 'selected' : '' ?>>Sắp diễn ra</option>
-                    <option value="inactive" <?= ($_POST['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Đã tắt</option>
-                  </select>
-                  <?php if (!empty($errors['status'])): ?>
-                    <div class="text-danger small mt-1"><?= $errors['status'] ?></div>
+                  <label for="max_discount" class="form-label">Giảm tối đa (VNĐ)</label>
+                  <input type="number" 
+                         name="max_discount" 
+                         id="max_discount" 
+                         class="form-control <?= !empty($errors['max_discount']) ? 'is-invalid' : '' ?>" 
+                         value="<?= htmlspecialchars($_POST['max_discount'] ?? '') ?>" 
+                         min="0"
+                         step="1000"
+                         placeholder="VD: 60000">
+                  <small class="form-text text-muted">Để trống nếu không giới hạn</small>
+                  <?php if (!empty($errors['max_discount'])): ?>
+                    <div class="text-danger small mt-1"><?= $errors['max_discount'] ?></div>
                   <?php endif; ?>
                 </div>
               </div>

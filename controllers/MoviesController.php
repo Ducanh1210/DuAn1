@@ -347,6 +347,16 @@ class MoviesController
     }
 
     /**
+     * Hiển thị trang giới thiệu (Client)
+     */
+    public function gioithieu()
+    {
+        // Include view client (không dùng layout chung)
+        require_once __DIR__ . '/../views/client/gioithieu.php';
+        exit; // Dừng lại để không render layout admin
+    }
+
+    /**
      * Hiển thị trang khuyến mãi (Client)
      */
     public function khuyenmai()
@@ -355,7 +365,7 @@ class MoviesController
         $discounts = array_map(function ($record) {
             return [
                 'title' => $record['title'],
-                'tag' => 'ticket', // All discounts apply to tickets only
+                'tag' => $record['apply_to'] ?? 'ticket',
                 'status' => $record['status'] ?? 'active',
                 'period' => $this->formatDiscountPeriod(
                     $record['start_date'] ?? null,
@@ -404,10 +414,10 @@ class MoviesController
             ],
         ];
 
-        // All discount codes are for tickets only
-        $totalDiscounts = $stats['total'] ?? 0;
         $heroStats = [
-            ['label' => 'Mã vé phim', 'value' => (string)$totalDiscounts]
+            ['label' => 'Mã vé phim', 'value' => (string)($stats['ticket'] ?? 0)],
+            ['label' => 'Ưu đãi đồ ăn', 'value' => (string)($stats['food'] ?? 0)],
+            ['label' => 'Combo đặc biệt', 'value' => (string)($stats['combo'] ?? 0)]
         ];
 
         renderClient('client/khuyenmai.php', [
