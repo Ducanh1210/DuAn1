@@ -1556,41 +1556,6 @@ INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_dat
 -- --------------------------------------------------------
 
 --
--- Table structure for table `vouchers`
---
-
-CREATE TABLE `vouchers` (
-  `id` int NOT NULL,
-  `title` varchar(255) NOT NULL COMMENT 'Tiêu đề khuyến mãi',
-  `description` text COMMENT 'Mô tả chi tiết khuyến mãi',
-  `tag` varchar(50) DEFAULT 'general' COMMENT 'Loại khuyến mãi: general, flash, member, newuser, student, combo, etc.',
-  `code` varchar(50) DEFAULT NULL COMMENT 'Mã giảm giá (hiển thị cho người dùng)',
-  `discount_code_id` int DEFAULT NULL COMMENT 'ID mã giảm giá trong bảng discount_codes (liên kết với mã giảm giá thực tế)',
-  `benefits` text COMMENT 'Danh sách lợi ích (mỗi lợi ích cách nhau bởi dấu |)',
-  `period` varchar(255) DEFAULT NULL COMMENT 'Chuỗi hiển thị thời gian áp dụng (VD: "01/11/2025 - 31/12/2025")',
-  `image` varchar(255) DEFAULT NULL COMMENT 'Hình ảnh banner khuyến mãi',
-  `start_date` datetime DEFAULT NULL COMMENT 'Ngày bắt đầu',
-  `end_date` datetime DEFAULT NULL COMMENT 'Ngày kết thúc',
-  `status` varchar(20) DEFAULT 'active' COMMENT 'Trạng thái: active, inactive, ongoing, upcoming, ended',
-  `cta` varchar(100) DEFAULT 'Đặt vé ngay' COMMENT 'Text nút call-to-action',
-  `cta_link` varchar(255) DEFAULT NULL COMMENT 'Link khi click CTA (mặc định: trang đặt vé)',
-  `priority` int DEFAULT '0' COMMENT 'Độ ưu tiên hiển thị (số càng cao càng hiển thị trước)',
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng quản lý voucher/khuyến mãi';
-
---
--- Dumping data for table `vouchers`
---
-
-INSERT INTO `vouchers` (`id`, `title`, `description`, `tag`, `code`, `discount_code_id`, `benefits`, `period`, `image`, `start_date`, `end_date`, `status`, `cta`, `cta_link`, `priority`, `created_at`, `updated_at`) VALUES
-(1, 'Giảm 20% cho thành viên mới', 'Đăng ký tài khoản mới và nhận ngay 20% giảm giá cho lần đặt vé đầu tiên. Áp dụng cho tất cả các suất chiếu.', 'newuser', 'WELCOME20', NULL, 'Giảm 20% cho lần đặt vé đầu tiên|Áp dụng cho tất cả suất chiếu|Không giới hạn số lượng vé|Có thể kết hợp với ưu đãi khác', '01/11/2025 - 31/12/2025', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đăng ký ngay', NULL, 10, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
-(2, 'Flash Sale - Giảm 50% thứ 2 hàng tuần', 'Mỗi thứ 2 hàng tuần, giảm 50% cho tất cả vé xem phim. Chỉ áp dụng khi đặt vé online.', 'flash', 'MONDAY50', NULL, 'Giảm 50% cho tất cả vé|Chỉ áp dụng thứ 2 hàng tuần|Đặt vé online|Áp dụng cho tất cả phim', 'Mỗi thứ 2 hàng tuần', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đặt vé ngay', NULL, 9, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
-(4, 'Ưu đãi sinh viên - Giảm 30%', 'Sinh viên được giảm 30% khi xuất trình thẻ sinh viên hợp lệ. Áp dụng cho tất cả suất chiếu.', 'student', 'STUDENT30', NULL, 'Giảm 30% cho sinh viên|Xuất trình thẻ sinh viên|Áp dụng tất cả suất chiếu|Không giới hạn số lần sử dụng', 'Áp dụng thường xuyên', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Đặt vé ngay', NULL, 7, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
-(5, 'Thành viên VIP - Giảm 15% mỗi đơn', 'Thành viên hạng VIP được giảm 15% tự động cho mọi đơn đặt vé. Không cần nhập mã.', 'member', NULL, NULL, 'Giảm 15% tự động|Áp dụng cho mọi đơn hàng|Không cần nhập mã|Tích điểm thưởng', 'Áp dụng thường xuyên', NULL, '2025-11-01 00:00:00', '2025-12-31 23:59:59', 'ongoing', 'Nâng cấp VIP', NULL, 6, '2025-11-20 22:14:09', '2025-11-20 22:14:09'),
-(6, 'Black Friday - Giảm đến 70%', 'Chương trình Black Friday đặc biệt. Giảm giá lên đến 70% cho các suất chiếu được chọn.', 'flash', 'BLACKFRIDAY70', NULL, 'Giảm đến 70%|Áp dụng cho suất chiếu được chọn|Chỉ trong ngày Black Friday|Số lượng có hạn', '29/11/2025', NULL, '2025-11-29 00:00:00', '2025-11-29 23:59:59', 'upcoming', 'Sắp diễn ra', NULL, 5, '2025-11-20 22:14:09', '2025-11-20 22:14:09');
-
---
 -- Indexes for dumped tables
 --
 
@@ -1728,16 +1693,6 @@ ALTER TABLE `users`
   ADD KEY `fk_users_tiers` (`tier_id`);
 
 --
--- Indexes for table `vouchers`
---
-ALTER TABLE `vouchers`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_dates` (`start_date`,`end_date`),
-  ADD KEY `idx_discount_code` (`discount_code_id`),
-  ADD KEY `idx_tag` (`tag`);
-
---
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -1850,12 +1805,6 @@ ALTER TABLE `users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT for table `vouchers`
---
-ALTER TABLE `vouchers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
 -- Constraints for dumped tables
 --
 
@@ -1926,12 +1875,6 @@ ALTER TABLE `showtimes`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `fk_users_tiers` FOREIGN KEY (`tier_id`) REFERENCES `customer_tiers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Constraints for table `vouchers`
---
-ALTER TABLE `vouchers`
-  ADD CONSTRAINT `fk_vouchers_discount_code` FOREIGN KEY (`discount_code_id`) REFERENCES `discount_codes` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- --------------------------------------------------------
 
