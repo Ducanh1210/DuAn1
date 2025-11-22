@@ -54,6 +54,7 @@ match ($act) {
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
     'khuyenmai' => (new MoviesController)->khuyenmai(),
+    'lienhe' => (new MoviesController)->lienhe(),
     'giave' => (new TicketPriceController)->index(),
     'khuyenmai' => (new MoviesController)->khuyenmai(),
     'check-voucher' => (new MoviesController)->checkVoucher(),

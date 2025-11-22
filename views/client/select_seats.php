@@ -849,10 +849,15 @@ function validateAllGroups() {
                 }
             }
             
+            // QUAN TRỌNG: Phải có ÍT NHẤT 2 ghế trống giữa 2 nhóm
             // Nếu khoảng cách thực tế < 2 HOẶC số ghế trống < 2 thì không hợp lệ - CẤM
             if (actualDistance < 2 || emptySeatsCount < 2) {
                 return false;
             }
+            
+            // KIỂM TRA BỔ SUNG: Không được có ghế maintenance ở giữa 2 nhóm
+            // Nếu có ghế maintenance ở giữa, vẫn phải đảm bảo có ít nhất 2 ghế trống (không tính maintenance)
+            // Logic trên đã đếm emptySeatsCount (không tính maintenance), nên nếu emptySeatsCount < 2 thì đã bị chặn
         }
     }
     
@@ -905,16 +910,21 @@ function canSelectSeatGroup(startSeatElement, groupSize) {
     if (startSeatIndex === -1) return false;
     
     // Tính toán các ghế sẽ được chọn trong nhóm mới (tạm thời, không đánh dấu)
+    // Các ghế PHẢI liền kề nhau về mặt vị trí (index liên tiếp)
     const newGroupIndices = [];
     let currentIndex = startSeatIndex;
     let foundCount = 0;
     
-    // Tìm các ghế liền nhau về phía sau
+    // Tìm các ghế liền nhau về phía sau (index tăng dần)
     while (foundCount < groupSize && currentIndex < allSeatsInRow.length) {
         const seat = allSeatsInRow[currentIndex];
+        
+        // Nếu gặp ghế đã đặt hoặc bảo trì -> KHÔNG THỂ chọn liền kề
         if (seat.classList.contains('booked') || seat.classList.contains('maintenance')) {
-            break;
+            break; // Dừng lại, không thể chọn liền kề
         }
+        
+        // Bỏ qua ghế đã được chọn
         if (!seat.classList.contains('selected')) {
             newGroupIndices.push(currentIndex);
             foundCount++;
@@ -922,15 +932,19 @@ function canSelectSeatGroup(startSeatElement, groupSize) {
         currentIndex++;
     }
     
-    // Nếu không đủ, tìm về phía trước
+    // Nếu không đủ, tìm về phía trước (index giảm dần)
     if (foundCount < groupSize) {
         currentIndex = startSeatIndex - 1;
         const reverseIndices = [];
         while (reverseIndices.length + foundCount < groupSize && currentIndex >= 0) {
             const seat = allSeatsInRow[currentIndex];
+            
+            // Nếu gặp ghế đã đặt hoặc bảo trì -> KHÔNG THỂ chọn liền kề
             if (seat.classList.contains('booked') || seat.classList.contains('maintenance')) {
-                break;
+                break; // Dừng lại, không thể chọn liền kề
             }
+            
+            // Bỏ qua ghế đã được chọn
             if (!seat.classList.contains('selected')) {
                 reverseIndices.unshift(currentIndex);
             }
@@ -944,10 +958,30 @@ function canSelectSeatGroup(startSeatElement, groupSize) {
         return false; // Không đủ ghế liền nhau
     }
     
+    // Kiểm tra: các ghế phải THỰC SỰ liền kề nhau (index liên tiếp)
+    newGroupIndices.sort((a, b) => a - b);
+    for (let i = 1; i < newGroupIndices.length; i++) {
+        if (newGroupIndices[i] !== newGroupIndices[i - 1] + 1) {
+            return false; // Có khoảng trống giữa các ghế - không liền kề
+        }
+    }
+    
+    // KIỂM TRA QUAN TRỌNG: Không cho phép chọn ghế 2 bên của ghế maintenance
+    // Kiểm tra xem có ghế maintenance ở giữa nhóm mới không
     const newGroupMinIndex = Math.min(...newGroupIndices);
     const newGroupMaxIndex = Math.max(...newGroupIndices);
     
-    // Lấy tất cả các ghế đã chọn trong hàng này (bao gồm cả trong nhóm và ngoài nhóm)
+    // Kiểm tra tất cả các ghế trong khoảng từ min đến max
+    for (let i = newGroupMinIndex; i <= newGroupMaxIndex; i++) {
+        const seat = allSeatsInRow[i];
+        if (seat && seat.classList.contains('maintenance')) {
+            return false; // CÓ GHẾ MAINTENANCE Ở GIỮA NHÓM - CẤM CHỌN
+        }
+    }
+    
+    // KIỂM TRA QUAN TRỌNG: Không cho phép chọn ghế 2 bên của ghế maintenance
+    // Kiểm tra xem có ghế maintenance ở giữa nhóm mới và các ghế đã chọn không
+    // Lấy tất cả các ghế đã chọn trong hàng này
     const allSelectedSeatIndices = [];
     
     // Lấy từ các nhóm đã chọn
@@ -970,6 +1004,74 @@ function canSelectSeatGroup(startSeatElement, groupSize) {
         }
     });
     
+    // Kiểm tra xem có ghế maintenance ở giữa nhóm mới và các ghế đã chọn không
+    if (allSelectedSeatIndices.length > 0) {
+        const minSelectedIndex = Math.min(...allSelectedSeatIndices);
+        const maxSelectedIndex = Math.max(...allSelectedSeatIndices);
+        
+        // Kiểm tra xem nhóm mới có nằm ở bên trái hay bên phải các ghế đã chọn
+        if (newGroupMaxIndex < minSelectedIndex) {
+            // Nhóm mới ở bên trái, kiểm tra từ newGroupMaxIndex đến minSelectedIndex
+            for (let i = newGroupMaxIndex + 1; i < minSelectedIndex; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('maintenance')) {
+                    return false; // CÓ GHẾ MAINTENANCE Ở GIỮA - CẤM CHỌN
+                }
+            }
+        } else if (newGroupMinIndex > maxSelectedIndex) {
+            // Nhóm mới ở bên phải, kiểm tra từ maxSelectedIndex đến newGroupMinIndex
+            for (let i = maxSelectedIndex + 1; i < newGroupMinIndex; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('maintenance')) {
+                    return false; // CÓ GHẾ MAINTENANCE Ở GIỮA - CẤM CHỌN
+                }
+            }
+        } else {
+            // Nhóm mới nằm trong khoảng các ghế đã chọn (không nên xảy ra nhưng kiểm tra để chắc chắn)
+            // Kiểm tra tất cả các ghế trong khoảng từ min đến max
+            const checkMin = Math.min(newGroupMinIndex, minSelectedIndex);
+            const checkMax = Math.max(newGroupMaxIndex, maxSelectedIndex);
+            for (let i = checkMin; i <= checkMax; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('maintenance')) {
+                    return false; // CÓ GHẾ MAINTENANCE Ở GIỮA - CẤM CHỌN
+                }
+            }
+        }
+    }
+    
+    // Kiểm tra xem có ghế maintenance ngay sát bên ngoài nhóm không (cũng không cho phép)
+    // Kiểm tra ghế bên trái nhóm
+    if (newGroupMinIndex > 0) {
+        const leftSeat = allSeatsInRow[newGroupMinIndex - 1];
+        if (leftSeat && leftSeat.classList.contains('maintenance')) {
+            // Nếu ghế bên trái là maintenance, kiểm tra xem có ghế nào được chọn ở bên trái maintenance không
+            // Nếu có thì không cho phép (vì sẽ tạo ra ghế maintenance ở giữa)
+            for (let i = 0; i < newGroupMinIndex - 1; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('selected')) {
+                    return false; // CÓ GHẾ ĐÃ CHỌN Ở BÊN TRÁI MAINTENANCE - CẤM CHỌN NHÓM MỚI Ở BÊN PHẢI
+                }
+            }
+        }
+    }
+    
+    // Kiểm tra ghế bên phải nhóm
+    if (newGroupMaxIndex < allSeatsInRow.length - 1) {
+        const rightSeat = allSeatsInRow[newGroupMaxIndex + 1];
+        if (rightSeat && rightSeat.classList.contains('maintenance')) {
+            // Nếu ghế bên phải là maintenance, kiểm tra xem có ghế nào được chọn ở bên phải maintenance không
+            // Nếu có thì không cho phép (vì sẽ tạo ra ghế maintenance ở giữa)
+            for (let i = newGroupMaxIndex + 2; i < allSeatsInRow.length; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('selected')) {
+                    return false; // CÓ GHẾ ĐÃ CHỌN Ở BÊN PHẢI MAINTENANCE - CẤM CHỌN NHÓM MỚI Ở BÊN TRÁI
+                }
+            }
+        }
+    }
+    
+    // Lấy lại danh sách các ghế đã chọn (đã lấy ở trên, nhưng cần kiểm tra lại để tính khoảng cách)
     if (allSelectedSeatIndices.length === 0) {
         return true; // Chưa có ghế nào được chọn
     }
@@ -1024,6 +1126,7 @@ function canSelectSeatGroup(startSeatElement, groupSize) {
                 }
             }
             
+            // QUAN TRỌNG: Phải có ÍT NHẤT 2 ghế trống giữa 2 nhóm
             // Nếu khoảng cách thực tế < 2 HOẶC số ghế trống < 2 thì không cho phép
             if (actualDistance < 2 || emptySeatsCount < 2) {
                 return false; // Cách ít hơn 2 ghế - CẤM
@@ -1046,6 +1149,7 @@ function canSelectSeatGroup(startSeatElement, groupSize) {
                 }
             }
             
+            // QUAN TRỌNG: Phải có ÍT NHẤT 2 ghế trống giữa 2 nhóm
             // Nếu khoảng cách thực tế < 2 HOẶC số ghế trống < 2 thì không cho phép
             if (actualDistance < 2 || emptySeatsCount < 2) {
                 return false; // Cách ít hơn 2 ghế - CẤM
@@ -1061,7 +1165,7 @@ function canSelectSeatGroup(startSeatElement, groupSize) {
 }
 
 function selectAdjacentSeats(startSeatElement, count) {
-    // Tìm các ghế liền nhau từ ghế bắt đầu (chỉ lấy ghế available, không lấy ghế đã đặt/bảo trì)
+    // Tìm các ghế liền nhau từ ghế bắt đầu - PHẢI LIỀN KỀ VỀ MẶT VỊ TRÍ (index liên tiếp)
     const row = startSeatElement.closest('.seat-row');
     if (!row) return [];
     
@@ -1071,27 +1175,27 @@ function selectAdjacentSeats(startSeatElement, count) {
     
     if (startSeatIndex === -1) return [];
     
-    // Kiểm tra xem có đủ ghế liền nhau không (không có ghế trống ở giữa)
+    // Tìm các ghế liền kề về phía sau (index tăng dần)
     const seatsToSelect = [];
     let currentIndex = startSeatIndex;
-    let consecutiveCount = 0;
+    let foundCount = 0;
     
-    // Tìm các ghế liền nhau về phía sau
-    while (consecutiveCount < count && currentIndex < allSeatsInRow.length) {
+    // Tìm về phía sau trước
+    while (foundCount < count && currentIndex < allSeatsInRow.length) {
         const seat = allSeatsInRow[currentIndex];
         
-        // Bỏ qua ghế đã đặt hoặc bảo trì
+        // Nếu gặp ghế đã đặt hoặc bảo trì -> KHÔNG THỂ chọn liền kề, phải dừng lại
         if (seat.classList.contains('booked') || seat.classList.contains('maintenance')) {
-            // Nếu gặp ghế đã đặt/bảo trì, không thể chọn liền nhau từ đây
-            break;
+            break; // Không thể chọn liền kề nếu có ghế maintenance/booked ở giữa
         }
         
-        // Bỏ qua ghế đã được chọn
+        // Nếu ghế đã được chọn, bỏ qua nhưng vẫn tiếp tục (có thể là ghế trong nhóm khác)
         if (seat.classList.contains('selected')) {
             currentIndex++;
             continue;
         }
         
+        // Ghế available, có thể chọn
         const seatId = seat.getAttribute('data-seat-id');
         const seatLabel = seat.getAttribute('data-seat-label');
         const seatType = seat.getAttribute('data-seat-type');
@@ -1106,29 +1210,30 @@ function selectAdjacentSeats(startSeatElement, count) {
             index: currentIndex
         });
         
-        consecutiveCount++;
+        foundCount++;
         currentIndex++;
     }
     
-    // Nếu không đủ số lượng ghế liền nhau, thử tìm về phía trước
-    if (consecutiveCount < count) {
+    // Nếu không đủ, thử tìm về phía trước (index giảm dần)
+    if (foundCount < count) {
         currentIndex = startSeatIndex - 1;
         const reverseSeats = [];
         
-        while (reverseSeats.length + consecutiveCount < count && currentIndex >= 0) {
+        while (reverseSeats.length + foundCount < count && currentIndex >= 0) {
             const seat = allSeatsInRow[currentIndex];
             
-            // Bỏ qua ghế đã đặt hoặc bảo trì
+            // Nếu gặp ghế đã đặt hoặc bảo trì -> KHÔNG THỂ chọn liền kề, phải dừng lại
             if (seat.classList.contains('booked') || seat.classList.contains('maintenance')) {
-                break;
+                break; // Không thể chọn liền kề nếu có ghế maintenance/booked ở giữa
             }
             
-            // Bỏ qua ghế đã được chọn
+            // Nếu ghế đã được chọn, bỏ qua nhưng vẫn tiếp tục
             if (seat.classList.contains('selected')) {
                 currentIndex--;
                 continue;
             }
             
+            // Ghế available, có thể chọn
             const seatId = seat.getAttribute('data-seat-id');
             const seatLabel = seat.getAttribute('data-seat-label');
             const seatType = seat.getAttribute('data-seat-type');
@@ -1148,13 +1253,101 @@ function selectAdjacentSeats(startSeatElement, count) {
         
         // Kết hợp ghế từ cả hai phía
         seatsToSelect.unshift(...reverseSeats);
-        consecutiveCount = seatsToSelect.length;
+        foundCount = seatsToSelect.length;
     }
     
-    // Kiểm tra xem có đủ số lượng ghế liền nhau không
-    if (consecutiveCount < count) {
-        alert(`Không đủ ${count} ghế liền nhau từ vị trí này! Các ghế phải ngồi cạnh nhau.`);
+    // Kiểm tra: các ghế phải THỰC SỰ liền kề nhau (index liên tiếp, không có khoảng trống)
+    if (foundCount < count) {
+        alert(`Không đủ ${count} ghế liền nhau từ vị trí này! Các ghế phải ngồi cạnh nhau, không được có ghế trống ở giữa.`);
         return [];
+    }
+    
+    // Kiểm tra xem các ghế có thực sự liền kề nhau không (index phải liên tiếp)
+    const indices = seatsToSelect.map(s => s.index).sort((a, b) => a - b);
+    for (let i = 1; i < indices.length; i++) {
+        if (indices[i] !== indices[i - 1] + 1) {
+            // Có khoảng trống giữa các ghế (có thể do ghế maintenance/booked)
+            alert(`Các ghế phải ngồi liền kề nhau! Không được có ghế trống hoặc ghế bảo trì ở giữa.`);
+            return [];
+        }
+    }
+    
+    // KIỂM TRA QUAN TRỌNG: Không cho phép chọn ghế 2 bên của ghế maintenance
+    // Kiểm tra xem có ghế maintenance ở giữa các ghế sẽ chọn không
+    const minIndex = Math.min(...indices);
+    const maxIndex = Math.max(...indices);
+    
+    for (let i = minIndex; i <= maxIndex; i++) {
+        const seat = allSeatsInRow[i];
+        if (seat && seat.classList.contains('maintenance')) {
+            alert(`CẤM: Không được chọn ghế 2 bên của ghế bảo trì! Các ghế phải liền kề nhau, không được có ghế bảo trì ở giữa.`);
+            return [];
+        }
+    }
+    
+    // KIỂM TRA QUAN TRỌNG: Kiểm tra xem có ghế maintenance ở giữa nhóm mới và các ghế đã chọn không
+    // Lấy tất cả các ghế đã chọn trong hàng này
+    const allSelectedSeatIndicesInRow = [];
+    allSeatsInRow.forEach((seat, idx) => {
+        if (seat.classList.contains('selected') && !indices.includes(idx)) {
+            allSelectedSeatIndicesInRow.push(idx);
+        }
+    });
+    
+    if (allSelectedSeatIndicesInRow.length > 0) {
+        const minSelectedIndex = Math.min(...allSelectedSeatIndicesInRow);
+        const maxSelectedIndex = Math.max(...allSelectedSeatIndicesInRow);
+        
+        // Kiểm tra xem nhóm mới có nằm ở bên trái hay bên phải các ghế đã chọn
+        if (maxIndex < minSelectedIndex) {
+            // Nhóm mới ở bên trái, kiểm tra từ maxIndex đến minSelectedIndex
+            for (let i = maxIndex + 1; i < minSelectedIndex; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('maintenance')) {
+                    alert(`CẤM: Không được chọn ghế 2 bên của ghế bảo trì! Có ghế bảo trì ở giữa các ghế đã chọn và ghế mới.`);
+                    return [];
+                }
+            }
+        } else if (minIndex > maxSelectedIndex) {
+            // Nhóm mới ở bên phải, kiểm tra từ maxSelectedIndex đến minIndex
+            for (let i = maxSelectedIndex + 1; i < minIndex; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('maintenance')) {
+                    alert(`CẤM: Không được chọn ghế 2 bên của ghế bảo trì! Có ghế bảo trì ở giữa các ghế đã chọn và ghế mới.`);
+                    return [];
+                }
+            }
+        }
+    }
+    
+    // Kiểm tra xem có ghế maintenance ngay sát bên ngoài nhóm không
+    // Nếu có ghế đã chọn ở bên kia của ghế maintenance, không cho phép
+    if (minIndex > 0) {
+        const leftSeat = allSeatsInRow[minIndex - 1];
+        if (leftSeat && leftSeat.classList.contains('maintenance')) {
+            // Kiểm tra xem có ghế nào đã được chọn ở bên trái maintenance không
+            for (let i = 0; i < minIndex - 1; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('selected')) {
+                    alert(`CẤM: Không được chọn ghế 2 bên của ghế bảo trì! Đã có ghế được chọn ở bên trái ghế bảo trì.`);
+                    return [];
+                }
+            }
+        }
+    }
+    
+    if (maxIndex < allSeatsInRow.length - 1) {
+        const rightSeat = allSeatsInRow[maxIndex + 1];
+        if (rightSeat && rightSeat.classList.contains('maintenance')) {
+            // Kiểm tra xem có ghế nào đã được chọn ở bên phải maintenance không
+            for (let i = maxIndex + 2; i < allSeatsInRow.length; i++) {
+                const seat = allSeatsInRow[i];
+                if (seat && seat.classList.contains('selected')) {
+                    alert(`CẤM: Không được chọn ghế 2 bên của ghế bảo trì! Đã có ghế được chọn ở bên phải ghế bảo trì.`);
+                    return [];
+                }
+            }
+        }
     }
     
     // KHÔNG đánh dấu ghế ở đây - sẽ đánh dấu sau khi kiểm tra validation

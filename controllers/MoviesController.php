@@ -735,6 +735,14 @@ class MoviesController
     }
 
     /**
+     * Hiển thị trang liên hệ
+     */
+    public function lienhe()
+    {
+        renderClient('client/lienhe.php', [], 'Liên Hệ');
+    }
+
+    /**
      * Lấy tên thứ trong tuần bằng tiếng Việt
      */
     private function getDayNameVietnamese($dayOfWeek)
