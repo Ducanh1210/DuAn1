@@ -55,23 +55,6 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label for="apply_to" class="form-label">Áp dụng cho <span class="text-danger">*</span></label>
-                  <select name="apply_to"
-                    id="apply_to"
-                    class="form-select <?= !empty($errors['apply_to']) ? 'is-invalid' : '' ?>"
-                    required>
-                    <option value="ticket" <?= ($_POST['apply_to'] ?? $discount['apply_to']) === 'ticket' ? 'selected' : '' ?>>Vé phim</option>
-                    <option value="food" <?= ($_POST['apply_to'] ?? $discount['apply_to']) === 'food' ? 'selected' : '' ?>>Đồ ăn & đồ uống</option>
-                    <option value="combo" <?= ($_POST['apply_to'] ?? $discount['apply_to']) === 'combo' ? 'selected' : '' ?>>Combo vé + F&B</option>
-                  </select>
-                  <?php if (!empty($errors['apply_to'])): ?>
-                    <div class="text-danger small mt-1"><?= $errors['apply_to'] ?></div>
-                  <?php endif; ?>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="mb-3">
                   <label for="status" class="form-label">Trạng thái <span class="text-danger">*</span></label>
                   <select name="status"
                     id="status"

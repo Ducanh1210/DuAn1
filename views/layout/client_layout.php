@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php endif; ?>
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'gioithieu.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/gioithieu.css">
+    <?php endif; ?>
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'khuyenmai.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/khuyenmai.css">
     <?php endif; ?>
@@ -58,7 +60,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <a href="<?= BASE_URL ?>?act=lichchieu" class="<?= $isLichChieu ? 'active' : '' ?>">Lịch Chiếu</a>
                 <a href="<?= BASE_URL ?>?act=khuyenmai" class="<?= $isKhuyenMai ? 'active' : '' ?>">Khuyến Mãi</a>
                 <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
-                <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a
+                <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
             </nav>
 
             <div class="nav-actions">
@@ -94,7 +96,7 @@ if (session_status() === PHP_SESSION_NONE) {
                             <div class="search-field">
                                 <label for="searchInput">Tìm kiếm phim</label>
                                 <input type="text" name="search" id="searchInput"
-                                    placeholder="Nhập tên phim..." 
+                                    placeholder="Nhập tên phim..."
                                     value="<?= htmlspecialchars($currentSearch) ?>">
                             </div>
                             <div class="search-field">
@@ -263,7 +265,7 @@ if (session_status() === PHP_SESSION_NONE) {
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
         // Search box toggle functionality
-        (function () {
+        (function() {
             const searchIcon = document.getElementById('searchIcon');
             const searchBox = document.getElementById('searchBox');
             const searchInput = document.getElementById('searchInput');
@@ -271,7 +273,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
             // Toggle search box khi click vào icon
             if (searchIcon) {
-                searchIcon.addEventListener('click', function (e) {
+                searchIcon.addEventListener('click', function(e) {
                     e.stopPropagation();
                     searchBox.classList.add('active');
                     searchInput.focus();
@@ -279,7 +281,7 @@ if (session_status() === PHP_SESSION_NONE) {
             }
 
             // Đóng search box khi click bên ngoài
-            document.addEventListener('click', function (e) {
+            document.addEventListener('click', function(e) {
                 if (!searchBox.contains(e.target) && !searchIcon.contains(e.target)) {
                     searchBox.classList.remove('active');
                 }
@@ -288,7 +290,7 @@ if (session_status() === PHP_SESSION_NONE) {
             // Xử lý khi nhấn Enter trong search input
             const searchForm = document.getElementById('searchForm');
             if (searchInput) {
-                searchInput.addEventListener('keypress', function (e) {
+                searchInput.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         if (searchForm) {
@@ -300,7 +302,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
             // Xử lý khi click vào nút search
             if (searchBtn) {
-                searchBtn.addEventListener('click', function (e) {
+                searchBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     if (searchForm) {
                         searchForm.submit();
