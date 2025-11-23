@@ -6,13 +6,13 @@ if (session_status() === PHP_SESSION_NONE) {
 ?>
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $GLOBALS['pageTitle'] ?? 'TicketHub' ?> | TicketHub</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/style.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/notifications.css">
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'movies.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/movies.css">
     <?php endif; ?>
@@ -24,6 +24,9 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php endif; ?>
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'khuyenmai.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/khuyenmai.css">
+    <?php endif; ?>
+    <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'lienhe.php') !== false): ?>
+        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lienhe.css?v=<?= time() ?>">
     <?php endif; ?>
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap"
@@ -61,9 +64,26 @@ if (session_status() === PHP_SESSION_NONE) {
                 <a href="<?= BASE_URL ?>?act=khuyenmai" class="<?= $isKhuyenMai ? 'active' : '' ?>">Khuyến Mãi</a>
                 <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
                 <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
+               
             </nav>
 
             <div class="nav-actions">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <!-- Notifications for logged-in users - ĐẶT TRƯỚC SEARCH -->
+                    <div class="notification-wrapper">
+                        <i class="bi bi-bell notification-icon" id="clientNotificationIcon"></i>
+                        <span class="notification-badge" id="clientNotificationBadge" style="display: none;">0</span>
+                        <div class="notification-dropdown" id="clientNotificationDropdown" style="display: none;">
+                            <div class="notification-header">
+                                <h6>Thông báo</h6>
+                                <button class="btn-mark-all-read" id="clientMarkAllReadBtn">Đánh dấu tất cả đã đọc</button>
+                            </div>
+                            <div class="notification-list" id="clientNotificationList">
+                                <div class="notification-empty">Không có thông báo mới</div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <div class="search-wrapper">
                     <i class="bi bi-search search-icon" id="searchIcon" title="Tìm kiếm"></i>
                     <div class="search-box" id="searchBox">
@@ -96,7 +116,7 @@ if (session_status() === PHP_SESSION_NONE) {
                             <div class="search-field">
                                 <label for="searchInput">Tìm kiếm phim</label>
                                 <input type="text" name="search" id="searchInput"
-                                    placeholder="Nhập tên phim..."
+                                    placeholder="Nhập tên phim..." 
                                     value="<?= htmlspecialchars($currentSearch) ?>">
                             </div>
                             <div class="search-field">
@@ -265,7 +285,7 @@ if (session_status() === PHP_SESSION_NONE) {
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
         // Search box toggle functionality
-        (function() {
+        (function () {
             const searchIcon = document.getElementById('searchIcon');
             const searchBox = document.getElementById('searchBox');
             const searchInput = document.getElementById('searchInput');
@@ -273,7 +293,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
             // Toggle search box khi click vào icon
             if (searchIcon) {
-                searchIcon.addEventListener('click', function(e) {
+                searchIcon.addEventListener('click', function (e) {
                     e.stopPropagation();
                     searchBox.classList.add('active');
                     searchInput.focus();
@@ -281,7 +301,7 @@ if (session_status() === PHP_SESSION_NONE) {
             }
 
             // Đóng search box khi click bên ngoài
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (!searchBox.contains(e.target) && !searchIcon.contains(e.target)) {
                     searchBox.classList.remove('active');
                 }
@@ -290,7 +310,7 @@ if (session_status() === PHP_SESSION_NONE) {
             // Xử lý khi nhấn Enter trong search input
             const searchForm = document.getElementById('searchForm');
             if (searchInput) {
-                searchInput.addEventListener('keypress', function(e) {
+                searchInput.addEventListener('keypress', function (e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         if (searchForm) {
@@ -302,7 +322,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
             // Xử lý khi click vào nút search
             if (searchBtn) {
-                searchBtn.addEventListener('click', function(e) {
+                searchBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     if (searchForm) {
                         searchForm.submit();
@@ -330,6 +350,160 @@ if (session_status() === PHP_SESSION_NONE) {
                 });
             }
         })();
+
+        // Client Notifications functionality
+        <?php if (isset($_SESSION['user_id'])): ?>
+        (function() {
+            const notificationIcon = document.getElementById('clientNotificationIcon');
+            const notificationBadge = document.getElementById('clientNotificationBadge');
+            const notificationDropdown = document.getElementById('clientNotificationDropdown');
+            const notificationList = document.getElementById('clientNotificationList');
+            const markAllReadBtn = document.getElementById('clientMarkAllReadBtn');
+
+            if (!notificationIcon) return;
+
+            function loadNotifications() {
+                fetch('<?= BASE_URL ?>?act=api-client-notifications&unread_only=true')
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.success) {
+                      updateNotificationBadge(data.unread_count);
+                      if (data.notifications && data.notifications.length > 0) {
+                        renderNotifications(data.notifications);
+                      } else {
+                        notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                      }
+                    } else {
+                      console.error('Failed to load notifications:', data.message);
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error loading notifications:', error);
+                  });
+            }
+
+            function updateNotificationBadge(count) {
+                if (count > 0) {
+                    notificationBadge.textContent = count > 99 ? '99+' : count;
+                    notificationBadge.style.display = 'block';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+            }
+
+            function renderNotifications(notifications) {
+                // Only show unread notifications
+                const unreadNotifications = notifications.filter(notif => notif.is_read == 0);
+                
+                if (unreadNotifications.length === 0) {
+                    notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                    return;
+                }
+                
+                notificationList.innerHTML = unreadNotifications.map(notif => `
+                  <div class="notification-item unread" data-id="${notif.id}">
+                    <div class="notification-content">
+                      <div class="notification-title">${notif.title}</div>
+                      <div class="notification-message">${notif.message}</div>
+                      <div class="notification-time">${formatTime(notif.created_at)}</div>
+                    </div>
+                    ${notif.related_id ? `<a href="<?= BASE_URL ?>?act=my-bookings" class="notification-link">Xem chi tiết</a>` : ''}
+                  </div>
+                `).join('');
+
+                notificationList.querySelectorAll('.notification-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        // Don't trigger if clicking the link
+                        if (e.target.tagName === 'A') return;
+                        
+                        const id = this.dataset.id;
+                        if (id) {
+                            markAsRead(id);
+                        }
+                    });
+                });
+            }
+
+            function markAsRead(id) {
+                const formData = new FormData();
+                formData.append('id', id);
+                
+                fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-read', {
+                  method: 'POST',
+                  body: formData
+                })
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.success) {
+                      updateNotificationBadge(data.unread_count || 0);
+                      const item = notificationList.querySelector(`[data-id="${id}"]`);
+                      if (item) {
+                        // Remove notification from list since we only show unread
+                        item.remove();
+                        // If no more notifications, show empty message
+                        if (notificationList.children.length === 0) {
+                            notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                        }
+                      }
+                    }
+                  })
+                  .catch(error => console.error('Error marking notification as read:', error));
+            }
+
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-all-read', {
+                      method: 'POST'
+                    })
+                      .then(response => response.json())
+                      .then(data => {
+                        if (data.success) {
+                          // Update badge to 0 (will hide it)
+                          updateNotificationBadge(0);
+                          // Clear all notifications from list immediately
+                          notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                        }
+                      })
+                      .catch(error => console.error('Error marking all as read:', error));
+                });
+            }
+
+            notificationIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
+                    notificationDropdown.style.display = 'block';
+                    loadNotifications();
+                } else {
+                    notificationDropdown.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (notificationDropdown && notificationIcon && 
+                    !notificationDropdown.contains(e.target) && 
+                    !notificationIcon.contains(e.target)) {
+                    notificationDropdown.style.display = 'none';
+                }
+            });
+
+            function formatTime(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diff = Math.floor((now - date) / 1000);
+                if (diff < 60) return 'Vừa xong';
+                if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
+                if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
+                return date.toLocaleDateString('vi-VN');
+            }
+
+            // Load notifications ngay khi trang load
+            loadNotifications();
+            // Refresh notifications mỗi 10 giây để cập nhật nhanh hơn
+            setInterval(loadNotifications, 10000);
+        })();
+        <?php endif; ?>
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

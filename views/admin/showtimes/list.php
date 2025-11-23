@@ -17,6 +17,15 @@
             <label for="date" class="form-label">Lọc theo ngày:</label>
             <input type="date" name="date" id="date" class="form-control" value="<?= htmlspecialchars($selectedDate ?? '') ?>">
           </div>
+          <div class="col-md-3">
+            <label for="status" class="form-label">Lọc theo trạng thái:</label>
+            <select name="status" id="status" class="form-select">
+              <option value="">-- Tất cả --</option>
+              <option value="upcoming" <?= ($selectedStatus ?? '') === 'upcoming' ? 'selected' : '' ?>>Sắp chiếu</option>
+              <option value="showing" <?= ($selectedStatus ?? '') === 'showing' ? 'selected' : '' ?>>Đang chiếu</option>
+              <option value="ended" <?= ($selectedStatus ?? '') === 'ended' ? 'selected' : '' ?>>Dừng</option>
+            </select>
+          </div>
           <div class="col-md-3 d-flex align-items-end">
             <button type="submit" class="btn btn-secondary me-2">
               <i class="bi bi-funnel"></i> Lọc
@@ -40,6 +49,7 @@
               <th>Giờ bắt đầu</th>
               <th>Giờ kết thúc</th>
               <th>Định dạng</th>
+              <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -77,6 +87,31 @@
                   <span class="badge bg-info"><?= htmlspecialchars($item['format'] ?? '2D') ?></span>
                 </td>
                 <td>
+                  <?php
+                  $status = $item['status'] ?? 'ended';
+                  $statusText = '';
+                  $statusClass = '';
+                  switch ($status) {
+                    case 'upcoming':
+                      $statusText = 'Sắp chiếu';
+                      $statusClass = 'bg-primary';
+                      break;
+                    case 'showing':
+                      $statusText = 'Đang chiếu';
+                      $statusClass = 'bg-success';
+                      break;
+                    case 'ended':
+                      $statusText = 'Dừng';
+                      $statusClass = 'bg-secondary';
+                      break;
+                    default:
+                      $statusText = 'Dừng';
+                      $statusClass = 'bg-secondary';
+                  }
+                  ?>
+                  <span class="badge <?= $statusClass ?>"><?= $statusText ?></span>
+                </td>
+                <td>
                   <div class="btn-group" role="group">
                     <a href="<?= BASE_URL ?>?act=showtimes-show&id=<?= $item['id'] ?>" class="btn btn-sm btn-info" title="Xem chi tiết">
                       <i class="bi bi-eye"></i>
@@ -96,7 +131,7 @@
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="9" class="text-center text-muted py-4">
+                <td colspan="10" class="text-center text-muted py-4">
                   <i class="bi bi-calendar-x" style="font-size: 48px; display: block; margin-bottom: 10px;"></i>
                   Chưa có lịch chiếu nào
                 </td>
@@ -124,6 +159,9 @@
                     if (!empty($selectedDate)) {
                       $prevUrl .= '&date=' . urlencode($selectedDate);
                     }
+                    if (!empty($selectedStatus)) {
+                      $prevUrl .= '&status=' . urlencode($selectedStatus);
+                    }
                     ?>
                     <a class="page-link" href="<?= $prevUrl ?>">
                       <i class="bi bi-chevron-left"></i> Trước
@@ -146,6 +184,9 @@
                   if (!empty($selectedDate)) {
                     $firstUrl .= '&date=' . urlencode($selectedDate);
                   }
+                  if (!empty($selectedStatus)) {
+                    $firstUrl .= '&status=' . urlencode($selectedStatus);
+                  }
                   ?>
                   <li class="page-item">
                     <a class="page-link" href="<?= $firstUrl ?>">1</a>
@@ -162,6 +203,9 @@
                   $pageUrl = BASE_URL . '?act=showtimes&page=' . $i;
                   if (!empty($selectedDate)) {
                     $pageUrl .= '&date=' . urlencode($selectedDate);
+                  }
+                  if (!empty($selectedStatus)) {
+                    $pageUrl .= '&status=' . urlencode($selectedStatus);
                   }
                   ?>
                   <li class="page-item <?= $i == $pagination['currentPage'] ? 'active' : '' ?>">
@@ -180,6 +224,9 @@
                   if (!empty($selectedDate)) {
                     $lastUrl .= '&date=' . urlencode($selectedDate);
                   }
+                  if (!empty($selectedStatus)) {
+                    $lastUrl .= '&status=' . urlencode($selectedStatus);
+                  }
                   ?>
                   <li class="page-item">
                     <a class="page-link" href="<?= $lastUrl ?>"><?= $pagination['totalPages'] ?></a>
@@ -192,6 +239,9 @@
                   $nextUrl = BASE_URL . '?act=showtimes&page=' . ($pagination['currentPage'] + 1);
                   if (!empty($selectedDate)) {
                     $nextUrl .= '&date=' . urlencode($selectedDate);
+                  }
+                  if (!empty($selectedStatus)) {
+                    $nextUrl .= '&status=' . urlencode($selectedStatus);
                   }
                   ?>
                   <li class="page-item">

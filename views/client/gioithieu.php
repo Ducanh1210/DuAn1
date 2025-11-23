@@ -43,8 +43,8 @@
                         trải nghiệm giải trí điện ảnh tuyệt vời nhất.
                     </p>
                     <p>
-                        Với hệ thống hiện đại và dịch vụ chuyên nghiệp, chúng tôi cam kết đem lại sự tiện lợi và hài lòng
-                        tối đa cho mọi khách hàng. Được thành lập với sứ mệnh kết nối người yêu phim với những bộ phim hay nhất
+                        Với hệ thống hiện đại và dịch vụ chuyên nghiệp, chúng tôi cam kết đem lại sự tiện lợi và hài lòng 
+                        tối đa cho mọi khách hàng. Được thành lập với sứ mệnh kết nối người yêu phim với những bộ phim hay nhất 
                         từ khắp nơi trên thế giới, TicketHub không ngừng phát triển và cải tiến để phục vụ hàng triệu người xem mỗi năm.
                     </p>
                 </div>
@@ -133,8 +133,8 @@
                         truyền cảm hứng và tạo nên những kỷ niệm đáng nhớ.
                     </p>
                     <p class="vanban">
-                        TicketHub được xây dựng với mục tiêu làm cho việc thưởng thức phim ảnh trở nên dễ dàng và thuận tiện hơn bao giờ hết.
-                        Chúng tôi không ngừng nỗ lực để mang đến trải nghiệm tốt nhất cho khán giả, từ việc lựa chọn phim, đặt vé,
+                        TicketHub được xây dựng với mục tiêu làm cho việc thưởng thức phim ảnh trở nên dễ dàng và thuận tiện hơn bao giờ hết. 
+                        Chúng tôi không ngừng nỗ lực để mang đến trải nghiệm tốt nhất cho khán giả, từ việc lựa chọn phim, đặt vé, 
                         cho đến việc tận hưởng bộ phim tại rạp với chất lượng hình ảnh và âm thanh tuyệt hảo.
                     </p>
                 </div>
@@ -226,40 +226,38 @@
 </main>
 
 <script>
-    // Counter animation for stats
-    document.addEventListener('DOMContentLoaded', function() {
-        const statNumbers = document.querySelectorAll('.stat-number[data-count]');
-
-        const animateCounter = (element) => {
-            const target = parseInt(element.getAttribute('data-count'));
-            const duration = 2000;
-            const increment = target / (duration / 16);
-            let current = 0;
-
-            const updateCounter = () => {
-                current += increment;
-                if (current < target) {
-                    element.textContent = Math.floor(current);
-                    requestAnimationFrame(updateCounter);
-                } else {
-                    element.textContent = target;
-                }
-            };
-
-            updateCounter();
+// Counter animation for stats
+document.addEventListener('DOMContentLoaded', function() {
+    const statNumbers = document.querySelectorAll('.stat-number[data-count]');
+    
+    const animateCounter = (element) => {
+        const target = parseInt(element.getAttribute('data-count'));
+        const duration = 2000;
+        const increment = target / (duration / 16);
+        let current = 0;
+        
+        const updateCounter = () => {
+            current += increment;
+            if (current < target) {
+                element.textContent = Math.floor(current);
+                requestAnimationFrame(updateCounter);
+            } else {
+                element.textContent = target;
+            }
         };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    animateCounter(entry.target);
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.5
+        
+        updateCounter();
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                observer.unobserve(entry.target);
+            }
         });
-
-        statNumbers.forEach(stat => observer.observe(stat));
-    });
+    }, { threshold: 0.5 });
+    
+    statNumbers.forEach(stat => observer.observe(stat));
+});
 </script>

@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="vi">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -13,7 +12,6 @@
   <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/main.css">
 
 </head>
-
 <body>
 
   <!-- SIDEBAR -->
@@ -39,6 +37,9 @@
     <a href="?act=showtimes" class="<?= in_array($_GET['act'] ?? '', ['showtimes', 'showtimes-create', 'showtimes-edit', 'showtimes-show', 'showtimes-delete']) ? 'active' : '' ?>">
       <i class="bi bi-clock-history"></i><span class="label">Quản lý Lịch chiếu</span>
     </a>
+    <a href="?act=discounts" class="<?= in_array($_GET['act'] ?? '', ['discounts', 'discounts-create', 'discounts-edit', 'discounts-delete']) ? 'active' : '' ?>">
+      <i class="bi bi-gift"></i><span class="label">Quản lý Khuyến mãi</span>
+    </a>
     <a href="?act=users" class="<?= in_array($_GET['act'] ?? '', ['users', 'users-create', 'users-edit', 'users-show', 'users-delete']) ? 'active' : '' ?>">
       <i class="bi bi-people"></i><span class="label">Quản lý Người dùng</span>
     </a>
@@ -59,9 +60,6 @@
     </a>
     <a href="?act=bookings" class="<?= in_array($_GET['act'] ?? '', ['bookings', 'bookings-show', 'bookings-delete', 'bookings-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-ticket-perforated"></i><span class="label">Quản lý Đặt Vé</span>
-    </a>
-    <a href="?act=discounts" class="<?= in_array($_GET['act'] ?? '', ['discounts', 'discounts-create', 'discounts-edit', 'discounts-delete']) ? 'active' : '' ?>">
-      <i class="bi bi-tag"></i><span class="label">Quản lý Mã Giảm Giá</span>
     </a>
     <a href="?act=ticket-prices" class="<?= in_array($_GET['act'] ?? '', ['ticket-prices', 'ticket-prices-update']) ? 'active' : '' ?>">
       <i class="bi bi-cash-coin"></i><span class="label">Quản lý Giá Vé</span>
@@ -85,69 +83,76 @@
       </button>
       <h5 class="fw-bold mb-0">
         <?php
-        $act = $_GET['act'] ?? 'Dashboard';
-        $titles = [
-          '/' => 'Danh sách phim',
-          'movies-create' => 'Thêm phim mới',
-          'movies-edit' => 'Sửa phim',
-          'movies-show' => 'Chi tiết phim',
-          'dashboard' => 'Dashboard',
-          'phim' => 'Quản lý Phim',
-          'theloai' => 'Quản lý Thể loại',
-          'genres' => 'Quản lý Thể loại',
-          'genres-create' => 'Thêm thể loại mới',
-          'genres-edit' => 'Sửa thể loại',
-          'showtimes' => 'Quản lý Lịch chiếu',
-          'showtimes-create' => 'Thêm lịch chiếu',
-          'showtimes-edit' => 'Sửa lịch chiếu',
-          'showtimes-show' => 'Chi tiết lịch chiếu',
-          'suatchieu' => 'Quản lý Suất chiếu',
-          'users' => 'Quản lý Người dùng',
-          'users-create' => 'Thêm người dùng',
-          'users-edit' => 'Sửa người dùng',
-          'users-show' => 'Chi tiết người dùng',
-          'permissions' => 'Quản lý Phân quyền',
-          'permissions-assign' => 'Phân quyền',
-          'nguoidung' => 'Quản lý Người dùng',
-          'rap' => 'Quản lý Rạp',
-          'cinemas' => 'Quản lý Rạp',
-          'cinemas-create' => 'Thêm rạp mới',
-          'cinemas-edit' => 'Sửa rạp',
-          'rooms' => 'Quản lý Phòng Chiếu',
-          'rooms-create' => 'Thêm phòng mới',
-          'rooms-edit' => 'Sửa phòng',
-          'rooms-show' => 'Chi tiết phòng',
-          'phongphim' => 'Quản lý phòng phim',
-          'seats' => 'Quản lý Ghế',
-          'seats-create' => 'Thêm ghế mới',
-          'seats-edit' => 'Sửa ghế',
-          'seats-show' => 'Chi tiết ghế',
-          'seats-seatmap' => 'Sơ đồ ghế',
-          'seats-generate' => 'Tạo sơ đồ ghế tự động',
-          'comments' => 'Quản lý bình luận',
-          'comments-show' => 'Chi tiết bình luận',
-          'binhluan' => 'Quản lý bình luận',
-          'bookings' => 'Quản lý đặt vé',
-          'bookings-show' => 'Chi tiết đặt vé',
-          'datve' => 'Quản lý đặt vé',
-          'discounts' => 'Quản lý mã giảm giá',
-          'discounts-create' => 'Thêm mã giảm giá mới',
-          'discounts-edit' => 'Sửa mã giảm giá',
-          'thongke' => 'Thống kê'
-        ];
-        echo htmlspecialchars($titles[$act] ?? ucfirst($act));
+          $act = $_GET['act'] ?? 'Dashboard';
+          $titles = [
+            '/' => 'Danh sách phim',
+            'movies-create' => 'Thêm phim mới',
+            'movies-edit' => 'Sửa phim',
+            'movies-show' => 'Chi tiết phim',
+            'dashboard' => 'Dashboard',
+            'phim' => 'Quản lý Phim',
+            'theloai' => 'Quản lý Thể loại',
+            'genres' => 'Quản lý Thể loại',
+            'genres-create' => 'Thêm thể loại mới',
+            'genres-edit' => 'Sửa thể loại',
+            'showtimes' => 'Quản lý Lịch chiếu',
+            'showtimes-create' => 'Thêm lịch chiếu',
+            'showtimes-edit' => 'Sửa lịch chiếu',
+            'showtimes-show' => 'Chi tiết lịch chiếu',
+            'suatchieu' => 'Quản lý Suất chiếu',
+            'users' => 'Quản lý Người dùng',
+            'users-create' => 'Thêm người dùng',
+            'users-edit' => 'Sửa người dùng',
+            'users-show' => 'Chi tiết người dùng',
+            'permissions' => 'Quản lý Phân quyền',
+            'permissions-assign' => 'Phân quyền',
+            'nguoidung' => 'Quản lý Người dùng',
+            'rap' => 'Quản lý Rạp',
+            'cinemas' => 'Quản lý Rạp',
+            'cinemas-create' => 'Thêm rạp mới',
+            'cinemas-edit' => 'Sửa rạp',
+            'rooms' => 'Quản lý Phòng Chiếu',
+            'rooms-create' => 'Thêm phòng mới',
+            'rooms-edit' => 'Sửa phòng',
+            'rooms-show' => 'Chi tiết phòng',
+            'phongphim' => 'Quản lý phòng phim',
+            'seats' => 'Quản lý Ghế',
+            'seats-create' => 'Thêm ghế mới',
+            'seats-edit' => 'Sửa ghế',
+            'seats-show' => 'Chi tiết ghế',
+            'seats-seatmap' => 'Sơ đồ ghế',
+            'seats-generate' => 'Tạo sơ đồ ghế tự động',
+            'comments' => 'Quản lý bình luận',
+            'comments-show' => 'Chi tiết bình luận',
+            'binhluan' => 'Quản lý bình luận',
+            'bookings' => 'Quản lý đặt vé',
+            'bookings-show' => 'Chi tiết đặt vé',
+            'datve' => 'Quản lý đặt vé',
+            'discounts' => 'Quản lý Khuyến mãi',
+            'discounts-create' => 'Thêm mã khuyến mại',
+            'discounts-edit' => 'Sửa mã khuyến mại',
+            'ticket-prices' => 'Quản lý Giá Vé',
+            'thongke' => 'Thống kê'
+          ];
+          echo htmlspecialchars($titles[$act] ?? ucfirst($act));
         ?>
       </h5>
     </div>
 
     <div class="header-right">
-      <div class="position-relative me-2">
-        <i class="bi bi-bell fs-5 position-relative" style="cursor: pointer;"></i>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">2</span>
+      <!-- Notifications -->
+      <div class="position-relative me-2 notification-wrapper">
+        <i class="bi bi-bell fs-5 position-relative" id="notificationIcon" style="cursor: pointer; color: var(--text-primary);"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none;">0</span>
+        <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+          <div class="notification-header">
+            <h6>Thông báo</h6>
+            <button class="btn-mark-all-read" id="markAllReadBtn" style="font-size: 12px; padding: 2px 8px;">Đánh dấu tất cả đã đọc</button>
+          </div>
+          <div class="notification-list" id="notificationList">
+            <div class="notification-empty">Không có thông báo mới</div>
+          </div>
       </div>
-      <div class="position-relative me-2">
-        <i class="bi bi-envelope fs-5 position-relative" style="cursor: pointer;"></i>
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">5</span>
       </div>
 
       <!-- Dark mode toggle -->
@@ -180,23 +185,23 @@
   <main id="main" class="main">
     <!-- Bắt đầu nội dung chính của trang -->
     <?php
-    // Include view động nếu có biến $viewPath
-    if (isset($GLOBALS['viewPath']) && !empty($GLOBALS['viewPath'])) {
-      $viewFile = __DIR__ . '/../' . $GLOBALS['viewPath'];
-      if (file_exists($viewFile)) {
-        include $viewFile;
+      // Include view động nếu có biến $viewPath
+      if (isset($GLOBALS['viewPath']) && !empty($GLOBALS['viewPath'])) {
+        $viewFile = __DIR__ . '/../' . $GLOBALS['viewPath'];
+        if (file_exists($viewFile)) {
+          include $viewFile;
+        } else {
+          echo '<div class="container-fluid"><div class="alert alert-danger">Không tìm thấy view: ' . htmlspecialchars($GLOBALS['viewPath']) . '</div></div>';
+        }
       } else {
-        echo '<div class="container-fluid"><div class="alert alert-danger">Không tìm thấy view: ' . htmlspecialchars($GLOBALS['viewPath']) . '</div></div>';
-      }
-    } else {
-      // Nếu không có view, hiển thị nội dung mặc định
-      echo '<div class="container-fluid">
+        // Nếu không có view, hiển thị nội dung mặc định
+        echo '<div class="container-fluid">
           <div class="card p-3">
             <h4>Chào mừng đến trang quản trị</h4>
             <p>Đặt nội dung của bạn ở đây. Đây là khu vực chính (main content).</p>
           </div>
         </div>';
-    }
+      }
     ?>
     <!-- Kết thúc nội dung chính -->
   </main>
@@ -205,7 +210,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    (function() {
+    (function(){
       const sidebar = document.getElementById('sidebar');
       const header = document.getElementById('header');
       const main = document.getElementById('main');
@@ -260,7 +265,7 @@
         if (!userDropdownToggle.contains(e.target) && !userDropdownMenu.contains(e.target)) {
           userDropdownMenu.classList.remove('show');
         }
-
+        
         // Close mobile sidebar when clicking outside
         if (window.matchMedia("(max-width: 991px)").matches) {
           if (!sidebar.contains(e.target) && !btn.contains(e.target) && sidebar.classList.contains('open')) {
@@ -288,8 +293,271 @@
           sidebar.classList.remove('open');
         }
       });
+
+      // Notifications functionality
+      const notificationIcon = document.getElementById('notificationIcon');
+      const notificationBadge = document.getElementById('notificationBadge');
+      const notificationDropdown = document.getElementById('notificationDropdown');
+      const notificationList = document.getElementById('notificationList');
+      const markAllReadBtn = document.getElementById('markAllReadBtn');
+
+      // Load notifications
+      function loadNotifications() {
+        fetch('<?= BASE_URL ?>?act=api-notifications&unread_only=true')
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              updateNotificationBadge(data.unread_count);
+              if (data.notifications && data.notifications.length > 0) {
+                renderNotifications(data.notifications);
+              } else {
+                notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Error loading notifications:', error);
+          });
+      }
+
+      // Update notification badge
+      function updateNotificationBadge(count) {
+        if (count > 0) {
+          notificationBadge.textContent = count > 99 ? '99+' : count;
+          notificationBadge.style.display = 'block';
+        } else {
+          notificationBadge.style.display = 'none';
+        }
+      }
+
+      // Render notifications
+      function renderNotifications(notifications) {
+        notificationList.innerHTML = notifications.map(notif => `
+          <div class="notification-item ${notif.is_read == 0 ? 'unread' : ''}" data-id="${notif.id}">
+            <div class="notification-content">
+              <div class="notification-title">${notif.title}</div>
+              <div class="notification-message">${notif.message}</div>
+              <div class="notification-time">${formatTime(notif.created_at)}</div>
+            </div>
+            ${notif.related_id ? `<a href="?act=bookings-show&id=${notif.related_id}" class="notification-link">Xem chi tiết</a>` : ''}
+          </div>
+        `).join('');
+
+        // Add click handlers
+        notificationList.querySelectorAll('.notification-item').forEach(item => {
+          item.addEventListener('click', function() {
+            const id = this.dataset.id;
+            if (id && !this.classList.contains('read')) {
+              markAsRead(id);
+            }
+          });
+        });
+      }
+
+      // Mark notification as read
+      function markAsRead(id) {
+        const formData = new FormData();
+        formData.append('id', id);
+        
+        fetch('<?= BASE_URL ?>?act=api-notifications-mark-read', {
+          method: 'POST',
+          body: formData
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              updateNotificationBadge(data.unread_count);
+              const item = notificationList.querySelector(`[data-id="${id}"]`);
+              if (item) {
+                item.classList.remove('unread');
+                item.classList.add('read');
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Error marking notification as read:', error);
+          });
+      }
+
+      // Mark all as read
+      if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          
+          fetch('<?= BASE_URL ?>?act=api-notifications-mark-all-read', {
+            method: 'POST'
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                updateNotificationBadge(0);
+                // Clear all notifications from list
+                notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+              }
+            })
+            .catch(error => {
+              console.error('Error marking all as read:', error);
+            });
+        });
+      }
+
+      // Toggle notification dropdown
+      if (notificationIcon) {
+        notificationIcon.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
+            notificationDropdown.style.display = 'block';
+            loadNotifications();
+          } else {
+            notificationDropdown.style.display = 'none';
+          }
+        });
+      }
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (notificationDropdown && notificationIcon && 
+            !notificationDropdown.contains(e.target) && 
+            !notificationIcon.contains(e.target)) {
+          notificationDropdown.style.display = 'none';
+        }
+      });
+
+      // Format time
+      function formatTime(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = Math.floor((now - date) / 1000); // seconds
+
+        if (diff < 60) return 'Vừa xong';
+        if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
+        return date.toLocaleDateString('vi-VN');
+      }
+
+      // Load notifications on page load
+      loadNotifications();
+      
+      // Refresh notifications every 30 seconds
+      setInterval(loadNotifications, 30000);
     })();
   </script>
-</body>
 
+  <style>
+    .notification-wrapper {
+      position: relative;
+    }
+
+    .notification-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 320px;
+      max-width: 400px;
+      max-height: 500px;
+      overflow-y: auto;
+      z-index: 1050;
+    }
+
+    .notification-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .notification-header h6 {
+      margin: 0;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .btn-mark-all-read {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .btn-mark-all-read:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .notification-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .notification-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .notification-item:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    .notification-item.unread {
+      background: rgba(13, 110, 253, 0.05);
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .notification-message {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .notification-time {
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .notification-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 12px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .notification-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .notification-dropdown::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .notification-dropdown::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .notification-dropdown::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+  </style>
+</body>
 </html>

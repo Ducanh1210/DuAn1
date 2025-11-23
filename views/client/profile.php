@@ -216,6 +216,7 @@ $firstName = isset($nameParts[1]) ? $nameParts[1] : '';
                     <th>Tổng tiền</th>
                     <th>Trạng thái</th>
                     <th>Ngày đặt</th>
+                    <th>Bình luận/Đánh giá</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -252,6 +253,10 @@ $firstName = isset($nameParts[1]) ? $nameParts[1] : '';
                         $statusText = 'Đã hủy';
                         break;
                     }
+                    
+                    // Kiểm tra xem đã bình luận chưa
+                    $movieId = $booking['movie_id'] ?? null;
+                    $hasCommented = $booking['has_commented'] ?? false;
                     ?>
                     <tr>
                       <td><?= $booking['id'] ?? ($index + 1) ?></td>
@@ -282,6 +287,22 @@ $firstName = isset($nameParts[1]) ? $nameParts[1] : '';
                             <span class="booking-time"><?= $bookingTime ?></span>
                           <?php endif; ?>
                         </div>
+                      </td>
+                      <td>
+                        <?php if ($movieId && ($statusClass === 'paid' || $statusClass === 'confirmed')): ?>
+                          <?php if ($hasCommented): ?>
+                            <span class="review-status reviewed">
+                              <i class="bi bi-check-circle"></i> Đã đánh giá
+                            </span>
+                          <?php else: ?>
+                            <a href="<?= BASE_URL ?>?act=review-movie&booking_id=<?= $booking['id'] ?>&movie_id=<?= $movieId ?>" 
+                               class="review-btn">
+                              <i class="bi bi-star"></i> Đánh giá
+                            </a>
+                          <?php endif; ?>
+                        <?php else: ?>
+                          <span class="review-status disabled">-</span>
+                        <?php endif; ?>
                       </td>
                     </tr>
                   <?php endforeach; ?>

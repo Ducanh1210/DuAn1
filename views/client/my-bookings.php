@@ -61,7 +61,8 @@
                   <?php
                   $statusClass = 'secondary';
                   $statusText = 'N/A';
-                  switch($booking['status'] ?? '') {
+                  $currentStatus = $booking['status'] ?? '';
+                  switch($currentStatus) {
                     case 'pending':
                       $statusClass = 'warning';
                       $statusText = 'Chờ xử lý';
@@ -77,6 +78,10 @@
                     case 'cancelled':
                       $statusClass = 'danger';
                       $statusText = 'Đã hủy';
+                      break;
+                    default:
+                      $statusClass = 'secondary';
+                      $statusText = $currentStatus ? htmlspecialchars($currentStatus) : 'N/A';
                       break;
                   }
                   ?>
@@ -389,4 +394,39 @@
   }
 }
 </style>
+
+<script>
+// Auto-refresh trang mỗi 30 giây để cập nhật trạng thái mới nhất
+(function() {
+    let refreshInterval = null;
+    
+    function refreshPage() {
+        // Chỉ refresh nếu không có thao tác nào đang diễn ra
+        if (!document.hidden) {
+            window.location.reload();
+        }
+    }
+    
+    // Bắt đầu auto-refresh sau 15 giây (giảm từ 30 giây để cập nhật nhanh hơn)
+    refreshInterval = setInterval(refreshPage, 15000);
+    
+    // Clear interval khi user rời khỏi trang
+    window.addEventListener('beforeunload', function() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    });
+    
+    // Pause refresh khi tab không active
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        } else {
+            refreshInterval = setInterval(refreshPage, 30000);
+        }
+    });
+})();
+</script>
 

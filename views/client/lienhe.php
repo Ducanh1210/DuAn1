@@ -1,0 +1,312 @@
+<?php
+// Xử lý form liên hệ nếu có POST
+$success = false;
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $subject = trim($_POST['subject'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+
+    // Validation
+    if (empty($name)) {
+        $error = 'Vui lòng nhập họ tên';
+    } elseif (empty($email)) {
+        $error = 'Vui lòng nhập email';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Email không hợp lệ';
+    } elseif (empty($phone)) {
+        $error = 'Vui lòng nhập số điện thoại';
+    } elseif (empty($subject)) {
+        $error = 'Vui lòng nhập chủ đề';
+    } elseif (empty($message)) {
+        $error = 'Vui lòng nhập nội dung tin nhắn';
+    } else {
+        // Ở đây có thể lưu vào database hoặc gửi email
+        // Tạm thời hiển thị thông báo thành công
+        $success = true;
+    }
+}
+?>
+
+<div class="contact-page">
+    <!-- Hero Section -->
+    <section class="contact-hero" style="background: #ff6978 !important; background-color: #ff6978 !important;">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Liên Hệ Với Chúng Tôi</h1>
+            <p class="hero-subtitle">Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="contact-container">
+        <div class="contact-wrapper">
+            <!-- Contact Form Section -->
+            <div class="contact-form-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="bi bi-envelope-paper"></i>
+                        Gửi Tin Nhắn
+                    </h2>
+                    <p class="section-description">Điền form bên dưới để gửi tin nhắn cho chúng tôi</p>
+                </div>
+
+                <?php if ($success): ?>
+                    <div class="alert alert-success" role="alert"></div>
+                    <i class="bi bi-check-circle-fill"></i>
+                    <strong>Cảm ơn bạn!</strong> Chúng tôi đã nhận được tin nhắn của bạn và sẽ phản hồi sớm nhất có thể.
+            </div>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>Lỗi!</strong> <?= htmlspecialchars($error) ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" class="contact-form" id="contactForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">
+                        <i class="bi bi-person"></i>
+                        Họ và Tên <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        class="form-control"
+                        placeholder="Nhập họ và tên của bạn"
+                        value="<?= htmlspecialchars($_POST['name'] ?? '') ?>"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="bi bi-envelope"></i>
+                        Email <span class="required">*</span>
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        placeholder="your.email@example.com"
+                        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                        required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">
+                        <i class="bi bi-telephone"></i>
+                        Số Điện Thoại <span class="required">*</span>
+                    </label>
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        class="form-control"
+                        placeholder="0123 456 789"
+                        value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">
+                        <i class="bi bi-tag"></i>
+                        Chủ Đề <span class="required">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="subject"
+                        name="subject"
+                        class="form-control"
+                        placeholder="Ví dụ: Hỏi về giá vé, Đặt vé..."
+                        value="<?= htmlspecialchars($_POST['subject'] ?? '') ?>"
+                        required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="message">
+                    <i class="bi bi-chat-left-text"></i>
+                    Nội Dung Tin Nhắn <span class="required">*</span>
+                </label>
+                <textarea
+                    id="message"
+                    name="message"
+                    class="form-control"
+                    rows="6"
+                    placeholder="Nhập nội dung tin nhắn của bạn..."
+                    required><?= htmlspecialchars($_POST['message'] ?? '') ?></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-send"></i>
+                <span>Gửi Tin Nhắn</span>
+            </button>
+        </form>
+        </div>
+
+        <!-- Contact Info Section -->
+        <div class="contact-info-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="bi bi-info-circle"></i>
+                    Thông Tin Liên Hệ
+                </h2>
+                <p class="section-description">Các cách khác để liên hệ với chúng tôi</p>
+            </div>
+
+            <div class="contact-cards">
+                <!-- Address Card -->
+                <div class="contact-card">
+                    <div class="card-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Địa Chỉ</h3>
+                        <p class="card-text">
+                            Số 87 Láng Hạ<br>
+                            Phường Ô Chợ Dừa<br>
+                            Quận Đống Đa, TP. Hà Nội
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Phone Card -->
+                <div class="contact-card">
+                    <div class="card-icon">
+                        <i class="bi bi-telephone-fill"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Điện Thoại</h3>
+                        <p class="card-text">
+                            <a href="tel:02435141791">024.3514.1791</a><br>
+                            <a href="tel:19001234">1900.1234</a> (Hotline)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Email Card -->
+                <div class="contact-card">
+                    <div class="card-icon">
+                        <i class="bi bi-envelope-fill"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Email</h3>
+                        <p class="card-text">
+                            <a href="mailto:info@tickethub.vn">info@tickethub.vn</a><br>
+                            <a href="mailto:support@tickethub.vn">support@tickethub.vn</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Hours Card -->
+                <div class="contact-card">
+                    <div class="card-icon">
+                        <i class="bi bi-clock-fill"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Giờ Làm Việc</h3>
+                        <p class="card-text">
+                            Thứ 2 - Chủ Nhật: 8:00 - 22:00<br>
+                            Hotline: 24/7
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media -->
+            <div class="social-section">
+                <h3 class="social-title">Theo Dõi Chúng Tôi</h3>
+                <div class="social-links">
+                    <a href="#" class="social-link facebook" aria-label="Facebook">
+                        <i class="bi bi-facebook"></i>
+                        <span>Facebook</span>
+                    </a>
+                    <a href="#" class="social-link zalo" aria-label="Zalo">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Zalo</span>
+                    </a>
+                    <a href="#" class="social-link youtube" aria-label="YouTube">
+                        <i class="bi bi-youtube"></i>
+                        <span>YouTube</span>
+                    </a>
+                    <a href="#" class="social-link instagram" aria-label="Instagram">
+                        <i class="bi bi-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="map-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="bi bi-map"></i>
+                Vị Trí Của Chúng Tôi
+            </h2>
+        </div>
+        <div class="map-container">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.0966996788!2d105.8123153154305!3d21.028593785998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab9b8c5e3b1b%3A0x5e3b1b8c5e3b1b8c!2zODcgTMOibiBI4buNLCBQaMaw4buNbmcgw7QgQ2jhu6cgRMO0YSwgxJDhu5NuZyDEkOG7qWMsIEjDoCBO4buZaSwgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1234567890123!5m2!1svi!2s"
+                width="100%"
+                height="450"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="Bản đồ vị trí TicketHub"></iframe>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    // Form validation và UX improvements
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('contactForm');
+        const inputs = form.querySelectorAll('input, textarea');
+
+        // Add focus/blur effects
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+
+            // Check if input has value on load
+            if (input.value) {
+                input.parentElement.classList.add('focused');
+            }
+        });
+
+        // Form submission with loading state
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('.btn-submit');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> <span>Đang gửi...</span>';
+
+            // Re-enable after 3 seconds (in case of error)
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }, 3000);
+        });
+    });
+</script>
