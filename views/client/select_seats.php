@@ -63,156 +63,168 @@ $countdownSeconds = $countdownSeconds ?? 900;
 
 .screen-container {
     text-align: center;
-    margin: 30px auto;
-    max-width: 1200px;
+    margin: 20px auto;
+    max-width: 1400px;
     padding: 0 20px;
 }
 
 .screen {
     background: linear-gradient(to bottom, #ff8c00, #ff6b00);
-    height: 60px;
+    height: 50px;
     border-radius: 50px 50px 0 0;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
     color: white;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 16px;
     letter-spacing: 2px;
 }
 
 .room-title {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: bold;
-    margin-top: 15px;
+    margin-top: 10px;
     color: #fff;
     text-align: center;
 }
 
-.seats-grid {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
+.seat-selection-container .seats-grid {
+    max-width: 1400px !important;
+    margin: 20px auto !important;
+    padding: 0 20px !important;
 }
 
-.seat-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px;
-    gap: 5px;
+.seat-selection-container .seat-row {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-bottom: 3px !important;
+    gap: 2px !important;
     transition: opacity 0.3s, transform 0.3s;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 0 !important;
 }
 
-.seat-row.hidden {
-    display: none;
+.seat-selection-container .seat-row.hidden {
+    display: none !important;
 }
 
-.seat-row.filtered-highlight {
+.seat-selection-container .seat-row.filtered-highlight {
     transform: scale(1.02);
     opacity: 1;
 }
 
-.row-label {
-    width: 30px;
-    text-align: center;
-    font-weight: bold;
-    color: #fff;
-    font-size: 16px;
+.seat-selection-container .row-label {
+    width: 28px !important;
+    min-width: 28px !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    flex-shrink: 0 !important;
 }
 
-.seat {
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
-    transition: all 0.2s;
-    border: 2px solid transparent;
+.seat-selection-container .seat {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    border-radius: 3px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    font-size: 9px !important;
+    font-weight: bold !important;
+    transition: all 0.2s !important;
+    border: 1px solid transparent !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
 }
 
 /* Ghế thường - màu xám đậm như ảnh */
-.seat.available {
-    background: #4a4a4a;
-    color: #fff;
-    border-color: #555;
+.seat-selection-container .seat.available {
+    background: #4a4a4a !important;
+    color: #fff !important;
+    border-color: #555 !important;
 }
 
-.seat.available:hover {
-    background: #5a5a5a;
-    transform: scale(1.1);
+.seat-selection-container .seat.available:hover {
+    background: #5a5a5a !important;
+    transform: scale(1.15) !important;
 }
 
 /* Ghế VIP - màu vàng */
-.seat.vip {
-    background: #ffc107;
-    color: #000;
-    border-color: #ffb300;
+.seat-selection-container .seat.vip {
+    background: #ffc107 !important;
+    color: #000 !important;
+    border-color: #ffb300 !important;
 }
 
-.seat.vip:hover {
-    background: #ffb300;
-    transform: scale(1.1);
+.seat-selection-container .seat.vip:hover {
+    background: #ffb300 !important;
+    transform: scale(1.15) !important;
 }
 
 /* Ghế đã chọn - màu cam như ảnh */
-.seat.selected {
-    background: #ff8c00;
-    color: #fff;
-    border-color: #ff6b00;
+.seat-selection-container .seat.selected {
+    background: #ff8c00 !important;
+    color: #fff !important;
+    border-color: #ff6b00 !important;
 }
 
-.seat.vip.selected {
-    background: #ff8c00;
-    color: #fff;
-    border-color: #ff6b00;
+.seat-selection-container .seat.vip.selected {
+    background: #ff8c00 !important;
+    color: #fff !important;
+    border-color: #ff6b00 !important;
 }
 
 /* Ghế đã đặt - màu đỏ */
-.seat.booked {
-    background: #dc3545;
-    color: #fff;
-    cursor: not-allowed;
-    opacity: 0.9;
+.seat-selection-container .seat.booked {
+    background: #dc3545 !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    opacity: 0.9 !important;
 }
 
 /* Ghế bảo trì - màu vàng với dấu X */
-.seat.maintenance {
-    background: #ffc107;
-    color: transparent; /* Ẩn số ghế, chỉ hiển thị dấu X */
-    cursor: not-allowed;
-    opacity: 0.8;
-    position: relative;
+.seat-selection-container .seat.maintenance {
+    background: #ffc107 !important;
+    color: transparent !important; /* Ẩn số ghế, chỉ hiển thị dấu X */
+    cursor: not-allowed !important;
+    opacity: 0.8 !important;
+    position: relative !important;
 }
 
-.seat.maintenance::after {
-    content: '✕';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 20px;
-    font-weight: bold;
-    color: #000;
-    z-index: 2;
-    line-height: 1;
+.seat-selection-container .seat.maintenance::after {
+    content: '✕' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    color: #000 !important;
+    z-index: 2 !important;
+    line-height: 1 !important;
 }
 
-.seat-gap {
-    width: 20px;
+.seat-selection-container .seat-gap {
+    width: 10px !important;
+    flex-shrink: 0 !important;
 }
 
 .seat-legend {
     display: flex;
     justify-content: center;
-    gap: 30px;
-    margin: 30px 0;
+    gap: 25px;
+    margin: 25px 0;
     flex-wrap: wrap;
 }
 
@@ -223,13 +235,13 @@ $countdownSeconds = $countdownSeconds ?? 900;
 }
 
 .legend-seat {
-    width: 30px;
-    height: 30px;
-    border-radius: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 8px;
 }
 
 .selected-seats-summary {
