@@ -191,6 +191,57 @@
   box-shadow: 0 6px 14px rgba(255, 105, 120, 0.35);
 }
 
+/* NOTIFICATION WRAPPER */
+.notification-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Notification Icon - giống search icon */
+.notification-icon {
+  background-color: #ff6978;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.3s ease;
+  color: #fff;
+  font-size: 18px;
+  position: relative;
+  z-index: 10;
+}
+
+.notification-icon:hover {
+  background-color: #ff5067;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(255, 105, 120, 0.35);
+}
+
+/* Notification Badge */
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ff0000;
+  color: #fff;
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 4px;
+  border: 2px solid #03060c;
+  z-index: 11;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 /* Search Box */
 .search-box {
   position: absolute;

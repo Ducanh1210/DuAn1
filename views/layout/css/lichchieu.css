@@ -40,23 +40,46 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
   min-height: 44px;
   box-sizing: border-box;
+  width: 100%;
+}
+
+/* Đảm bảo page và header-container có cùng max-width và padding để căn giữa đúng */
+.page,
+.header-container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page {
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 /* ===== LOGO ===== */
+.logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 .logo a {
   display: inline-block;
   text-decoration: none;
+  line-height: 0;
 }
 
 .logo img {
   width: 120px;
+  height: auto;
   user-select: none;
-  object-fit: cover;
+  object-fit: contain;
   transition: 0.3s ease;
-  transform: scale(1.4);
   display: block;
+  max-width: 100%;
 }
 
 /* ===== MENU ===== */
@@ -66,6 +89,9 @@ body {
   gap: 26px;
   line-height: 1.5;
   min-height: 44px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .menu a {
@@ -115,6 +141,7 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-shrink: 0;
 }
 
  /* SEARCH WRAPPER */
@@ -371,11 +398,19 @@ body {
 }
 /* PHẦN NỘI DUNG */
 .page {
-  max-width: var(--maxw);
+  max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* Đảm bảo nội dung căn giữa và có padding 2 bên giống header */
+@media (min-width: 1240px) {
+  .page {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 }
 
 /* Đảm bảo nội dung có cùng padding với header */
@@ -389,6 +424,8 @@ body {
   margin-bottom: 28px;
   width: 100%;
   max-width: 100%;
+  padding: 0 0;
+  box-sizing: border-box;
 }
 .page-header h2 {
   display: inline-flex;
@@ -417,6 +454,8 @@ body {
   margin-bottom: 26px;
   width: 100%;
   padding: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .pill {
   padding: 8px 14px;
@@ -452,12 +491,14 @@ body {
   padding: 0 !important;
 }
 
-/* Đảm bảo grid không tràn ra ngoài */
+/* Đảm bảo grid căn giữa và có cùng max-width với page */
 @media (min-width: 1240px) {
   .movies-grid {
-    max-width: calc(1200px - 40px);
+    max-width: 100%;
   }
 }
+
+/* Responsive: Đảm bảo grid không tràn trên màn hình lớn - đã có ở trên */
 
 /* CARD */
 .movie-card {
@@ -475,10 +516,10 @@ body {
   min-height: 140px !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   position: relative !important;
   flex: none !important;
-  max-width: none !important;
+  max-width: 100% !important;
 }
 
 .poster {
@@ -521,9 +562,10 @@ body {
   flex-direction: column !important;
   gap: 6px !important;
   min-width: 0 !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   width: 100% !important;
   position: relative !important;
+  max-width: 100% !important;
 }
 
 .info-link {
@@ -588,8 +630,15 @@ body {
   color: #fff !important;
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
-  display: block !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   text-transform: none !important;
+  max-width: 100% !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
 }
 
 .meta-lines {
@@ -663,11 +712,50 @@ body {
   .header-container {
     padding: 0 20px;
   }
+  
+  .logo img {
+    width: 100px;
+  }
+  
+  .menu {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+  .header-container {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .logo {
+    order: 1;
+  }
+  
+  .menu {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    gap: 12px;
+  }
+  
+  .nav-actions {
+    order: 2;
+    margin-left: auto;
+  }
 }
 
 @media (max-width: 768px) {
   .header-container {
     padding: 0 16px;
+  }
+  
+  .logo img {
+    width: 90px;
+  }
+  
+  .menu {
+    display: none; /* Ẩn menu nếu cần responsive mobile */
   }
 }
 
@@ -675,10 +763,12 @@ body {
 @media (max-width: 980px) {
   .page {
     padding: 40px 16px;
+    max-width: 100%;
   }
   .movies-grid {
     grid-template-columns: 1fr !important;
     gap: 18px !important;
+    max-width: 100% !important;
   }
   .movie-card {
     flex-direction: column !important;
@@ -709,6 +799,23 @@ body {
   .pill {
     padding: 6px 12px;
     font-size: 13px;
+  }
+}
+
+/* Đảm bảo căn giữa trên mọi màn hình */
+@media (min-width: 1241px) {
+  .page {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  
+  .movies-grid {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 

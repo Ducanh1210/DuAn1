@@ -40,6 +40,10 @@ require_once('./models/DiscountCode.php');
 require_once('./controllers/DiscountsController.php');
 require_once('./controllers/TicketPriceController.php');
 require_once('./models/TicketPrice.php');
+require_once('./models/DiscountCode.php');
+require_once('./controllers/DiscountCodesController.php');
+require_once('./controllers/NotificationController.php');
+require_once('./models/Notification.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -52,6 +56,9 @@ match ($act) {
     'lichchieu' => (new MoviesController)->lichchieu(),
     'khuyenmai' => (new MoviesController)->khuyenmai(),
     'giave' => (new TicketPriceController)->index(),
+    'khuyenmai' => (new MoviesController)->khuyenmai(),
+    'lienhe' => (new MoviesController)->lienhe(),
+    'check-voucher' => (new MoviesController)->checkVoucher(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
     'api-seats' => (new BookingController)->getSeatsApi(),
@@ -70,6 +77,8 @@ match ($act) {
     'profile' => (new ProfileController)->index(),
     'profile-update' => (new ProfileController)->update(),
     'profile-change-password' => (new ProfileController)->changePassword(),
+    'review-movie' => (new ProfileController)->reviewMovie(),
+    'submit-review' => (new ProfileController)->submitReview(),
 
     // Dashboard route
     'dashboard' => (new DashboardController)->index(),
@@ -149,6 +158,23 @@ match ($act) {
     'ticket-prices' => (new TicketPriceController)->list(),
     'ticket-prices-edit' => (new TicketPriceController)->edit(),
     'ticket-prices-update' => (new TicketPriceController)->update(),
+
+    // Discount Codes routes (Admin)
+    'discounts' => (new DiscountCodesController)->list(),
+    'discounts-create' => (new DiscountCodesController)->create(),
+    'discounts-edit' => (new DiscountCodesController)->edit(),
+    'discounts-delete' => (new DiscountCodesController)->delete(),
+
+    // Notifications API routes (Admin)
+    'api-notifications' => (new NotificationController)->getNotifications(),
+    'api-notifications-count' => (new NotificationController)->getUnreadCount(),
+    'api-notifications-mark-read' => (new NotificationController)->markAsRead(),
+    'api-notifications-mark-all-read' => (new NotificationController)->markAllAsRead(),
+
+    // Client Notifications API routes
+    'api-client-notifications' => (new NotificationController)->getNotifications(),
+    'api-client-notifications-mark-read' => (new NotificationController)->markAsRead(),
+    'api-client-notifications-mark-all-read' => (new NotificationController)->markAllAsRead(),
 
     default => notFound(),
 };

@@ -10,6 +10,7 @@ class Showtime
 
     /**
      * Lấy tất cả lịch chiếu với thông tin phim và phòng
+     * Chỉ lấy lịch chiếu của phim đang chiếu (status = 'active' và còn trong thời gian chiếu)
      */
     public function all()
     {
@@ -18,6 +19,9 @@ class Showtime
                     movies.title AS movie_title,
                     movies.duration AS movie_duration,
                     movies.image AS movie_image,
+                    movies.status AS movie_status,
+                    movies.release_date AS movie_release_date,
+                    movies.end_date AS movie_end_date,
                     rooms.name AS room_name,
                     rooms.room_code AS room_code,
                     cinemas.name AS cinema_name
@@ -25,6 +29,9 @@ class Showtime
                     LEFT JOIN movies ON showtimes.movie_id = movies.id
                     LEFT JOIN rooms ON showtimes.room_id = rooms.id
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                    WHERE movies.status = 'active'
+                    AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
+                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)
                     ORDER BY showtimes.show_date ASC, showtimes.start_time ASC, showtimes.id ASC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
@@ -35,33 +42,151 @@ class Showtime
     }
 
     /**
+     * Tính trạng thái của showtime
+     * @param array $showtime Dữ liệu showtime (có show_date, start_time, end_time, movie_status, movie_end_date)
+     * @return string 'upcoming' (sắp chiếu), 'showing' (đang chiếu), 'ended' (dừng)
+     */
+    public function getStatus($showtime)
+    {
+        // Kiểm tra trạng thái phim trước
+        $movieStatus = $showtime['movie_status'] ?? 'inactive';
+        $movieEndDate = $showtime['movie_end_date'] ?? null;
+        $movieReleaseDate = $showtime['movie_release_date'] ?? null;
+        
+        // Nếu phim không active hoặc đã hết thời gian chiếu thì dừng
+        if ($movieStatus !== 'active') {
+            return 'ended';
+        }
+        
+        // Kiểm tra end_date của phim
+        if ($movieEndDate) {
+            $today = date('Y-m-d');
+            if ($movieEndDate < $today) {
+                return 'ended';
+            }
+        }
+        
+        // Kiểm tra release_date của phim
+        if ($movieReleaseDate) {
+            $today = date('Y-m-d');
+            if ($movieReleaseDate > $today) {
+                return 'upcoming';
+            }
+        }
+        
+        if (empty($showtime['show_date'])) {
+            return 'ended';
+        }
+        
+        $today = date('Y-m-d');
+        $now = date('H:i:s');
+        $showDate = $showtime['show_date'];
+        $startTime = $showtime['start_time'] ?? '00:00:00';
+        $endTime = $showtime['end_time'] ?? '23:59:59';
+        
+        // So sánh ngày
+        if ($showDate < $today) {
+            // Ngày chiếu đã qua
+            return 'ended';
+        } elseif ($showDate > $today) {
+            // Ngày chiếu chưa tới
+            return 'upcoming';
+        } else {
+            // Cùng ngày, so sánh giờ
+            if ($now < $startTime) {
+                // Chưa đến giờ bắt đầu
+                return 'upcoming';
+            } elseif ($now >= $startTime && $now <= $endTime) {
+                // Đang trong khoảng thời gian chiếu
+                return 'showing';
+            } else {
+                // Đã qua giờ kết thúc
+                return 'ended';
+            }
+        }
+    }
+
+    /**
      * Lấy lịch chiếu với phân trang
      */
-    public function paginate($page = 1, $perPage = 5, $date = null)
+    public function paginate($page = 1, $perPage = 5, $date = null, $status = null)
     {
         try {
             $offset = ($page - 1) * $perPage;
-
+            
             // Xây dựng WHERE clause
             $whereClause = "";
             $params = [];
-
+            
             if ($date) {
                 $whereClause = "WHERE showtimes.show_date = :date";
                 $params[':date'] = $date;
             }
-
+            
+            // Filter theo trạng thái
+            if ($status) {
+                $today = date('Y-m-d');
+                $now = date('H:i:s');
+                
+                if ($whereClause) {
+                    $whereClause .= " AND";
+                } else {
+                    $whereClause = "WHERE";
+                }
+                
+                switch ($status) {
+                    case 'upcoming':
+                        // Sắp chiếu: show_date > today hoặc (show_date = today và start_time > now)
+                        $whereClause .= " (showtimes.show_date > :status_today OR (showtimes.show_date = :status_today2 AND showtimes.start_time > :status_now))";
+                        $params[':status_today'] = $today;
+                        $params[':status_today2'] = $today;
+                        $params[':status_now'] = $now;
+                        break;
+                    case 'showing':
+                        // Đang chiếu: show_date = today và start_time <= now <= end_time
+                        $whereClause .= " showtimes.show_date = :status_today AND showtimes.start_time <= :status_now AND showtimes.end_time >= :status_now2";
+                        $params[':status_today'] = $today;
+                        $params[':status_now'] = $now;
+                        $params[':status_now2'] = $now;
+                        break;
+                    case 'ended':
+                        // Dừng: show_date < today hoặc (show_date = today và end_time < now)
+                        $whereClause .= " (showtimes.show_date < :status_today OR (showtimes.show_date = :status_today2 AND showtimes.end_time < :status_now))";
+                        $params[':status_today'] = $today;
+                        $params[':status_today2'] = $today;
+                        $params[':status_now'] = $now;
+                        break;
+                }
+            }
+            
+            // Thêm filter theo trạng thái phim (chỉ lấy phim đang chiếu)
+            $movieFilter = "movies.status = 'active' 
+                           AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
+                           AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)";
+            
+            if ($whereClause) {
+                $whereClause .= " AND " . $movieFilter;
+            } else {
+                $whereClause = "WHERE " . $movieFilter;
+            }
+            
             // Lấy tổng số bản ghi
-            $countSql = "SELECT COUNT(*) as total FROM showtimes $whereClause";
+            $countSql = "SELECT COUNT(*) as total 
+                        FROM showtimes
+                        LEFT JOIN movies ON showtimes.movie_id = movies.id
+                        $whereClause";
             $countStmt = $this->conn->prepare($countSql);
             $countStmt->execute($params);
             $total = $countStmt->fetch()['total'];
-
+            
             // Lấy dữ liệu phân trang (sắp xếp: ngày tăng dần, giờ tăng dần, ID tăng dần)
             $sql = "SELECT showtimes.*, 
                     movies.title AS movie_title,
                     movies.duration AS movie_duration,
                     movies.image AS movie_image,
+                    movies.status AS movie_status,
+                    movies.release_date AS movie_release_date,
+                    movies.end_date AS movie_end_date,
                     rooms.name AS room_name,
                     rooms.room_code AS room_code,
                     cinemas.name AS cinema_name
@@ -73,7 +198,7 @@ class Showtime
                     ORDER BY showtimes.show_date ASC, showtimes.start_time ASC, showtimes.id ASC
                     LIMIT :limit OFFSET :offset";
             $stmt = $this->conn->prepare($sql);
-
+            
             // Bind params
             foreach ($params as $key => $value) {
                 $stmt->bindValue($key, $value);
@@ -82,7 +207,12 @@ class Showtime
             $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
             $stmt->execute();
             $data = $stmt->fetchAll();
-
+            
+            // Thêm trạng thái vào mỗi item
+            foreach ($data as &$item) {
+                $item['status'] = $this->getStatus($item);
+            }
+            
             return [
                 'data' => $data,
                 'total' => $total,
@@ -139,18 +269,26 @@ class Showtime
 
     /**
      * Lấy lịch chiếu theo phim
+     * Chỉ lấy lịch chiếu của phim đang chiếu
      */
     public function getByMovie($movie_id)
     {
         try {
             $sql = "SELECT showtimes.*, 
+                    movies.status AS movie_status,
+                    movies.release_date AS movie_release_date,
+                    movies.end_date AS movie_end_date,
                     rooms.name AS room_name,
                     rooms.room_code AS room_code,
                     cinemas.name AS cinema_name
                     FROM showtimes
+                    LEFT JOIN movies ON showtimes.movie_id = movies.id
                     LEFT JOIN rooms ON showtimes.room_id = rooms.id
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
                     WHERE showtimes.movie_id = :movie_id
+                    AND movies.status = 'active'
+                    AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
+                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)
                     AND showtimes.show_date >= CURDATE()
                     ORDER BY showtimes.show_date ASC, showtimes.start_time ASC";
             $stmt = $this->conn->prepare($sql);
@@ -163,20 +301,28 @@ class Showtime
 
     /**
      * Lấy lịch chiếu theo phim và ngày
+     * Chỉ lấy lịch chiếu của phim đang chiếu
      */
     public function getByMovieAndDate($movie_id, $date)
     {
         try {
             $sql = "SELECT showtimes.*, 
                     showtimes.format AS format,
+                    movies.status AS movie_status,
+                    movies.release_date AS movie_release_date,
+                    movies.end_date AS movie_end_date,
                     rooms.name AS room_name,
                     rooms.room_code AS room_code,
                     cinemas.name AS cinema_name
                     FROM showtimes
+                    LEFT JOIN movies ON showtimes.movie_id = movies.id
                     LEFT JOIN rooms ON showtimes.room_id = rooms.id
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
                     WHERE showtimes.movie_id = :movie_id
                     AND showtimes.show_date = :date
+                    AND movies.status = 'active'
+                    AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
+                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)
                     ORDER BY showtimes.start_time ASC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
@@ -191,6 +337,7 @@ class Showtime
 
     /**
      * Lấy lịch chiếu theo ngày
+     * Chỉ lấy lịch chiếu của phim đang chiếu
      */
     public function getByDate($date, $cinemaId = '')
     {
@@ -203,7 +350,9 @@ class Showtime
                     movies.age_rating AS movie_age_rating,
                     movies.original_language AS movie_original_language,
                     movies.release_date AS movie_release_date,
+                    movies.end_date AS movie_end_date,
                     movies.format AS movie_format,
+                    movies.status AS movie_status,
                     movie_genres.name AS genre_name,
                     rooms.name AS room_name,
                     rooms.room_code AS room_code,
@@ -215,18 +364,20 @@ class Showtime
                     LEFT JOIN rooms ON showtimes.room_id = rooms.id
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
                     WHERE showtimes.show_date = :date
-                    AND movies.status = 'active'";
-
+                    AND movies.status = 'active'
+                    AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
+                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)";
+            
             $params = [':date' => $date];
-
+            
             // Lọc theo rạp nếu có
             if (!empty($cinemaId)) {
                 $sql .= " AND rooms.cinema_id = :cinema_id";
                 $params[':cinema_id'] = $cinemaId;
             }
-
+            
             $sql .= " ORDER BY movies.title ASC, showtimes.start_time ASC";
-
+            
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchAll();
@@ -237,26 +388,33 @@ class Showtime
 
     /**
      * Lấy lịch chiếu theo phòng
+     * Chỉ lấy lịch chiếu của phim đang chiếu
      */
     public function getByRoom($room_id, $date = null)
     {
         try {
             $sql = "SELECT showtimes.*, 
                     movies.title AS movie_title,
-                    movies.duration AS movie_duration
+                    movies.duration AS movie_duration,
+                    movies.status AS movie_status,
+                    movies.release_date AS movie_release_date,
+                    movies.end_date AS movie_end_date
                     FROM showtimes
                     LEFT JOIN movies ON showtimes.movie_id = movies.id
-                    WHERE showtimes.room_id = :room_id";
-
+                    WHERE showtimes.room_id = :room_id
+                    AND movies.status = 'active'
+                    AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
+                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)";
+            
             $params = [':room_id' => $room_id];
-
+            
             if ($date) {
                 $sql .= " AND showtimes.show_date = :date";
                 $params[':date'] = $date;
             }
-
+            
             $sql .= " ORDER BY showtimes.show_date ASC, showtimes.start_time ASC";
-
+            
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchAll();
@@ -267,6 +425,7 @@ class Showtime
 
     /**
      * Lấy lịch chiếu sắp tới (từ hôm nay)
+     * Chỉ lấy lịch chiếu của phim đang chiếu
      */
     public function getUpcoming($limit = 50)
     {
@@ -275,6 +434,9 @@ class Showtime
                     movies.title AS movie_title,
                     movies.duration AS movie_duration,
                     movies.image AS movie_image,
+                    movies.status AS movie_status,
+                    movies.release_date AS movie_release_date,
+                    movies.end_date AS movie_end_date,
                     rooms.name AS room_name,
                     cinemas.name AS cinema_name
                     FROM showtimes
@@ -283,6 +445,8 @@ class Showtime
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
                     WHERE showtimes.show_date >= CURDATE()
                     AND movies.status = 'active'
+                    AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
+                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)
                     ORDER BY showtimes.show_date ASC, showtimes.start_time ASC
                     LIMIT :limit";
             $stmt = $this->conn->prepare($sql);
@@ -325,43 +489,8 @@ class Showtime
                 ':format' => $data['format'] ?? null
             ]);
             return $this->conn->lastInsertId();
-        } catch (PDOException $e) {
-            // Handle primary key violation (AUTO_INCREMENT issue)
-            if ($e->getCode() == 'HY000' && strpos($e->getMessage(), "doesn't have a default value") !== false) {
-                // Fix AUTO_INCREMENT by resetting it to the next available ID
-                try {
-                    $maxIdSql = "SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM showtimes";
-                    $maxIdStmt = $this->conn->prepare($maxIdSql);
-                    $maxIdStmt->execute();
-                    $result = $maxIdStmt->fetch();
-                    $nextId = $result['next_id'] ?? 1;
-
-                    $resetSql = "ALTER TABLE showtimes AUTO_INCREMENT = :next_id";
-                    $resetStmt = $this->conn->prepare($resetSql);
-                    $resetStmt->execute([':next_id' => $nextId]);
-
-                    // Retry the insert
-                    $stmt = $this->conn->prepare($sql);
-                    $stmt->execute([
-                        ':movie_id' => $data['movie_id'] ?? null,
-                        ':room_id' => $data['room_id'] ?? null,
-                        ':show_date' => $data['show_date'] ?? null,
-                        ':start_time' => $data['start_time'] ?? null,
-                        ':end_time' => $data['end_time'] ?? null,
-                        ':format' => $data['format'] ?? null
-                    ]);
-
-                    return $this->conn->lastInsertId();
-                } catch (Exception $retryException) {
-                    debug($retryException);
-                    return false;
-                }
-            }
-            debug($e);
-            return false;
         } catch (Exception $e) {
             debug($e);
-            return false;
         }
     }
 
@@ -424,11 +553,11 @@ class Showtime
                         OR (start_time < :end_time AND end_time >= :end_time)
                         OR (start_time >= :start_time AND end_time <= :end_time)
                     )";
-
+            
             if ($exclude_id) {
                 $sql .= " AND id != :exclude_id";
             }
-
+            
             $stmt = $this->conn->prepare($sql);
             $params = [
                 ':room_id' => $room_id,
@@ -436,11 +565,11 @@ class Showtime
                 ':start_time' => $start_time,
                 ':end_time' => $end_time
             ];
-
+            
             if ($exclude_id) {
                 $params[':exclude_id'] = $exclude_id;
             }
-
+            
             $stmt->execute($params);
             $result = $stmt->fetch();
             return $result['count'] > 0;
@@ -495,18 +624,11 @@ class Showtime
         // Giá vé được quản lý tại bảng ticket_prices, không cần validate ở đây
 
         // Check conflict
-        if (
-            !empty($data['room_id']) && !empty($data['show_date']) &&
-            !empty($data['start_time']) && !empty($data['end_time'])
-        ) {
+        if (!empty($data['room_id']) && !empty($data['show_date']) && 
+            !empty($data['start_time']) && !empty($data['end_time'])) {
             $exclude_id = $isUpdate && isset($data['id']) ? $data['id'] : null;
-            if ($this->checkConflict(
-                $data['room_id'],
-                $data['show_date'],
-                $data['start_time'],
-                $data['end_time'],
-                $exclude_id
-            )) {
+            if ($this->checkConflict($data['room_id'], $data['show_date'], 
+                $data['start_time'], $data['end_time'], $exclude_id)) {
                 $errors['conflict'] = 'Lịch chiếu bị trùng với suất chiếu khác trong cùng phòng';
             }
         }
@@ -536,3 +658,6 @@ class Showtime
         }
     }
 }
+
+?>
+

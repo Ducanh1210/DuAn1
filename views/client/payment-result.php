@@ -162,16 +162,17 @@ $transactionCode = $transactionCode ?? null;
 <div class="payment-result-container">
     <div class="payment-result-card">
         <?php if ($success): ?>
-            <!-- Thành công -->
-            <div class="payment-result-icon" style="background: linear-gradient(135deg, #4caf50, #45a049);">
+            <!-- Thành công - Thanh toán thành công -->
+            <div class="payment-result-icon" style="background: linear-gradient(135deg, #4caf50, #388e3c);">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
                 </svg>
             </div>
-            <h2 class="payment-result-title" style="color: #4caf50;">Thanh toán thành công!</h2>
+            <h2 class="payment-result-title" style="color: #4caf50;">Thanh toán thành công</h2>
             
             <p class="payment-result-message">
-                <?= htmlspecialchars($message) ?>
+                Thanh toán đã được thực hiện thành công! Đơn đặt vé của bạn đã được xác nhận.<br>
+                Bạn có thể xem chi tiết đơn đặt vé trong mục "Vé của tôi".
             </p>
 
             <?php if ($booking): ?>

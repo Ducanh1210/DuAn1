@@ -123,489 +123,6 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     </div>
 </div>
 
-<style>
-.seat-selection-wrapper {
-    background: #2a2a2a;
-    padding: 30px;
-    border-radius: 15px;
-    margin-top: 30px;
-}
-
-.seat-selection-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 30px;
-    background: #1a1a1a;
-    border-radius: 10px;
-    margin-bottom: 30px;
-}
-
-.showtime-info {
-    font-size: 20px;
-    font-weight: 600;
-    color: #fff;
-}
-
-.countdown-timer {
-    background: #dc3545;
-    border: 2px solid #dc3545;
-    border-radius: 10px;
-    padding: 15px 30px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #fff;
-}
-
-.screen-container {
-    text-align: center;
-    margin: 30px auto;
-    max-width: 1200px;
-    position: relative;
-}
-
-.screen {
-    background: linear-gradient(to bottom, #ff8c00, #ff6b00);
-    height: 80px;
-    border-radius: 50px 50px 0 0;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
-    position: relative;
-}
-
-.screen::after {
-    content: 'MÀN HÌNH';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #fff;
-    font-weight: bold;
-    font-size: 24px;
-    letter-spacing: 3px;
-}
-
-.room-title {
-    font-size: 28px;
-    font-weight: bold;
-    margin-top: 20px;
-    margin-bottom: 30px;
-    color: #fff;
-    text-align: center;
-}
-
-.seats-grid {
-    max-width: 1200px;
-    margin: 20px auto;
-}
-
-.seat-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 15px;
-    gap: 10px;
-}
-
-.seat-block {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    flex-wrap: nowrap;
-}
-
-.row-label {
-    width: 40px;
-    text-align: center;
-    font-weight: bold;
-    color: #fff;
-    font-size: 20px;
-}
-
-.seat {
-    width: 55px;
-    height: 55px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: all 0.2s;
-    border: 2px solid transparent;
-    margin: 0;
-}
-
-/* Ghế thường - có thể chọn (màu xám đậm như trong hình) */
-.seat.available {
-    background: #4a4a4a;
-    color: #fff;
-    border-color: #555;
-}
-
-.seat.available:hover {
-    background: #5a5a5a;
-    transform: scale(1.1);
-}
-
-/* Ghế đã chọn */
-.seat.selected {
-    background: #ff8c00;
-    color: #fff;
-    border-color: #ff6b00;
-}
-
-/* Ghế đã đặt */
-.seat.booked {
-    background: #f44336;
-    color: #fff;
-    cursor: not-allowed;
-    opacity: 0.8;
-}
-
-/* Ghế VIP */
-.seat.vip {
-    background: #ffeb3b;
-    color: #000;
-    border-color: #fdd835;
-    font-weight: bold;
-}
-
-.seat.vip:hover {
-    background: #fff176;
-    transform: scale(1.05);
-}
-
-.seat.vip.selected {
-    background: #ff8c00;
-    color: #fff;
-    border-color: #ff6b00;
-}
-
-/* Ghế đôi */
-.seat.couple {
-    background: #03a9f4;
-    color: #fff;
-    border-color: #0288d1;
-    font-weight: bold;
-}
-
-.seat.couple:hover {
-    background: #29b6f6;
-    transform: scale(1.05);
-}
-
-.seat.couple.selected {
-    background: #00bcd4;
-    color: #fff;
-    border-color: #0097a7;
-}
-
-/* Ghế khuyết tật */
-.seat.disabled {
-    background: #000;
-    color: #fff;
-    border-color: #333;
-    cursor: not-allowed;
-}
-
-.seat.disabled:hover {
-    background: #1a1a1a;
-    transform: scale(1);
-}
-
-/* Ghế bảo trì */
-.seat.maintenance {
-    background: #ffeb3b;
-    color: transparent !important; /* Ẩn số ghế, chỉ hiển thị X */
-    border-color: #fdd835;
-    cursor: not-allowed;
-    opacity: 0.9;
-    position: relative;
-}
-
-.seat.maintenance::before {
-    content: 'X';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 16px;
-    color: #f44336;
-    font-weight: bold;
-    z-index: 1;
-    line-height: 1;
-}
-
-.seat-gap {
-    width: 30px;
-    margin: 0;
-    flex-shrink: 0;
-}
-
-.seat-legend {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin: 20px 0;
-    flex-wrap: wrap;
-    color: #fff;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 16px;
-}
-
-.legend-seat {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-}
-
-.selected-seats-summary {
-    background: #1a1a1a;
-    padding: 25px;
-    border-radius: 10px;
-    margin-top: 30px;
-    border-top: 3px solid #ff8c00;
-}
-
-.summary-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.selected-seats-list {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.selected-seat-badge {
-    background: #00bcd4;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.total-price {
-    font-size: 28px;
-    font-weight: bold;
-    color: #ff8c00;
-}
-
-.continue-btn {
-    background: #ff8c00;
-    color: #fff;
-    border: none;
-    padding: 15px 50px;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.continue-btn:hover {
-    background: #ff6b00;
-    transform: translateY(-2px);
-}
-
-.continue-btn:disabled {
-    background: #666;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.back-btn:hover {
-    background: #5a5a5a !important;
-    border-color: #777 !important;
-    transform: translateY(-1px);
-}
-
-/* Ticket Selection Panel */
-.ticket-selection-panel {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 25px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.ticket-quantity-section {
-    display: flex;
-    gap: 30px;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-}
-
-.quantity-selector {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.quantity-selector label {
-    color: #fff;
-    font-weight: 500;
-    font-size: 14px;
-}
-
-.quantity-select {
-    padding: 10px 15px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: #fff;
-    color: #000;
-    font-size: 16px;
-    cursor: pointer;
-    min-width: 100px;
-}
-
-.quantity-select:focus {
-    outline: none;
-    border-color: #00bcd4;
-    box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2);
-}
-
-.quantity-select option {
-    background: #fff;
-    color: #000;
-    padding: 8px;
-}
-
-.adjacent-seats-section {
-    margin-bottom: 25px;
-}
-
-.adjacent-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 15px;
-}
-
-.adjacent-label label {
-    color: #fff;
-    font-weight: 500;
-    font-size: 14px;
-}
-
-.info-icon {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    cursor: help;
-}
-
-.adjacent-options {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
-}
-
-.adjacent-option {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.adjacent-option-radio {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    background: transparent;
-    position: relative;
-    flex-shrink: 0;
-    transition: all 0.2s;
-}
-
-.adjacent-option.active .adjacent-option-radio {
-    border-color: #ff8c00;
-    background: #ff8c00;
-}
-
-.adjacent-option.active .adjacent-option-radio::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #fff;
-}
-
-.adjacent-option-seats {
-    display: flex;
-    gap: 2px;
-    align-items: center;
-}
-
-.adjacent-seat-box {
-    width: 12px;
-    height: 12px;
-    background: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-    flex-shrink: 0;
-}
-
-.adjacent-option:hover .adjacent-option-radio {
-    border-color: #ff8c00;
-}
-
-.adjacent-option.disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.max-seats-info {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 13px;
-    margin-top: 10px;
-}
-
-/* Keyboard navigation */
-.seat-row.hidden {
-    display: none !important;
-}
-
-.seat-row.filtered-highlight {
-    background: rgba(255, 140, 0, 0.1);
-    padding: 5px;
-    border-radius: 5px;
-    border: 2px solid #ff8c00;
-}
-
-/* Time pill active state */
-.time-pill.active {
-    background: #ff8c00 !important;
-    color: #fff !important;
-    border-color: #ff6b00 !important;
-}
-
-</style>
-
 <script>
 // Xử lý xem trailer
 document.addEventListener('DOMContentLoaded', function() {
@@ -684,15 +201,6 @@ function loadSeatData(showtimeId, showtimeTime) {
                 studentPrice = parseFloat(data.prices.student_normal) || 60000;
                 adultVipPrice = parseFloat(data.prices.adult_vip) || 80000;
                 studentVipPrice = parseFloat(data.prices.student_vip) || 70000;
-                
-                // Debug: Log giá và format để kiểm tra
-                console.log('Format showtime:', data.format);
-                console.log('Giá vé:', {
-                    'Người lớn thường': adultPrice,
-                    'Sinh viên thường': studentPrice,
-                    'Người lớn VIP': adultVipPrice,
-                    'Sinh viên VIP': studentVipPrice
-                });
             }
             
             renderSeatSelection(data, showtimeTime);
@@ -711,48 +219,48 @@ function renderSeatSelection(data, showtimeTime) {
     // Lấy thông tin phòng
     let roomDisplay = 'Phòng chiếu';
     if (room) {
-        if (room.room_code) {
-            const roomNumber = room.room_code.match(/\d+/);
-            if (roomNumber) {
+    if (room.room_code) {
+        const roomNumber = room.room_code.match(/\d+/);
+        if (roomNumber) {
                 roomDisplay = `Phòng chiếu số ${roomNumber[0]}`;
-            } else {
+        } else {
                 roomDisplay = `Phòng ${room.room_code}`;
-            }
-        } else if (room.name) {
-            const matches = room.name.match(/\d+/);
-            if (matches) {
-                roomDisplay = `Phòng chiếu số ${matches[0]}`;
-            } else {
-                roomDisplay = room.name;
-            }
+        }
+    } else if (room.name) {
+        const matches = room.name.match(/\d+/);
+        if (matches) {
+            roomDisplay = `Phòng chiếu số ${matches[0]}`;
+        } else {
+            roomDisplay = room.name;
+        }
         }
     }
     
     let html = `
         <div class="seat-selection-wrapper">
             <div class="seat-selection-header">
-                <div class="showtime-info" style="color: #fff;">
+                <div class="showtime-info">
                     Giờ chiếu: <strong>${showtimeTime}</strong>
                 </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <button onclick="goBackToShowtimes()" class="back-button" style="background: #4a4a4a; color: #fff; border: 2px solid #666; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 500; transition: all 0.2s;">
+                <div class="header-actions">
+                    <button onclick="goBackToShowtimes()" class="back-button">
                         ← Quay lại
                     </button>
-                    <div class="countdown-timer" style="background: #dc3545; border: 2px solid #dc3545; border-radius: 10px; padding: 15px 30px; font-size: 18px; font-weight: bold; color: #fff;">
+                    <div class="countdown-timer">
                         Thời gian chọn ghế: <span id="countdown">15:00</span>
                     </div>
                 </div>
             </div>
-
+            
             <!-- Phần chọn số lượng người -->
-            <div style="max-width: 1200px; margin: 20px auto; padding: 0 20px;">
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                    <h3 style="color: #fff; margin-bottom: 25px; font-size: 28px; font-weight: bold;">Chọn ghế</h3>
+            <div class="ticket-selection-panel">
+                <div class="ticket-panel-content">
+                    <h3 class="ticket-panel-title">Chọn ghế</h3>
                     
-                    <div style="display: flex; gap: 40px; margin-bottom: 30px; flex-wrap: wrap;">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <label style="color: #fff; font-weight: 600; font-size: 18px;">Người lớn:</label>
-                            <select id="adultQuantity" onchange="validateAndUpdateQuantity(event)" style="padding: 15px 20px; border-radius: 8px; border: 2px solid rgba(255, 255, 255, 0.3); background: #fff; color: #000; font-size: 18px; cursor: pointer; min-width: 150px; font-weight: 500;">
+                    <div class="quantity-section">
+                        <div class="quantity-wrapper">
+                            <label class="quantity-label">Người lớn:</label>
+                            <select id="adultQuantity" onchange="validateAndUpdateQuantity(event)" class="quantity-select">
                                 <option value="0">0</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
@@ -764,9 +272,9 @@ function renderSeatSelection(data, showtimeTime) {
                                 <option value="8">8</option>
                             </select>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <label style="color: #fff; font-weight: 600; font-size: 18px;">Sinh viên:</label>
-                            <select id="studentQuantity" onchange="validateAndUpdateQuantity(event)" style="padding: 15px 20px; border-radius: 8px; border: 2px solid rgba(255, 255, 255, 0.3); background: #fff; color: #000; font-size: 18px; cursor: pointer; min-width: 150px; font-weight: 500;">
+                        <div class="quantity-wrapper">
+                            <label class="quantity-label">Sinh viên:</label>
+                            <select id="studentQuantity" onchange="validateAndUpdateQuantity(event)" class="quantity-select">
                                 <option value="0">0</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
@@ -780,27 +288,27 @@ function renderSeatSelection(data, showtimeTime) {
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 30px;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-                            <label style="color: #fff; font-weight: 600; font-size: 18px;">Chọn ghế liền nhau</label>
-                            <span style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: inline-flex; align-items: center; justify-content: center; font-size: 14px; cursor: help;" title="Chọn số lượng ghế liền nhau bạn muốn">ℹ️</span>
+                    <div class="adjacent-section">
+                        <div class="adjacent-header">
+                            <label class="adjacent-header-label">Chọn ghế liền nhau</label>
+                            <span class="info-icon" title="Chọn số lượng ghế liền nhau bạn muốn">ℹ️</span>
                         </div>
-                        <div id="adjacentOptions" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <div id="adjacentOptions" class="adjacent-options-container">
                             <!-- Sẽ được render động -->
                         </div>
-                        <div style="color: rgba(255, 255, 255, 0.6); font-size: 13px; margin-top: 10px;">
+                        <div class="max-seats-note">
                             Có thể chọn tối đa 8 người. (Max:8)
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="screen-container" style="text-align: center; margin: 30px auto; max-width: 1200px; padding: 0 20px;">
-                <div class="screen" style="background: linear-gradient(to bottom, #ff8c00, #ff6b00); height: 80px; border-radius: 50px 50px 0 0; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3); color: white; font-weight: bold; font-size: 24px; letter-spacing: 3px;">MÀN HÌNH</div>
-                <div class="room-title" style="font-size: 28px; font-weight: bold; margin-top: 20px; margin-bottom: 30px; color: #fff; text-align: center;">${roomDisplay}</div>
+            <div class="screen-container">
+                <div class="screen">MÀN HÌNH</div>
+                <div class="room-title">${roomDisplay}</div>
             </div>
             
-            <div class="seats-grid" id="seatsGrid" style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
+            <div class="seats-grid" id="seatsGrid">
     `;
     
     // Sắp xếp hàng từ A đến Z
@@ -810,8 +318,8 @@ function renderSeatSelection(data, showtimeTime) {
         const rowSeats = seatsByRow[rowLabel];
         
         html += `
-            <div class="seat-row" data-row-label="${rowLabel.toUpperCase()}" style="display: flex; justify-content: center; align-items: center; margin-bottom: 15px; gap: 10px;">
-                <div class="row-label" style="width: 40px; text-align: center; font-weight: bold; color: #fff; font-size: 20px;">${rowLabel}</div>
+            <div class="seat-row" data-row-label="${rowLabel.toUpperCase()}">
+                <div class="row-label">${rowLabel}</div>
         `;
         
         // Sắp xếp ghế theo số
@@ -834,7 +342,7 @@ function renderSeatSelection(data, showtimeTime) {
             // Thêm khoảng trống nếu cần
             if (prevSeatNumber > 0 && (seatNumber - prevSeatNumber) > 1) {
                 if ((prevSeatNumber % 4 == 0)) {
-                    html += '<div class="seat-gap" style="width: 20px;"></div>';
+                    html += '<div class="seat-gap"></div>';
                 }
             }
             
@@ -863,8 +371,7 @@ function renderSeatSelection(data, showtimeTime) {
                      data-seat-type="${seatType}"
                      data-seat-status="${seatStatus}"
                      ${onClick}
-                     ${title}
-                     style="width: 55px; height: 55px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s; border: 2px solid transparent;">
+                     ${title}>
                     ${seatNumber}
                 </div>
             `;
@@ -880,42 +387,62 @@ function renderSeatSelection(data, showtimeTime) {
     html += `
             </div>
             
-            <div class="seat-legend" style="display: flex; justify-content: center; gap: 40px; margin: 40px 0; flex-wrap: wrap;">
-                <div class="legend-item" style="display: flex; align-items: center; gap: 12px;">
-                    <div class="legend-seat" style="width: 40px; height: 40px; border-radius: 8px; background: #4a4a4a;"></div>
-                    <span style="color: #fff; font-size: 16px; font-weight: 500;">Thường</span>
+            <div class="seat-legend">
+                <div class="legend-item">
+                    <div class="legend-seat normal"></div>
+                    <span class="legend-text">Thường</span>
                 </div>
-                <div class="legend-item" style="display: flex; align-items: center; gap: 12px;">
-                    <div class="legend-seat" style="width: 40px; height: 40px; border-radius: 8px; background: #ffc107;"></div>
-                    <span style="color: #fff; font-size: 16px; font-weight: 500;">VIP</span>
+                <div class="legend-item">
+                    <div class="legend-seat vip"></div>
+                    <span class="legend-text">VIP</span>
                 </div>
-                <div class="legend-item" style="display: flex; align-items: center; gap: 12px;">
-                    <div class="legend-seat" style="width: 40px; height: 40px; border-radius: 8px; background: #ff8c00;"></div>
-                    <span style="color: #fff; font-size: 16px; font-weight: 500;">Ghế bạn chọn</span>
+                <div class="legend-item">
+                    <div class="legend-seat selected"></div>
+                    <span class="legend-text">Ghế bạn chọn</span>
                 </div>
-                <div class="legend-item" style="display: flex; align-items: center; gap: 12px;">
-                    <div class="legend-seat" style="width: 40px; height: 40px; border-radius: 8px; background: #dc3545;"></div>
-                    <span style="color: #fff; font-size: 16px; font-weight: 500;">Đã đặt</span>
+                <div class="legend-item">
+                    <div class="legend-seat booked"></div>
+                    <span class="legend-text">Đã đặt</span>
                 </div>
-                <div class="legend-item" style="display: flex; align-items: center; gap: 12px;">
-                    <div class="legend-seat" style="width: 40px; height: 40px; border-radius: 8px; background: #ffc107; position: relative;">
-                        <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; color: #000;">✕</span>
-                    </div>
-                    <span style="color: #fff; font-size: 16px; font-weight: 500;">Bảo trì</span>
+                <div class="legend-item">
+                    <div class="legend-seat maintenance"></div>
+                    <span class="legend-text">Bảo trì</span>
                 </div>
             </div>
             
-            <div class="selected-seats-summary" id="selectedSeatsSummary" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 20px; border-top: 2px solid #ff8c00; z-index: 1000;">
-                <div class="summary-content" style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div class="price-info-box" id="priceInfoBox">
+                <h3 class="price-info-title">Bảng giá vé</h3>
+                <div class="price-grid">
+                    <div class="price-card">
+                        <div class="price-label">Người lớn - Thường</div>
+                        <div class="price-value adult-normal" id="priceAdultNormal">-</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="price-label">Người lớn - VIP</div>
+                        <div class="price-value adult-vip" id="priceAdultVip">-</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="price-label">Sinh viên - Thường</div>
+                        <div class="price-value student-normal" id="priceStudentNormal">-</div>
+                    </div>
+                    <div class="price-card">
+                        <div class="price-label">Sinh viên - VIP</div>
+                        <div class="price-value student-vip" id="priceStudentVip">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="selected-seats-summary" id="selectedSeatsSummary" style="display: none;">
+                <div class="summary-content">
                     <div>
-                        <div style="margin-bottom: 15px; font-weight: bold; color: #fff; font-size: 18px;">Ghế đã chọn:</div>
-                        <div class="selected-seats-list" id="selectedSeatsList" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
+                        <div class="summary-seats-label">Ghế đã chọn:</div>
+                        <div class="selected-seats-list" id="selectedSeatsList"></div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="margin-bottom: 15px; color: #fff; font-size: 18px; font-weight: 500;">Tổng tiền:</div>
-                        <div class="total-price" id="totalPrice" style="font-size: 32px; font-weight: bold; color: #ff8c00;">0 đ</div>
+                        <div class="total-price-label">Tổng tiền:</div>
+                        <div class="total-price" id="totalPrice">0 đ</div>
                     </div>
-                    <button class="continue-btn" id="continueBtn" onclick="continueBooking()" disabled style="background: #ff8c00; color: #fff; border: none; padding: 15px 50px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.3s;">
+                    <button class="continue-btn" id="continueBtn" onclick="continueBooking()" disabled>
                         Tiếp tục
                     </button>
                 </div>
@@ -927,6 +454,11 @@ function renderSeatSelection(data, showtimeTime) {
     
     // Khởi tạo phần chọn ghế liền nhau
     updateTicketSelection();
+    
+    // Cập nhật hiển thị giá trong bảng giá (sau khi DOM đã render)
+    setTimeout(() => {
+        updatePriceDisplay();
+    }, 100);
 }
 
 function startCountdown() {
@@ -1065,6 +597,22 @@ function selectAdjacentSeats(startSeatElement, count) {
     return seatsToSelect;
 }
 
+function updatePriceDisplay() {
+    try {
+        const priceAdultNormal = document.getElementById('priceAdultNormal');
+        const priceAdultVip = document.getElementById('priceAdultVip');
+        const priceStudentNormal = document.getElementById('priceStudentNormal');
+        const priceStudentVip = document.getElementById('priceStudentVip');
+        
+        if (priceAdultNormal) priceAdultNormal.textContent = adultPrice.toLocaleString('vi-VN') + ' đ';
+        if (priceAdultVip) priceAdultVip.textContent = adultVipPrice.toLocaleString('vi-VN') + ' đ';
+        if (priceStudentNormal) priceStudentNormal.textContent = studentPrice.toLocaleString('vi-VN') + ' đ';
+        if (priceStudentVip) priceStudentVip.textContent = studentVipPrice.toLocaleString('vi-VN') + ' đ';
+    } catch (error) {
+        console.error('Error updating price display:', error);
+    }
+}
+
 function updateSummary() {
     const summaryElement = document.getElementById('selectedSeatsSummary');
     const seatsListElement = document.getElementById('selectedSeatsList');
@@ -1094,7 +642,7 @@ function updateSummary() {
         } else {
             label += ' - SV';
         }
-        seatLabels.push(`<span style="background: #ff8c00; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 16px;">${label}</span>`);
+        seatLabels.push(`<span class="seat-badge">${label}</span>`);
     });
     seatsListElement.innerHTML = seatLabels.join('');
     

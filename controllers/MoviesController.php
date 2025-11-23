@@ -3,13 +3,12 @@ class MoviesController
 {
     public $movie;
     public $genre;
-    public $discountCode;
 
     public function __construct()
     {
         $this->movie = new Movie();
         $this->genre = new Genre();
-        $this->discountCode = new DiscountCode();
+        require_once __DIR__ . '/../models/DiscountCode.php';
     }
 
     /**
@@ -19,9 +18,9 @@ class MoviesController
     {
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $page = max(1, $page); // Đảm bảo page >= 1
-
+        
         $result = $this->movie->paginate($page, 5);
-
+        
         render('admin/movies/list.php', [
             'data' => $result['data'],
             'pagination' => [
@@ -37,117 +36,117 @@ class MoviesController
      * Hiển thị form tạo phim mới (Admin)
      */
     public function create()
-    {
-        $errors = [];
-        $genres = $this->genre->all();
-        $uploaded_image = null;
+{
+    $errors = [];
+    $genres = $this->genre->all();
+    $uploaded_image = null;
+    
+    // validate form
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // ktra trường rỗng
+        if (empty(trim($_POST['title'] ?? ''))) {
+            $errors['title'] = "Bạn vui lòng nhập tên phim";
+        }
 
-        // validate form
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // ktra trường rỗng
-            if (empty(trim($_POST['title'] ?? ''))) {
-                $errors['title'] = "Bạn vui lòng nhập tên phim";
-            }
+        if (empty(trim($_POST['description'] ?? ''))) {
+            $errors['description'] = "Bạn vui lòng nhập mô tả";
+        }
 
-            if (empty(trim($_POST['description'] ?? ''))) {
-                $errors['description'] = "Bạn vui lòng nhập mô tả";
-            }
+        if (empty($_FILES['image']['name'])) {
+            $errors['image'] = "Bạn vui lòng chọn hình ảnh";
+        }
 
-            if (empty($_FILES['image']['name'])) {
-                $errors['image'] = "Bạn vui lòng chọn hình ảnh";
-            }
+        if (empty(trim($_POST['duration'] ?? ''))) {
+            $errors['duration'] = "Bạn vui lòng nhập thời lượng";
+        }
 
-            if (empty(trim($_POST['duration'] ?? ''))) {
-                $errors['duration'] = "Bạn vui lòng nhập thời lượng";
-            }
+        if (empty(trim($_POST['genre_id'] ?? ''))) {
+            $errors['genre_id'] = "Bạn vui lòng chọn thể loại";
+        }
 
-            if (empty(trim($_POST['genre_id'] ?? ''))) {
-                $errors['genre_id'] = "Bạn vui lòng chọn thể loại";
-            }
+        if (empty(trim($_POST['release_date'] ?? ''))) {
+            $errors['release_date'] = "Bạn vui lòng chọn ngày phát hành";
+        }
 
-            if (empty(trim($_POST['release_date'] ?? ''))) {
-                $errors['release_date'] = "Bạn vui lòng chọn ngày phát hành";
-            }
+        if (empty(trim($_POST['format'] ?? ''))) {
+            $errors['format'] = "Bạn vui lòng chọn định dạng";
+        }
 
-            if (empty(trim($_POST['format'] ?? ''))) {
-                $errors['format'] = "Bạn vui lòng chọn định dạng";
-            }
-
-            // Kiểm tra và upload ảnh (chỉ khi không có lỗi validation ban đầu)
-            $imagePath = null;
-            if (empty($errors) && !empty($_FILES['image']['name'])) {
-                $allowed = ['jpg', 'jpeg', 'png', 'gif'];
-                $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-                if (!in_array($ext, $allowed)) {
-                    $errors['image'] = 'Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif)';
+        // Kiểm tra và upload ảnh (chỉ khi không có lỗi validation ban đầu)
+        $imagePath = null;
+        if (empty($errors) && !empty($_FILES['image']['name'])) {
+            $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+            $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, $allowed)) {
+                $errors['image'] = 'Chỉ chấp nhận file ảnh (jpg, jpeg, png, gif)';
+            } else {
+                $dest = 'image/' . basename($_FILES['image']['name']);
+                $temp = $_FILES['image']['tmp_name'];
+                if (move_uploaded_file($temp, $dest)) {
+                    $imagePath = $dest;
+                    $uploaded_image = $dest;
                 } else {
-                    $dest = 'image/' . basename($_FILES['image']['name']);
-                    $temp = $_FILES['image']['tmp_name'];
-                    if (move_uploaded_file($temp, $dest)) {
-                        $imagePath = $dest;
-                        $uploaded_image = $dest;
-                    } else {
-                        $errors['image'] = 'Lỗi khi upload hình ảnh';
-                    }
+                    $errors['image'] = 'Lỗi khi upload hình ảnh';
                 }
             }
-
-            // Kiểm tra trailer nếu có
-            if (!empty($_POST['trailer'])) {
-                if (!filter_var($_POST['trailer'], FILTER_VALIDATE_URL)) {
-                    $errors['trailer'] = 'Link trailer phải là URL hợp lệ';
-                }
-            }
-
-            // Kiểm tra end_date nếu có
-            if (!empty($_POST['end_date'])) {
-                if (strtotime($_POST['end_date']) === false) {
-                    $errors['end_date'] = 'Ngày kết thúc không hợp lệ';
-                } elseif (!empty($_POST['release_date']) && strtotime($_POST['end_date']) < strtotime($_POST['release_date'])) {
-                    $errors['end_date'] = 'Ngày kết thúc phải sau ngày phát hành';
-                }
-            }
-
-            // Nếu không có lỗi, lưu vào database
-            if (empty($errors)) {
-                // Tự động tính status dựa trên ngày
-                $today = date('Y-m-d');
-                $releaseDate = trim($_POST['release_date']);
-                $endDate = trim($_POST['end_date'] ?? '');
-
-                $status = 'active'; // Mặc định là active
-                if ($endDate && $today > $endDate) {
-                    // Nếu đã quá ngày kết thúc
-                    $status = 'inactive';
-                } elseif ($releaseDate && $today < $releaseDate) {
-                    // Nếu chưa đến ngày phát hành, vẫn để active để có thể hiển thị "Sắp chiếu"
-                    $status = 'active';
-                }
-
-                $data = [
-                    'title' => trim($_POST['title']),
-                    'description' => trim($_POST['description']),
-                    'image' => $imagePath,
-                    'trailer' => trim($_POST['trailer'] ?? ''),
-                    'duration' => trim($_POST['duration']),
-                    'release_date' => $releaseDate,
-                    'end_date' => $endDate ?: null,
-                    'format' => trim($_POST['format']),
-                    'original_language' => trim($_POST['original_language'] ?? ''),
-                    'subtitle_or_dub' => trim($_POST['subtitle_or_dub'] ?? ''),
-                    'age_rating' => trim($_POST['age_rating'] ?? ''),
-                    'producer' => trim($_POST['producer'] ?? ''),
-                    'genre_id' => trim($_POST['genre_id']),
-                    'status' => $status
-                ];
-                $this->movie->insert($data);
-                header('Location: ' . BASE_URL . '?act=/');
-                exit;
+        }
+        
+        // Kiểm tra trailer nếu có
+        if (!empty($_POST['trailer'])) {
+            if (!filter_var($_POST['trailer'], FILTER_VALIDATE_URL)) {
+                $errors['trailer'] = 'Link trailer phải là URL hợp lệ';
             }
         }
 
-        render('admin/movies/create.php', ['errors' => $errors, 'genres' => $genres, 'uploaded_image' => $uploaded_image]);
+        // Kiểm tra end_date nếu có
+        if (!empty($_POST['end_date'])) {
+            if (strtotime($_POST['end_date']) === false) {
+                $errors['end_date'] = 'Ngày kết thúc không hợp lệ';
+            } elseif (!empty($_POST['release_date']) && strtotime($_POST['end_date']) < strtotime($_POST['release_date'])) {
+                $errors['end_date'] = 'Ngày kết thúc phải sau ngày phát hành';
+            }
+        }
+
+        // Nếu không có lỗi, lưu vào database
+        if (empty($errors)) {
+            // Tự động tính status dựa trên ngày
+            $today = date('Y-m-d');
+            $releaseDate = trim($_POST['release_date']);
+            $endDate = trim($_POST['end_date'] ?? '');
+            
+            $status = 'active'; // Mặc định là active
+            if ($endDate && $today > $endDate) {
+                // Nếu đã quá ngày kết thúc
+                $status = 'inactive';
+            } elseif ($releaseDate && $today < $releaseDate) {
+                // Nếu chưa đến ngày phát hành, vẫn để active để có thể hiển thị "Sắp chiếu"
+                $status = 'active';
+            }
+            
+            $data = [
+                'title' => trim($_POST['title']),
+                'description' => trim($_POST['description']),
+                'image' => $imagePath,
+                'trailer' => trim($_POST['trailer'] ?? ''),
+                'duration' => trim($_POST['duration']),
+                'release_date' => $releaseDate,
+                'end_date' => $endDate ?: null,
+                'format' => trim($_POST['format']),
+                'original_language' => trim($_POST['original_language'] ?? ''),
+                'subtitle_or_dub' => trim($_POST['subtitle_or_dub'] ?? ''),
+                'age_rating' => trim($_POST['age_rating'] ?? ''),
+                'producer' => trim($_POST['producer'] ?? ''),
+                'genre_id' => trim($_POST['genre_id']),
+                'status' => $status
+            ];
+            $this->movie->insert($data);
+            header('Location: ' . BASE_URL . '?act=/');
+            exit;
+        }
     }
+
+    render('admin/movies/create.php', ['errors' => $errors, 'genres' => $genres, 'uploaded_image' => $uploaded_image]);
+}
 
 
     /**
@@ -243,7 +242,7 @@ class MoviesController
                 $today = date('Y-m-d');
                 $releaseDate = trim($_POST['release_date']);
                 $endDate = trim($_POST['end_date'] ?? '');
-
+                
                 $status = 'active'; // Mặc định là active
                 if ($endDate && $today > $endDate) {
                     // Nếu đã quá ngày kết thúc
@@ -252,7 +251,7 @@ class MoviesController
                     // Nếu chưa đến ngày phát hành, vẫn để active để có thể hiển thị "Sắp chiếu"
                     $status = 'active';
                 }
-
+                
                 $data = [
                     'title' => trim($_POST['title']),
                     'description' => trim($_POST['description']),
@@ -351,48 +350,87 @@ class MoviesController
      */
     public function khuyenmai()
     {
-        $records = $this->discountCode->getClientDiscounts();
-        $discounts = array_map(function ($record) {
-            return [
-                'title' => $record['title'],
-                'status' => $record['status'] ?? 'active',
-                'discount_percent' => $record['discount_percent'] ?? 0,
-                'period' => $this->formatDiscountPeriod(
-                    $record['start_date'] ?? null,
-                    $record['end_date'] ?? null,
-                    $record['status'] ?? ''
-                ),
-                'description' => $record['description'] ?? '',
-                'benefits' => is_array($record['benefits']) ? $record['benefits'] : [],
-                'code' => $record['code'],
-                'cta' => $record['cta'] ?? 'Áp dụng mã'
-            ];
-        }, $records);
-
-        $stats = $this->discountCode->getStats();
+        $promotions = [
+            [
+                'title' => 'Cuối tuần rực rỡ',
+                'tag' => 'combo',
+                'status' => 'ongoing',
+                'period' => '01/11 - 31/12',
+                'description' => 'Giảm 35% combo 2 vé + bắp nước khi đặt vé online trong ba ngày cuối tuần.',
+                'benefits' => [
+                    'Áp dụng Thứ 6 - Chủ nhật cho ghế Standard & VIP',
+                    'Tặng thêm voucher nước ngọt 25.000đ',
+                    'Không giới hạn số lần đổi trong thời gian diễn ra'
+                ],
+                'code' => 'WEEKEND35',
+                'cta' => 'Đặt vé ngay'
+            ],
+            [
+                'title' => 'Thành viên kim cương',
+                'tag' => 'membership',
+                'status' => 'ongoing',
+                'period' => '15/10 - 15/12',
+                'description' => 'Ưu đãi độc quyền cho khách hàng chi tiêu từ 3.000.000đ trong 60 ngày.',
+                'benefits' => [
+                    'Tích lũy x3 điểm thưởng trên mọi giao dịch',
+                    'Miễn phí nâng hạng ghế khi đặt trước 24h',
+                    'Tặng 02 vé IMAX mỗi tháng'
+                ],
+                'code' => 'DIAMONDUP',
+                'cta' => 'Nâng hạng ngay'
+            ],
+            [
+                'title' => 'Combo gia đình 4 vé',
+                'tag' => 'family',
+                'status' => 'upcoming',
+                'period' => 'Khởi động 01/12',
+                'description' => 'Ưu đãi cho gia đình với 4 vé + 2 bắp lớn + 4 nước chỉ từ 399.000đ.',
+                'benefits' => [
+                    'Đặt trước để giữ ghế liền kề',
+                    'Tặng album sticker chủ đề phim tháng 12',
+                    'Giảm thêm 5% khi thanh toán qua Momo'
+                ],
+                'code' => 'FAMILYJOY',
+                'cta' => 'Đăng ký nhắc lịch'
+            ],
+            [
+                'title' => 'Sinh viên đồng giá',
+                'tag' => 'student',
+                'status' => 'ongoing',
+                'period' => '24/7 - Không giới hạn',
+                'description' => 'Vé Standard đồng giá 55.000đ cho sinh viên trên toàn hệ thống.',
+                'benefits' => [
+                    'Áp dụng cho tất cả suất chiếu trước 18h',
+                    'Ưu đãi 15% bắp nước khi xuất trình thẻ',
+                    'Mua 5 vé/tháng tặng 1 vé bất kỳ'
+                ],
+                'code' => 'STUDENT55',
+                'cta' => 'Xem chi tiết'
+            ],
+        ];
 
         $membershipBenefits = [
             [
                 'icon' => 'bi-gift',
-                'title' => 'Mã riêng cho suất hot',
-                'desc' => 'Giữ chỗ và áp dụng mã ngay khi TicketHub mở bán suất chiếu được săn đón.'
+                'title' => 'Quà tặng mỗi tháng',
+                'desc' => 'Voucher đồ ăn, vé miễn phí, suất chiếu đặc biệt dành riêng cho hội viên.'
             ],
             [
                 'icon' => 'bi-lightning-charge',
-                'title' => 'Thanh toán nhanh',
-                'desc' => 'Ưu tiên ví điện tử/QR để nhận thêm hoàn tiền khi nhập mã giảm giá.'
+                'title' => 'Đặc quyền ưu tiên',
+                'desc' => 'Check-in và nhận vé nhanh, vào phòng chiếu sớm hơn 10 phút.'
             ],
             [
                 'icon' => 'bi-graph-up',
-                'title' => 'Tích điểm kép',
-                'desc' => 'Dùng mã giảm vẫn được cộng điểm TicketHub Rewards như bình thường.'
+                'title' => 'Tích điểm đa tầng',
+                'desc' => 'Tự động nhân 1.5-3 lần điểm thưởng dựa trên hạng thẻ hiện tại.'
             ],
         ];
 
         $faqs = [
             [
                 'question' => 'Làm sao để nhận mã khuyến mãi?',
-                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm "Sao chép mã". Mã sẽ được lưu và bạn có thể áp dụng ở bước thanh toán.'
+                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm “Sao chép mã”. Mã sẽ lưu trong ví voucher và tự áp dụng ở bước thanh toán.'
             ],
             [
                 'question' => 'Tôi có thể dùng nhiều mã trong cùng một đơn?',
@@ -405,15 +443,81 @@ class MoviesController
         ];
 
         $heroStats = [
-            ['label' => 'Mã giảm giá', 'value' => (string)($stats['total'] ?? 0)]
+            ['label' => 'Ưu đãi đang diễn ra', 'value' => count($promotions)],
+            ['label' => 'Khách nhận mã trong tuần', 'value' => '12.457'],
+            ['label' => 'Điểm thưởng đã tặng', 'value' => '3.2M']
         ];
 
+        // Lấy discount codes từ database
+        $discountCodeModel = new DiscountCode();
+        $discountCodes = $discountCodeModel->all();
+        
+        // Chuyển đổi discount codes thành format promotions
+        $dbPromotions = [];
+        foreach ($discountCodes as $dc) {
+            if ($dc['status'] === 'active') {
+                $dbPromotions[] = [
+                    'title' => 'Mã giảm giá: ' . $dc['code'],
+                    'tag' => 'general',
+                    'status' => 'ongoing',
+                    'period' => ($dc['start_date'] ?? '') . ' - ' . ($dc['end_date'] ?? ''),
+                    'description' => 'Giảm ' . $dc['discount_percent'] . '% cho đơn hàng của bạn.',
+                    'benefits' => [
+                        'Giảm ' . $dc['discount_percent'] . '% cho tổng đơn hàng',
+                        'Áp dụng cho tất cả suất chiếu',
+                        'Có hiệu lực từ ' . ($dc['start_date'] ?? '') . ' đến ' . ($dc['end_date'] ?? '')
+                    ],
+                    'code' => $dc['code'],
+                    'cta' => 'Sử dụng mã'
+                ];
+            }
+        }
+        
+        // Kết hợp promotions từ code và database
+        $allPromotions = array_merge($dbPromotions, $promotions);
+
         renderClient('client/khuyenmai.php', [
-            'discounts' => $discounts,
+            'promotions' => $allPromotions,
             'membershipBenefits' => $membershipBenefits,
             'faqs' => $faqs,
             'heroStats' => $heroStats
         ], 'Khuyến mãi');
+        exit;
+    }
+
+    /**
+     * API kiểm tra mã giảm giá (thay thế VoucherController->checkVoucher)
+     */
+    public function checkVoucher()
+    {
+        header('Content-Type: application/json');
+        
+        $code = $_GET['code'] ?? '';
+        $totalAmount = floatval($_GET['total_amount'] ?? 0);
+        
+        if (empty($code)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Vui lòng nhập mã giảm giá'
+            ]);
+            exit;
+        }
+        
+        $discountCodeModel = new DiscountCode();
+        $discount = $discountCodeModel->validateDiscountCode($code, $totalAmount);
+        
+        if ($discount) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Áp dụng thành công! Giảm ' . $discount['discount_percent'] . '%',
+                'discount_code' => $discount
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Mã giảm giá không hợp lệ hoặc đã hết hạn'
+            ]);
+        }
         exit;
     }
 
@@ -426,13 +530,11 @@ class MoviesController
             $sql = "SELECT DISTINCT movies.*, movie_genres.name AS genre_name
                     FROM movies
                     LEFT JOIN movie_genres ON movies.genre_id = movie_genres.id";
-
-            $where = [
-                "movies.status = 'active'",
-                "(movies.release_date <= CURDATE() OR movies.release_date IS NULL)",
-                "(movies.end_date >= CURDATE() OR movies.end_date IS NULL)"
-            ];
-
+            
+            $where = ["movies.status = 'active'", 
+                     "(movies.release_date <= CURDATE() OR movies.release_date IS NULL)",
+                     "(movies.end_date >= CURDATE() OR movies.end_date IS NULL)"];
+            
             $params = [];
 
             // Lọc theo tên phim
@@ -451,7 +553,7 @@ class MoviesController
 
             $sql .= " WHERE " . implode(' AND ', $where);
             $sql .= " ORDER BY movies.release_date DESC LIMIT 20";
-
+            
             $stmt = $this->movie->conn->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchAll();
@@ -471,7 +573,7 @@ class MoviesController
                     LEFT JOIN movie_genres ON movies.genre_id = movie_genres.id
                     WHERE movies.status = 'active' 
                     AND movies.release_date > CURDATE()";
-
+            
             $params = [];
 
             // Lọc theo tên phim
@@ -481,7 +583,7 @@ class MoviesController
             }
 
             $sql .= " ORDER BY movies.release_date ASC LIMIT 20";
-
+            
             $stmt = $this->movie->conn->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchAll();
@@ -503,33 +605,6 @@ class MoviesController
         } catch (Exception $e) {
             return [];
         }
-    }
-
-    /**
-     * Định dạng thời gian áp dụng mã giảm giá
-     */
-    private function formatDiscountPeriod($startDate, $endDate, $status = '')
-    {
-        $start = $startDate ? strtotime($startDate) : null;
-        $end = $endDate ? strtotime($endDate) : null;
-
-        if ($status === 'upcoming' && $start) {
-            return 'Khởi động ' . date('d/m', $start);
-        }
-
-        if ($start && $end) {
-            return date('d/m', $start) . ' - ' . date('d/m', $end);
-        }
-
-        if ($start) {
-            return 'Từ ' . date('d/m', $start);
-        }
-
-        if ($end) {
-            return 'Đến ' . date('d/m', $end);
-        }
-
-        return 'Áp dụng giới hạn';
     }
 
 
@@ -620,7 +695,7 @@ class MoviesController
     {
         require_once './models/Showtime.php';
         $showtimeModel = new Showtime();
-
+        
         $movieId = $_GET['id'] ?? null;
         if (!$movieId) {
             header('Location: ' . BASE_URL . '?act=trangchu');
@@ -640,25 +715,25 @@ class MoviesController
         // Lấy danh sách ngày từ hôm nay đến end_date của phim
         $today = date('Y-m-d');
         $startDate = $today;
-
+        
         // Nếu phim chưa khởi chiếu, bắt đầu từ release_date
         if (!empty($movie['release_date']) && $movie['release_date'] > $today) {
             $startDate = $movie['release_date'];
         }
-
+        
         // Kết thúc ở end_date hoặc 7 ngày từ hôm nay nếu không có end_date
         $endDate = !empty($movie['end_date']) ? $movie['end_date'] : date('Y-m-d', strtotime('+7 days'));
-
+        
         // Đảm bảo end_date không nhỏ hơn startDate
         if ($endDate < $startDate) {
             $endDate = $startDate;
         }
-
+        
         // Tạo danh sách ngày
         $dates = [];
         $currentDate = strtotime($startDate);
         $endTimestamp = strtotime($endDate);
-
+        
         while ($currentDate <= $endTimestamp) {
             $dateStr = date('Y-m-d', $currentDate);
             $dayOfWeek = (int)date('w', $currentDate);
@@ -685,13 +760,22 @@ class MoviesController
     }
 
     /**
-     * Hiển thị trang giới thiệu (Client)
+     * Hiển thị trang giới thiệu
      */
     public function gioithieu()
     {
         renderClient('client/gioithieu.php', [], 'Giới Thiệu');
-        exit;
     }
+
+    
+    /**
+     * Hiển thị trang liên hệ
+     */
+    public function lienhe()
+    {
+        renderClient('client/lienhe.php', [], 'Liên Hệ');
+    }
+
 
     /**
      * Lấy tên thứ trong tuần bằng tiếng Việt
@@ -710,3 +794,5 @@ class MoviesController
         return $days[$dayOfWeek] ?? '';
     }
 }
+
+?>

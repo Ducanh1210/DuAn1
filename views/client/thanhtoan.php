@@ -178,10 +178,34 @@ function formatPrice($price) {
                 </label>
             </div>
 
+            <!-- Voucher code section -->
+            <div class="voucher-section" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <label for="voucherCode" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">
+                    Mã giảm giá / Voucher
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" 
+                           id="voucherCode" 
+                           name="voucher_code" 
+                           placeholder="Nhập mã voucher" 
+                           style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    <button type="button" 
+                            id="applyVoucherBtn" 
+                            style="padding: 10px 20px; background: #ff6978; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                        Áp dụng
+                    </button>
+                </div>
+                <div id="voucherMessage" style="margin-top: 8px; font-size: 13px;"></div>
+            </div>
+
             <div class="costs" id="costs">
                 <div class="cost-row">
-                    <div>Thanh toán</div>
+                    <div>Tổng tiền</div>
                     <div id="subtotal"><?= formatPrice($totalPrice) ?></div>
+                </div>
+                <div class="cost-row" id="discountRow" style="display: none;">
+                    <div>Giảm giá</div>
+                    <div id="discountAmount" style="color: #28a745;">-0đ</div>
                 </div>
                 <div class="cost-row">
                     <div>Phí</div>
@@ -217,16 +241,71 @@ function formatPrice($price) {
     const grandEl = document.getElementById("grandTotal");
 
     // Numeric values (VND)
-    let subtotal = <?= $totalPrice ?>;
+    let originalTotal = <?= $totalPrice ?>;
+    let subtotal = originalTotal;
     let fee = 0;
+    let appliedVoucher = null;
     
     function fmt(v) {
         return new Intl.NumberFormat("vi-VN").format(v) + "đ";
     }
     
-    subtotalEl.textContent = fmt(subtotal);
-    feeEl.textContent = fmt(fee);
-    grandEl.textContent = fmt(subtotal + fee);
+    function updateTotals() {
+        subtotal = originalTotal;
+        const discount = appliedVoucher ? (subtotal * appliedVoucher.discount_percent / 100) : 0;
+        fee = 0;
+        const grandTotal = subtotal - discount + fee;
+        
+        subtotalEl.textContent = fmt(subtotal);
+        feeEl.textContent = fmt(fee);
+        
+        if (discount > 0) {
+            document.getElementById('discountRow').style.display = 'flex';
+            document.getElementById('discountAmount').textContent = '-' + fmt(discount);
+        } else {
+            document.getElementById('discountRow').style.display = 'none';
+        }
+        
+        grandEl.textContent = fmt(grandTotal);
+    }
+    
+    updateTotals();
+    
+    // Voucher code handler
+    document.getElementById('applyVoucherBtn').addEventListener('click', function() {
+        const voucherCode = document.getElementById('voucherCode').value.trim();
+        const messageEl = document.getElementById('voucherMessage');
+        
+        if (!voucherCode) {
+            messageEl.innerHTML = '<span style="color: #dc3545;">Vui lòng nhập mã voucher</span>';
+            return;
+        }
+        
+        messageEl.innerHTML = '<span style="color: #ffc107;">Đang kiểm tra mã voucher...</span>';
+        
+        // Kiểm tra discount code qua API
+        const url = '<?= BASE_URL ?>?act=check-voucher&code=' + encodeURIComponent(voucherCode) + '&total_amount=' + originalTotal;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.discount_code) {
+                    // Sử dụng data.discount_code
+                    appliedVoucher = data.discount_code;
+                    messageEl.innerHTML = '<span style="color: #28a745;">✓ ' + (data.message || 'Áp dụng thành công! Giảm ' + appliedVoucher.discount_percent + '%') + '</span>';
+                    updateTotals();
+                } else {
+                    appliedVoucher = null;
+                    messageEl.innerHTML = '<span style="color: #dc3545;">' + (data.message || 'Mã voucher không hợp lệ') + '</span>';
+                    updateTotals();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking voucher:', error);
+                appliedVoucher = null;
+                messageEl.innerHTML = '<span style="color: #dc3545;">Có lỗi xảy ra khi kiểm tra voucher. Vui lòng thử lại.</span>';
+                updateTotals();
+            });
+    });
 
     let selectedMethod = null;
     methods.forEach((m) => {
@@ -275,6 +354,14 @@ function formatPrice($price) {
         formData.append('seats', '<?= htmlspecialchars($seatIds) ?>');
         formData.append('seat_labels', '<?= htmlspecialchars($seatLabels) ?>');
         formData.append('payment_method', selectedMethod);
+        formData.append('adult_count', '<?= $adultCount ?? 0 ?>');
+        formData.append('student_count', '<?= $studentCount ?? 0 ?>');
+        
+        // Thêm voucher code nếu có
+        const voucherCode = document.getElementById('voucherCode').value.trim();
+        if (voucherCode) {
+            formData.append('voucher_code', voucherCode);
+        }
         
         fetch('<?= BASE_URL ?>?act=payment-process', {
             method: 'POST',

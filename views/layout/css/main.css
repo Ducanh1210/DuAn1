@@ -44,13 +44,51 @@
     background-color: var(--bg-sidebar);
     color: var(--text-sidebar);
     padding-top: 12px;
+    padding-bottom: 20px;
     transition: width .22s ease;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     z-index: 1050;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Sidebar scrollbar styling */
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
   }
   .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
-  .sidebar .sidebar-header { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-  .sidebar .brand { color: #cfe3ff; font-weight: 600; font-size: 14px; display:flex; align-items:center; gap:.6rem; justify-content:center; }
+  .sidebar .sidebar-header { 
+    padding: 12px 10px; 
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    flex-shrink: 0;
+  }
+  .sidebar .brand { 
+    color: #cfe3ff; 
+    font-weight: 600; 
+    font-size: 14px; 
+    display:flex; 
+    align-items:center; 
+    gap:.6rem; 
+    justify-content:center; 
+  }
+  
+  /* Sidebar menu container */
+  .sidebar > a,
+  .sidebar > hr {
+    flex-shrink: 0;
+  }
+  
   .sidebar a {
     display: flex;
     align-items: center;
@@ -60,6 +98,7 @@
     text-decoration: none;
     font-size: 14px;
     transition: background .18s, color .18s, padding-left .18s;
+    white-space: nowrap;
   }
   .sidebar a i { font-size: 18px; width:18px; text-align:center; }
   .sidebar a span.label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -68,7 +107,16 @@
     color: #fff;
     border-radius: 8px;
   }
-  .sidebar hr { border-color: rgba(255,255,255,0.06); margin: 12px 10px; }
+  .sidebar hr { 
+    border-color: rgba(255,255,255,0.06); 
+    margin: 12px 10px;
+    flex-shrink: 0;
+  }
+  
+  /* Đảm bảo phần đăng xuất hiển thị đầy đủ */
+  .sidebar a.text-danger {
+    flex-shrink: 0;
+  }
 
   /* Header */
   .header {

@@ -179,6 +179,7 @@ class Booking
             
             // Lấy dữ liệu phân trang
             $sql = "SELECT bookings.*, 
+                    movies.id AS movie_id,
                     movies.title AS movie_title,
                     movies.image AS movie_image,
                     showtimes.show_date,
