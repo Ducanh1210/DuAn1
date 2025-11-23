@@ -73,6 +73,21 @@ class ProfileController
         $bookingResult = $this->booking->getByUser($userId);
         $bookingHistory = $bookingResult['data'] ?? [];
 
+        // Kiểm tra đã bình luận cho từng booking
+        require_once __DIR__ . '/../models/Comment.php';
+        $commentModel = new Comment();
+        $userComments = $commentModel->getByUser($userId);
+        $commentedMovies = [];
+        foreach ($userComments as $comment) {
+            $commentedMovies[$comment['movie_id']] = true;
+        }
+
+        // Thêm thông tin đã bình luận vào booking history
+        foreach ($bookingHistory as &$booking) {
+            $booking['has_commented'] = isset($commentedMovies[$booking['movie_id'] ?? null]);
+        }
+        unset($booking);
+
         // Tab hiện tại
         $tab = $_GET['tab'] ?? 'account';
 
@@ -341,6 +356,159 @@ class ProfileController
         } catch (Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Hiển thị trang bình luận/đánh giá phim
+     */
+    public function reviewMovie()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . '?act=dangnhap');
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+        $bookingId = $_GET['booking_id'] ?? null;
+        $movieId = $_GET['movie_id'] ?? null;
+
+        if (!$bookingId || !$movieId) {
+            header('Location: ' . BASE_URL . '?act=profile&tab=bookings');
+            exit;
+        }
+
+        // Kiểm tra booking thuộc về user này
+        $booking = $this->booking->find($bookingId);
+        if (!$booking || $booking['user_id'] != $userId) {
+            header('Location: ' . BASE_URL . '?act=profile&tab=bookings');
+            exit;
+        }
+
+        // Kiểm tra booking đã thanh toán chưa
+        if (!in_array($booking['status'] ?? '', ['paid', 'confirmed'])) {
+            header('Location: ' . BASE_URL . '?act=profile&tab=bookings');
+            exit;
+        }
+
+        // Lấy thông tin phim
+        require_once __DIR__ . '/../models/Movie.php';
+        $movieModel = new Movie();
+        $movie = $movieModel->find($movieId);
+
+        if (!$movie) {
+            header('Location: ' . BASE_URL . '?act=profile&tab=bookings');
+            exit;
+        }
+
+        // Kiểm tra đã bình luận chưa
+        require_once __DIR__ . '/../models/Comment.php';
+        $commentModel = new Comment();
+        $existingComment = null;
+        $userComments = $commentModel->getByUser($userId);
+        foreach ($userComments as $comment) {
+            if ($comment['movie_id'] == $movieId) {
+                $existingComment = $comment;
+                break;
+            }
+        }
+
+        renderClient('client/review.php', [
+            'booking' => $booking,
+            'movie' => $movie,
+            'existingComment' => $existingComment
+        ], 'Đánh giá phim');
+    }
+
+    /**
+     * Xử lý submit bình luận/đánh giá
+     */
+    public function submitReview()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . '?act=dangnhap');
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+        $errors = [];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $bookingId = $_POST['booking_id'] ?? null;
+            $movieId = $_POST['movie_id'] ?? null;
+            $rating = isset($_POST['rating']) ? (int)$_POST['rating'] : null;
+            $content = trim($_POST['content'] ?? '');
+
+            // Validation
+            if (!$bookingId || !$movieId) {
+                $errors[] = 'Thông tin không hợp lệ';
+            }
+
+            // Kiểm tra booking thuộc về user này
+            $booking = $this->booking->find($bookingId);
+            if (!$booking || $booking['user_id'] != $userId) {
+                $errors[] = 'Bạn không có quyền đánh giá đơn hàng này';
+            }
+
+            if ($rating === null || $rating < 1 || $rating > 5) {
+                $errors[] = 'Vui lòng chọn đánh giá từ 1 đến 5 sao';
+            }
+
+            if (empty($content)) {
+                $errors[] = 'Vui lòng nhập nội dung bình luận';
+            } elseif (strlen($content) < 10) {
+                $errors[] = 'Nội dung bình luận phải có ít nhất 10 ký tự';
+            }
+
+            if (empty($errors)) {
+                require_once __DIR__ . '/../models/Comment.php';
+                $commentModel = new Comment();
+
+                // Kiểm tra đã bình luận chưa
+                $userComments = $commentModel->getByUser($userId);
+                $existingComment = null;
+                foreach ($userComments as $comment) {
+                    if ($comment['movie_id'] == $movieId) {
+                        $existingComment = $comment;
+                        break;
+                    }
+                }
+
+                if ($existingComment) {
+                    // Cập nhật bình luận cũ
+                    $commentModel->update($existingComment['id'], [
+                        'rating' => $rating,
+                        'content' => $content
+                    ]);
+                } else {
+                    // Tạo bình luận mới
+                    $commentModel->insert([
+                        'user_id' => $userId,
+                        'movie_id' => $movieId,
+                        'rating' => $rating,
+                        'content' => $content
+                    ]);
+                }
+
+                header('Location: ' . BASE_URL . '?act=profile&tab=bookings&review_success=1');
+                exit;
+            }
+        }
+
+        // Nếu có lỗi, quay lại trang bình luận
+        $movieId = $_GET['movie_id'] ?? $_POST['movie_id'] ?? null;
+        $bookingId = $_GET['booking_id'] ?? $_POST['booking_id'] ?? null;
+        if ($movieId && $bookingId) {
+            header('Location: ' . BASE_URL . '?act=review-movie&booking_id=' . $bookingId . '&movie_id=' . $movieId . '&error=' . urlencode(implode(', ', $errors)));
+        } else {
+            header('Location: ' . BASE_URL . '?act=profile&tab=bookings');
+        }
+        exit;
     }
 }
 

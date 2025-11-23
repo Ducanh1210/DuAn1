@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 21, 2025 at 02:40 AM
+-- Generation Time: Nov 22, 2025 at 02:56 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `du_an_1`
+-- Database: `duan`
 --
 
 -- --------------------------------------------------------
@@ -63,10 +63,7 @@ INSERT INTO `bookings` (`id`, `user_id`, `showtime_id`, `discount_id`, `booking_
 (14, 3, 2, NULL, '2025-11-20 09:43:19', 'A5,A6,A7,A8,A9', NULL, NULL, 400000.00, 0.00, 400000.00, 'paid', NULL, 'BK17636065992196', 1, 18),
 (15, 3, 4, NULL, '2025-11-20 19:46:25', 'A3,A4', NULL, NULL, 180000.00, 0.00, 180000.00, 'paid', NULL, 'BK17636427856547', 1, 17),
 (16, 3, 2, NULL, '2025-11-20 21:31:24', 'B6', NULL, NULL, 55000.00, 0.00, 55000.00, 'pending', NULL, 'BK17636490845963', 1, 18),
-(17, 3, 2, NULL, '2025-11-20 21:32:21', 'B6', NULL, NULL, 55000.00, 0.00, 55000.00, 'paid', NULL, 'BK17636491412783', 1, 18),
-(21, 3, 8, 4, '2025-11-21 09:05:54', 'A4', NULL, NULL, 65000.00, 19500.00, 45500.00, 'paid', NULL, 'BK17636907547993', 2, 21),
-(22, 3, 4, 4, '2025-11-21 09:14:37', 'C5,C6,C7,C8,C9', NULL, NULL, 375000.00, 112500.00, 262500.00, 'paid', NULL, 'BK17636912771727', 1, 17),
-(23, 3, 8, 4, '2025-11-21 09:34:53', 'A5', NULL, NULL, 65000.00, 19500.00, 45500.00, 'pending', NULL, 'BK17636924938587', 2, 21);
+(17, 3, 2, NULL, '2025-11-20 21:32:21', 'B6', NULL, NULL, 55000.00, 0.00, 55000.00, 'paid', NULL, 'BK17636491412783', 1, 18);
 
 -- --------------------------------------------------------
 
@@ -146,23 +143,28 @@ CREATE TABLE `customer_tiers` (
 CREATE TABLE `discount_codes` (
   `id` int NOT NULL,
   `code` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
   `discount_percent` int DEFAULT '0',
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
-  `status` varchar(20) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `description` text,
+  `benefits` json DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'active',
+  `cta` varchar(100) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng mã giảm giá';
 
 --
 -- Dumping data for table `discount_codes`
 --
 
-INSERT INTO `discount_codes` (`id`, `code`, `discount_percent`, `start_date`, `end_date`, `status`) VALUES
-(1, 'WELCOME20', 20, '2025-11-01', '2025-12-31', 'active'),
-(2, 'MONDAY50', 50, '2025-11-01', '2025-12-31', 'active'),
-(3, 'COMBO2+1', 0, '2025-11-01', '2025-12-31', 'active'),
-(4, 'STUDENT30', 30, '2025-11-01', '2025-12-31', 'active'),
-(5, 'BLACKFRIDAY70', 70, '2025-11-29', '2025-11-29', 'active'),
-(6, 'FASHION204', 15, '2025-11-01', '2025-12-31', 'active');
+INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_date`, `end_date`, `description`, `benefits`, `status`, `cta`, `created_at`, `updated_at`) VALUES
+(1, 'WEEKEND25', 'Giảm giá cuối tuần 25%', 25, '2025-11-01', '2025-12-31', 'Ưu đãi đặc biệt cho các suất chiếu cuối tuần (Thứ 6, Thứ 7, Chủ nhật). Áp dụng cho tất cả phim và tất cả rạp.', '[\"Áp dụng cho suất chiếu cuối tuần\", \"Giảm 25% cho mọi vé\", \"Không giới hạn số lượng vé\", \"Áp dụng cho tất cả phim\"]', 'active', 'Đặt vé cuối tuần', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', '2025-11-20 15:00:00', '2025-11-20 15:00:00');
 
 -- --------------------------------------------------------
 
@@ -232,7 +234,7 @@ CREATE TABLE `movies` (
 
 INSERT INTO `movies` (`id`, `genre_id`, `title`, `description`, `duration`, `image`, `trailer`, `release_date`, `end_date`, `format`, `original_language`, `subtitle_or_dub`, `age_rating`, `producer`, `status`, `created_at`, `updated_at`) VALUES
 (6, 7, 'Quán kỳ nma', 'ko hay lắm đâu', 120, 'image/phim 4.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-20', '2025-11-23', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-14 19:38:50', '2025-11-20 21:14:48'),
-(7, 3, 'Phòng trọ ma bầu', 'kinh dị ko nên xem', 120, 'image/phim 5.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-21', '2025-11-23', '2D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-14 20:27:20', '2025-11-21 08:02:36'),
+(7, 3, 'Phòng trọ ma bầu', 'kinh dị ko nên xem', 120, 'image/phim 5.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-17', '2025-11-20', '3D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-14 20:27:20', '2025-11-17 09:52:58'),
 (8, 1, 'Truy tìm long diên hương', 'cx hay lắm nha', 122, 'image/phim5.jpg', 'https://youtu.be/XjhAFebnNkM?si=vKFX_9ElyDAoSMMX', '2025-11-19', '2025-11-21', '2D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-15 11:43:43', '2025-11-19 09:39:00'),
 (9, 1, 'TRỐN CHẠY TỬ THẦN-T18', 'Trong bối cảnh xã hội tương lai gần, Trốn Chạy Tử Thần là chương trình truyền hình ăn khách nhất, một cuộc thi sinh tồn khốc liệt nơi các thí sinh, được gọi là “Runners”, phải trốn chạy suốt 30 ngày khỏi sự truy đuổi của các sát thủ chuyên nghiệp. Mọi bước đi của họ đều được phát sóng công khai cho khán giả theo dõi và phần thưởng tiền mặt sẽ tăng lên sau mỗi ngày sống sót. Vì cần tiền cứu chữa cho cô con gái bệnh nặng, Ben...', 133, 'image/phim 3.jpg', 'https://youtu.be/NuOl156fv_c?si=98qM39lvGn18VcdI', '2025-11-19', '2025-11-20', '2D', 'Tiếng Anh', 'Phụ Đề', 'C16', 'Mỹ', 'active', '2025-11-15 22:40:20', '2025-11-19 07:29:12'),
 (10, 6, 'MỘ ĐOM ĐÓM', 'Hai anh em Seita và Setsuko mất mẹ sau cuộc thả bom dữ dội của không quân Mỹ. Cả hai phải vật lộn để tồn tại ở Nhật Bản hậu Thế chiến II. Nhưng xã hội khắc nghiệt và chúng vật lộn tìm kiếm thức ăn cũng như thoát khỏi những khó khăn giữa chiến tranh.', 120, 'image/phim 6.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-11-17', '2025-11-19', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-17 09:58:57', '2025-11-17 19:38:42'),
@@ -266,47 +268,6 @@ INSERT INTO `movie_genres` (`id`, `name`, `description`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `notifications`
---
-
-CREATE TABLE `notifications` (
-  `id` int NOT NULL,
-  `type` varchar(50) NOT NULL DEFAULT 'booking',
-  `title` varchar(255) NOT NULL,
-  `message` text,
-  `related_id` int DEFAULT NULL COMMENT 'ID liên quan (booking_id, etc)',
-  `is_read` tinyint(1) DEFAULT '0',
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `notifications`
---
-
-INSERT INTO `notifications` (`id`, `type`, `title`, `message`, `related_id`, `is_read`, `created_at`) VALUES
-(1, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636873017429 - Quán kỳ nma - Tổng tiền: 65.000₫', 19, 1, '2025-11-21 08:09:43'),
-(2, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636873017429 - Quán kỳ nma - Tổng tiền: 65.000₫', 19, 0, '2025-11-21 08:10:31'),
-(3, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636873017429 - Quán kỳ nma - Tổng tiền: 65.000₫', 19, 0, '2025-11-21 08:10:32'),
-(4, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636873017429 - Quán kỳ nma - Tổng tiền: 65.000₫', 19, 0, '2025-11-21 08:10:33'),
-(5, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636873017429 - Quán kỳ nma - Tổng tiền: 65.000₫', 19, 0, '2025-11-21 08:10:33'),
-(6, 'booking', 'Đơn đặt vé đã được duyệt', 'Đơn đặt vé BK17636881889669 - Phòng trọ ma bầu đã được duyệt thành công!', 20, 0, '2025-11-21 08:34:33'),
-(7, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:06:36'),
-(8, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:06:42'),
-(9, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:06:42'),
-(10, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:06:43'),
-(11, 'booking', 'Đơn đặt vé đã được duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu đã được duyệt thành công!', 21, 0, '2025-11-21 09:07:27'),
-(12, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:07:34'),
-(13, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:07:35'),
-(14, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:07:36'),
-(15, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:07:36'),
-(16, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:07:37'),
-(17, 'booking', 'Đơn đặt vé mới cần duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu - Tổng tiền: 45.500₫', 21, 0, '2025-11-21 09:07:37'),
-(18, 'booking', 'Đơn đặt vé đã được duyệt', 'Đơn đặt vé BK17636907547993 - Phòng trọ ma bầu đã được duyệt thành công!', 21, 0, '2025-11-21 09:11:22'),
-(19, 'booking', 'Đơn đặt vé đã được duyệt', 'Đơn đặt vé BK17636912771727 - Truy tìm long diên hương đã được duyệt thành công!', 22, 0, '2025-11-21 09:17:05');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `payments`
 --
 
@@ -335,10 +296,7 @@ INSERT INTO `payments` (`id`, `booking_id`, `method`, `transaction_code`, `payme
 (6, 12, 'vnpay', '15271325', '2025-11-19 16:42:48', 80000.00, 0.00, 80000.00, 'paid'),
 (7, 14, 'vnpay', '15271629', '2025-11-20 02:44:19', 400000.00, 0.00, 400000.00, 'paid'),
 (8, 15, 'vnpay', '15273280', '2025-11-20 12:47:13', 180000.00, 0.00, 180000.00, 'paid'),
-(9, 17, 'vnpay', '15273478', '2025-11-20 14:33:33', 55000.00, 0.00, 55000.00, 'paid'),
-(10, NULL, 'vnpay', '15274126', '2025-11-21 01:10:33', 65000.00, 0.00, 65000.00, 'paid'),
-(11, NULL, 'vnpay', '15274149', '2025-11-21 01:24:49', 65000.00, 0.00, 65000.00, 'paid'),
-(12, 21, 'vnpay', '15274217', '2025-11-21 02:07:37', 65000.00, 0.00, 65000.00, 'paid');
+(9, 17, 'vnpay', '15273478', '2025-11-20 14:33:33', 55000.00, 0.00, 55000.00, 'paid');
 
 -- --------------------------------------------------------
 
@@ -1485,7 +1443,7 @@ INSERT INTO `seats` (`id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `
 --
 
 CREATE TABLE `showtimes` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `movie_id` int DEFAULT NULL,
   `room_id` int DEFAULT NULL,
   `show_date` date NOT NULL,
@@ -1493,7 +1451,8 @@ CREATE TABLE `showtimes` (
   `end_time` time DEFAULT NULL,
   `adult_price` decimal(10,2) DEFAULT NULL,
   `student_price` decimal(10,2) DEFAULT NULL,
-  `format` varchar(20) DEFAULT NULL
+  `format` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -1502,13 +1461,13 @@ CREATE TABLE `showtimes` (
 
 INSERT INTO `showtimes` (`id`, `movie_id`, `room_id`, `show_date`, `start_time`, `end_time`, `adult_price`, `student_price`, `format`) VALUES
 (1, 8, 17, '2025-11-19', '15:00:00', '16:30:00', 80000.00, 65000.00, '2D'),
-(2, 7, 18, '2025-11-20', '16:00:00', '17:00:00', 75000.00, 65000.00, '2D'),
+(2, 7, 18, '2025-11-20', '16:00:00', '17:00:00', 75000.00, 65000.00, '3D'),
 (3, 6, 17, '2025-11-20', '15:00:00', '17:00:00', 85000.00, 70000.00, '3D'),
 (4, 8, 17, '2025-11-21', '17:30:00', '19:32:00', 80000.00, 65000.00, '2D'),
-(5, 6, 18, '2025-11-21', '14:00:00', '16:00:00', 75000.00, 60000.00, '2D'),
+(5, 6, 18, '2025-11-19', '14:00:00', '16:00:00', 75000.00, 60000.00, '3D'),
 (6, 9, 19, '2025-11-20', '15:00:00', '17:13:00', 70000.00, 60000.00, '2D'),
 (7, 9, 17, '2025-11-19', '10:30:00', '12:43:00', 80000.00, 70000.00, '2D'),
-(8, 7, 21, '2025-11-21', '13:45:00', '15:45:00', 75000.00, 60000.00, '2D'),
+(8, 7, 21, '2025-11-21', '13:45:00', '15:45:00', 75000.00, 60000.00, '3D'),
 (9, 9, 18, '2025-11-19', '09:30:00', '11:43:00', 80000.00, 70000.00, '2D');
 
 -- --------------------------------------------------------
@@ -1533,22 +1492,22 @@ CREATE TABLE `ticket_prices` (
 --
 
 INSERT INTO `ticket_prices` (`id`, `day_type`, `format`, `customer_type`, `seat_type`, `base_price`, `created_at`, `updated_at`) VALUES
-(1, 'weekday', '2D', 'student', 'normal', 55000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(2, 'weekday', '2D', 'student', 'vip', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(3, 'weekday', '2D', 'adult', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(4, 'weekday', '2D', 'adult', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(5, 'weekday', '3D', 'student', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(6, 'weekday', '3D', 'student', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(7, 'weekday', '3D', 'adult', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(8, 'weekday', '3D', 'adult', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(9, 'weekend', '2D', 'student', 'normal', 65000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(10, 'weekend', '2D', 'student', 'vip', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(11, 'weekend', '2D', 'adult', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(12, 'weekend', '2D', 'adult', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(13, 'weekend', '3D', 'student', 'normal', 75000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(14, 'weekend', '3D', 'student', 'vip', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(15, 'weekend', '3D', 'adult', 'normal', 85000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50'),
-(16, 'weekend', '3D', 'adult', 'vip', 95000.00, '2025-11-20 20:30:36', '2025-11-20 20:30:50');
+(1, 'weekday', '2D', 'student', 'normal', 55000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(2, 'weekday', '2D', 'student', 'vip', 65000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(3, 'weekday', '2D', 'adult', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(4, 'weekday', '2D', 'adult', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(5, 'weekday', '3D', 'student', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(6, 'weekday', '3D', 'student', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(7, 'weekday', '3D', 'adult', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(8, 'weekday', '3D', 'adult', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(9, 'weekend', '2D', 'student', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(10, 'weekend', '2D', 'student', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(11, 'weekend', '2D', 'adult', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(12, 'weekend', '2D', 'adult', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(13, 'weekend', '3D', 'student', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(14, 'weekend', '3D', 'student', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(15, 'weekend', '3D', 'adult', 'normal', 85000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
+(16, 'weekend', '3D', 'adult', 'vip', 95000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53');
 
 -- --------------------------------------------------------
 
@@ -1576,7 +1535,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_date`, `tier_id`, `total_spending`, `created_at`, `role`, `status`) VALUES
 (2, 'Nguyễn Đức Anh', 'anp93005@gmail.com', '$2y$10$CWyRPSmpryxfnvWJk.WU6ee587peAVpJ2WM.gPnWxn1EURYPTorwe', '0386036692', '2025-10-28', NULL, 0.00, '2025-11-15 20:56:13', 'admin', 'active'),
-(3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$VaYpeaUFxGUKFgO3yq7xVe.qnTi4VRvnnxK4ZiLkysvEq2jvCVr8.', '0386036636', '2000-10-12', NULL, 2063000.00, '2025-11-15 21:17:27', 'customer', 'active'),
+(3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$VaYpeaUFxGUKFgO3yq7xVe.qnTi4VRvnnxK4ZiLkysvEq2jvCVr8.', '0386036636', '2000-10-12', NULL, 1755000.00, '2025-11-15 21:17:27', 'customer', 'active'),
 (4, 'Bảo Châu', 'baochau06@gmail.com', '$2y$10$4msjaSiici7YXHciPSW0Cu/bYvTZuQRdlhm3ifOL4LTesvPmpzGxq', '0386036693', '2006-12-11', NULL, 0.00, '2025-11-18 22:28:02', 'staff', 'active');
 
 --
@@ -1658,15 +1617,6 @@ ALTER TABLE `movie_genres`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `notifications`
---
-ALTER TABLE `notifications`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_related_id` (`related_id`),
-  ADD KEY `idx_is_read` (`is_read`),
-  ADD KEY `idx_created_at` (`created_at`);
-
---
 -- Indexes for table `payments`
 --
 ALTER TABLE `payments`
@@ -1706,7 +1656,6 @@ ALTER TABLE `seats`
 -- Indexes for table `showtimes`
 --
 ALTER TABLE `showtimes`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `fk_showtimes_movie` (`movie_id`),
   ADD KEY `fk_showtimes_room` (`room_id`);
 
@@ -1733,7 +1682,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `booking_items`
@@ -1763,7 +1712,7 @@ ALTER TABLE `customer_tiers`
 -- AUTO_INCREMENT for table `discount_codes`
 --
 ALTER TABLE `discount_codes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `food_drinks`
@@ -1790,16 +1739,10 @@ ALTER TABLE `movie_genres`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `notifications`
---
-ALTER TABLE `notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
-
---
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -1914,6 +1857,19 @@ ALTER TABLE `showtimes`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `fk_users_tiers` FOREIGN KEY (`tier_id`) REFERENCES `customer_tiers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Update showtimes format based on movie format
+-- This ensures showtimes.format matches the movie format
+--
+UPDATE showtimes s
+INNER JOIN movies m ON s.movie_id = m.id
+SET s.format = 
+    CASE 
+        WHEN UPPER(TRIM(m.format)) IN ('3D', 'IMAX', '4DX') THEN '3D'
+        ELSE '2D'
+    END;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -37,7 +37,7 @@
     <a href="?act=showtimes" class="<?= in_array($_GET['act'] ?? '', ['showtimes', 'showtimes-create', 'showtimes-edit', 'showtimes-show', 'showtimes-delete']) ? 'active' : '' ?>">
       <i class="bi bi-clock-history"></i><span class="label">Quản lý Lịch chiếu</span>
     </a>
-    <a href="?act=vouchers" class="<?= in_array($_GET['act'] ?? '', ['vouchers', 'vouchers-create', 'vouchers-edit', 'vouchers-delete']) ? 'active' : '' ?>">
+    <a href="?act=discounts" class="<?= in_array($_GET['act'] ?? '', ['discounts', 'discounts-create', 'discounts-edit', 'discounts-delete']) ? 'active' : '' ?>">
       <i class="bi bi-gift"></i><span class="label">Quản lý Khuyến mãi</span>
     </a>
     <a href="?act=users" class="<?= in_array($_GET['act'] ?? '', ['users', 'users-create', 'users-edit', 'users-show', 'users-delete']) ? 'active' : '' ?>">
@@ -128,6 +128,10 @@
             'bookings' => 'Quản lý đặt vé',
             'bookings-show' => 'Chi tiết đặt vé',
             'datve' => 'Quản lý đặt vé',
+            'discounts' => 'Quản lý Khuyến mãi',
+            'discounts-create' => 'Thêm mã khuyến mại',
+            'discounts-edit' => 'Sửa mã khuyến mại',
+            'ticket-prices' => 'Quản lý Giá Vé',
             'thongke' => 'Thống kê'
           ];
           echo htmlspecialchars($titles[$act] ?? ucfirst($act));

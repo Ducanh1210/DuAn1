@@ -19,11 +19,13 @@ class ShowtimesController
     {
         // Lọc theo ngày nếu có
         $date = $_GET['date'] ?? null;
+        // Lọc theo trạng thái nếu có
+        $status = $_GET['status'] ?? null;
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $page = max(1, $page); // Đảm bảo page >= 1
         
         // Lấy dữ liệu phân trang
-        $result = $this->showtime->paginate($page, 5, $date);
+        $result = $this->showtime->paginate($page, 5, $date, $status);
         
         // Lấy danh sách phim và phòng cho filter
         $movies = $this->movie->all();
@@ -34,6 +36,7 @@ class ShowtimesController
             'movies' => $movies,
             'rooms' => $rooms,
             'selectedDate' => $date,
+            'selectedStatus' => $status,
             'pagination' => [
                 'currentPage' => $result['page'],
                 'totalPages' => $result['totalPages'],

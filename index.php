@@ -39,6 +39,7 @@ require_once('./controllers/ProfileController.php');
 require_once('./controllers/TicketPriceController.php');
 require_once('./models/TicketPrice.php');
 require_once('./models/DiscountCode.php');
+require_once('./controllers/DiscountCodesController.php');
 require_once('./controllers/NotificationController.php');
 require_once('./models/Notification.php');
 //route
@@ -53,6 +54,7 @@ match ($act) {
     'lichchieu' => (new MoviesController)->lichchieu(),
     'giave' => (new TicketPriceController)->index(),
     'khuyenmai' => (new MoviesController)->khuyenmai(),
+    'lienhe' => (new MoviesController)->lienhe(),
     'check-voucher' => (new MoviesController)->checkVoucher(),
     'movies' => (new MoviesController)->movieDetail(),
     'datve' => (new BookingController)->selectSeats(),
@@ -72,6 +74,8 @@ match ($act) {
     'profile' => (new ProfileController)->index(),
     'profile-update' => (new ProfileController)->update(),
     'profile-change-password' => (new ProfileController)->changePassword(),
+    'review-movie' => (new ProfileController)->reviewMovie(),
+    'submit-review' => (new ProfileController)->submitReview(),
 
     // Dashboard route
     'dashboard' => (new DashboardController)->index(),
@@ -147,7 +151,11 @@ match ($act) {
     'ticket-prices-edit' => (new TicketPriceController)->edit(),
     'ticket-prices-update' => (new TicketPriceController)->update(),
 
-    // Discount Codes routes (Admin) - có thể thêm sau nếu cần
+    // Discount Codes routes (Admin)
+    'discounts' => (new DiscountCodesController)->list(),
+    'discounts-create' => (new DiscountCodesController)->create(),
+    'discounts-edit' => (new DiscountCodesController)->edit(),
+    'discounts-delete' => (new DiscountCodesController)->delete(),
 
     // Notifications API routes (Admin)
     'api-notifications' => (new NotificationController)->getNotifications(),
