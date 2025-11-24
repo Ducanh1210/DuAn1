@@ -325,11 +325,11 @@ if (session_status() === PHP_SESSION_NONE) {
                     <h4>Khám phá</h4>
                     <ul>
                         <li><a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=gioithieu">Giới thiệu</a></li>
                         <li><a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a></li>
                         <li><a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a></li>
                         <li><a href="<?= BASE_URL ?>?act=giave">Giá vé</a></li>
-                        <li><a href="<?= BASE_URL ?>?act=tintuc">Tin tức</a></li>
-                        <li><a href="<?= BASE_URL ?>?act=hoidap">Hỏi đáp</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=lienhe">Liên hệ</a></li>
                     </ul>
                 </div>
 
@@ -377,9 +377,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     <p class="muted">Địa chỉ: Số 87 Láng Hạ, Phường
                         Ô Chợ Dừa, TP. Hà Nội</p>
                     <p class="muted">Điện thoại: <a href="tel:02435141791">024.3514.1791</a></p>
-                    <div class="certs">
-                        <img src="" alt="Đã thông báo" class="gov-badge">
-                    </div>
                 </div>
 
                 <!-- Subscribe -->

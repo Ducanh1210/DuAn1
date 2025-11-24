@@ -10,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $GLOBALS['pageTitle'] ?? 'TicketHub' ?> | TicketHub</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/client_layout.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/notifications.css">
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'movies.php') !== false): ?>
@@ -202,10 +202,10 @@ if (session_status() === PHP_SESSION_NONE) {
                     <h4>Khám phá</h4>
                     <ul>
                         <li><a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=gioithieu">Giới thiệu</a></li>
                         <li><a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a></li>
                         <li><a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a></li>
                         <li><a href="<?= BASE_URL ?>?act=giave">Giá vé</a></li>
-                        <li><a href="<?= BASE_URL ?>?act=tintuc">Tin tức</a></li>
                         <li><a href="<?= BASE_URL ?>?act=lienhe">Liên hệ</a></li>
                     </ul>
                 </div>
