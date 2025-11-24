@@ -350,65 +350,6 @@ class MoviesController
      */
     public function khuyenmai()
     {
-        $promotions = [
-            [
-                'title' => 'Cuối tuần rực rỡ',
-                'tag' => 'combo',
-                'status' => 'ongoing',
-                'period' => '01/11 - 31/12',
-                'description' => 'Giảm 35% combo 2 vé + bắp nước khi đặt vé online trong ba ngày cuối tuần.',
-                'benefits' => [
-                    'Áp dụng Thứ 6 - Chủ nhật cho ghế Standard & VIP',
-                    'Tặng thêm voucher nước ngọt 25.000đ',
-                    'Không giới hạn số lần đổi trong thời gian diễn ra'
-                ],
-                'code' => 'WEEKEND35',
-                'cta' => 'Đặt vé ngay'
-            ],
-            [
-                'title' => 'Thành viên kim cương',
-                'tag' => 'membership',
-                'status' => 'ongoing',
-                'period' => '15/10 - 15/12',
-                'description' => 'Ưu đãi độc quyền cho khách hàng chi tiêu từ 3.000.000đ trong 60 ngày.',
-                'benefits' => [
-                    'Tích lũy x3 điểm thưởng trên mọi giao dịch',
-                    'Miễn phí nâng hạng ghế khi đặt trước 24h',
-                    'Tặng 02 vé IMAX mỗi tháng'
-                ],
-                'code' => 'DIAMONDUP',
-                'cta' => 'Nâng hạng ngay'
-            ],
-            [
-                'title' => 'Combo gia đình 4 vé',
-                'tag' => 'family',
-                'status' => 'upcoming',
-                'period' => 'Khởi động 01/12',
-                'description' => 'Ưu đãi cho gia đình với 4 vé + 2 bắp lớn + 4 nước chỉ từ 399.000đ.',
-                'benefits' => [
-                    'Đặt trước để giữ ghế liền kề',
-                    'Tặng album sticker chủ đề phim tháng 12',
-                    'Giảm thêm 5% khi thanh toán qua Momo'
-                ],
-                'code' => 'FAMILYJOY',
-                'cta' => 'Đăng ký nhắc lịch'
-            ],
-            [
-                'title' => 'Sinh viên đồng giá',
-                'tag' => 'student',
-                'status' => 'ongoing',
-                'period' => '24/7 - Không giới hạn',
-                'description' => 'Vé Standard đồng giá 55.000đ cho sinh viên trên toàn hệ thống.',
-                'benefits' => [
-                    'Áp dụng cho tất cả suất chiếu trước 18h',
-                    'Ưu đãi 15% bắp nước khi xuất trình thẻ',
-                    'Mua 5 vé/tháng tặng 1 vé bất kỳ'
-                ],
-                'code' => 'STUDENT55',
-                'cta' => 'Xem chi tiết'
-            ],
-        ];
-
         $membershipBenefits = [
             [
                 'icon' => 'bi-gift',
@@ -430,7 +371,7 @@ class MoviesController
         $faqs = [
             [
                 'question' => 'Làm sao để nhận mã khuyến mãi?',
-                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm “Sao chép mã”. Mã sẽ lưu trong ví voucher và tự áp dụng ở bước thanh toán.'
+                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm "Sao chép mã". Mã sẽ lưu trong ví voucher và tự áp dụng ở bước thanh toán.'
             ],
             [
                 'question' => 'Tôi có thể dùng nhiều mã trong cùng một đơn?',
@@ -442,42 +383,99 @@ class MoviesController
             ],
         ];
 
-        $heroStats = [
-            ['label' => 'Ưu đãi đang diễn ra', 'value' => count($promotions)],
-            ['label' => 'Khách nhận mã trong tuần', 'value' => '12.457'],
-            ['label' => 'Điểm thưởng đã tặng', 'value' => '3.2M']
-        ];
-
         // Lấy discount codes từ database
         $discountCodeModel = new DiscountCode();
         $discountCodes = $discountCodeModel->all();
         
         // Chuyển đổi discount codes thành format promotions
-        $dbPromotions = [];
-        foreach ($discountCodes as $dc) {
-            if ($dc['status'] === 'active') {
-                $dbPromotions[] = [
-                    'title' => 'Mã giảm giá: ' . $dc['code'],
-                    'tag' => 'general',
-                    'status' => 'ongoing',
-                    'period' => ($dc['start_date'] ?? '') . ' - ' . ($dc['end_date'] ?? ''),
-                    'description' => 'Giảm ' . $dc['discount_percent'] . '% cho đơn hàng của bạn.',
-                    'benefits' => [
-                        'Giảm ' . $dc['discount_percent'] . '% cho tổng đơn hàng',
-                        'Áp dụng cho tất cả suất chiếu',
-                        'Có hiệu lực từ ' . ($dc['start_date'] ?? '') . ' đến ' . ($dc['end_date'] ?? '')
-                    ],
-                    'code' => $dc['code'],
-                    'cta' => 'Sử dụng mã'
-                ];
-            }
-        }
+        $promotions = [];
+        $now = date('Y-m-d');
         
-        // Kết hợp promotions từ code và database
-        $allPromotions = array_merge($dbPromotions, $promotions);
+        foreach ($discountCodes as $dc) {
+            // Chỉ hiển thị các discount code đang active
+            if ($dc['status'] !== 'active') {
+                continue;
+            }
+            
+            // Xác định status dựa trên ngày hiện tại
+            $status = 'ongoing';
+            if ($dc['start_date'] && $now < $dc['start_date']) {
+                $status = 'upcoming';
+            } elseif ($dc['end_date'] && $now > $dc['end_date']) {
+                $status = 'ended';
+                continue; // Bỏ qua các mã đã hết hạn
+            }
+            
+            // Parse benefits từ JSON nếu có
+            $benefits = [];
+            if (!empty($dc['benefits'])) {
+                if (is_string($dc['benefits'])) {
+                    $benefits = json_decode($dc['benefits'], true) ?: [];
+                } elseif (is_array($dc['benefits'])) {
+                    $benefits = $dc['benefits'];
+                }
+            }
+            
+            // Nếu không có benefits, tạo mặc định
+            if (empty($benefits)) {
+                $benefits = [
+                    'Giảm ' . $dc['discount_percent'] . '% cho tổng đơn hàng',
+                    'Áp dụng cho tất cả suất chiếu'
+                ];
+                if ($dc['start_date'] && $dc['end_date']) {
+                    $benefits[] = 'Có hiệu lực từ ' . date('d/m/Y', strtotime($dc['start_date'])) . ' đến ' . date('d/m/Y', strtotime($dc['end_date']));
+                }
+            }
+            
+            // Format period
+            $period = '';
+            if ($dc['start_date'] && $dc['end_date']) {
+                $period = date('d/m/Y', strtotime($dc['start_date'])) . ' - ' . date('d/m/Y', strtotime($dc['end_date']));
+            } elseif ($dc['start_date']) {
+                $period = 'Từ ' . date('d/m/Y', strtotime($dc['start_date']));
+            } elseif ($dc['end_date']) {
+                $period = 'Đến ' . date('d/m/Y', strtotime($dc['end_date']));
+            } else {
+                $period = 'Áp dụng thường xuyên';
+            }
+            
+            // Xác định tag dựa trên code hoặc title
+            $tag = 'general';
+            $codeUpper = strtoupper($dc['code'] ?? '');
+            if (strpos($codeUpper, 'WEEKEND') !== false || strpos($codeUpper, 'CUỐI TUẦN') !== false) {
+                $tag = 'combo';
+            } elseif (strpos($codeUpper, 'FAMILY') !== false || strpos($codeUpper, 'GIA ĐÌNH') !== false) {
+                $tag = 'family';
+            } elseif (strpos($codeUpper, 'STUDENT') !== false || strpos($codeUpper, 'SINH VIÊN') !== false) {
+                $tag = 'student';
+            } elseif (strpos($codeUpper, 'HOLIDAY') !== false || strpos($codeUpper, 'LỄ') !== false || strpos($codeUpper, 'TẾT') !== false) {
+                $tag = 'holiday';
+            } elseif (strpos($codeUpper, 'COUPLE') !== false || strpos($codeUpper, 'CẶP ĐÔI') !== false) {
+                $tag = 'couple';
+            }
+            
+            $promotions[] = [
+                'title' => $dc['title'] ?? 'Mã giảm giá: ' . $dc['code'],
+                'tag' => $tag,
+                'status' => $status,
+                'display_status' => $status,
+                'period' => $period,
+                'description' => $dc['description'] ?? ('Giảm ' . $dc['discount_percent'] . '% cho đơn hàng của bạn.'),
+                'benefits' => $benefits,
+                'code' => $dc['code'] ?? '',
+                'cta' => $dc['cta'] ?? 'Sử dụng mã',
+                'cta_link' => BASE_URL . '?act=datve'
+            ];
+        }
+
+        $heroStats = [
+            ['label' => 'Ưu đãi đang diễn ra', 'value' => count(array_filter($promotions, function($p) { return $p['status'] === 'ongoing'; }))],
+            ['label' => 'Khách nhận mã trong tuần', 'value' => '12.457'],
+            ['label' => 'Điểm thưởng đã tặng', 'value' => '3.2M']
+        ];
 
         renderClient('client/khuyenmai.php', [
-            'promotions' => $allPromotions,
+            'promotions' => $promotions,
             'membershipBenefits' => $membershipBenefits,
             'faqs' => $faqs,
             'heroStats' => $heroStats
