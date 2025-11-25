@@ -44,6 +44,9 @@ require_once('./models/DiscountCode.php');
 require_once('./controllers/DiscountCodesController.php');
 require_once('./controllers/NotificationController.php');
 require_once('./models/Notification.php');
+require_once('./controllers/ContactsController.php');
+require_once('./models/Contact.php');
+require_once('./controllers/StatisticsController.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';

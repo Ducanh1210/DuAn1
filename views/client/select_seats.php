@@ -427,7 +427,7 @@ $maxColumns = 12;
     </div>
 
     <!-- Phần chọn số lượng người -->
-    <div class="ticket-selection-panel" style="max-width: 1200px; margin: 20px auto; padding: 0 20px;">
+    <div class="ticket-selection-panel" style="max-width: 1400px; margin: 20px auto; padding: 0 40px;">
         <div style="background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid rgba(255, 255, 255, 0.1);">
             <h3 style="color: #fff; margin-bottom: 20px; font-size: 24px;">Chọn ghế</h3>
 
@@ -470,7 +470,7 @@ $maxColumns = 12;
                 <div id="adjacentOptions" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
                     <!-- Sẽ được render động -->
                 </div>
-                <div style="color: rgba(255, 255, 255, 0.6); font-size: 13px; margin-top: 10px;">
+                <div id="remainingSeatsInfo" style="color: rgba(255, 255, 255, 0.6); font-size: 13px; margin-top: 10px;">
                     Có thể chọn tối đa 8 người. (Max:8)
                 </div>
             </div>
@@ -580,10 +580,7 @@ $maxColumns = 12;
                         <?= $title ?> <?= $onClick ?>>
                         <?= htmlspecialchars($seatNumber) ?>
                     </div>
-                <?php
-                    $prevSeatNumber = $seatNumber;
-                endforeach;
-                ?>
+                </div>
             </div>
         <?php endforeach; ?>
     </div>

@@ -79,7 +79,7 @@
                 <div class="feature-card">
                     <div class="feature-icon-wrapper">
                         <div class="feature-icon">
-                            <i class="bi bi-shield-lock-fill"></i>
+                            <i class="bi bi-shield-check-fill"></i>
                         </div>
                         <div class="feature-glow"></div>
                     </div>

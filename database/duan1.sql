@@ -117,6 +117,38 @@ CREATE TABLE `comments` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `comments`
+--
+
+INSERT INTO `comments` (`id`, `user_id`, `movie_id`, `rating`, `content`, `created_at`) VALUES
+(1, 3, 7, 5, 'hay lắm cần tốt hơn', '2025-11-23 21:54:50');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `contacts`
+--
+
+CREATE TABLE `contacts` (
+  `id` int NOT NULL,
+  `name` varchar(255) NOT NULL COMMENT 'Họ và tên khách hàng',
+  `email` varchar(255) NOT NULL COMMENT 'Email khách hàng',
+  `phone` varchar(20) DEFAULT NULL COMMENT 'Số điện thoại',
+  `subject` varchar(255) NOT NULL COMMENT 'Chủ đề liên hệ',
+  `message` text NOT NULL COMMENT 'Nội dung tin nhắn',
+  `status` varchar(20) DEFAULT 'pending' COMMENT 'Trạng thái: pending, processing, resolved, closed',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời gian tạo',
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Thời gian cập nhật'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng lưu trữ thông tin liên hệ của khách hàng';
+
+--
+-- Dumping data for table `contacts`
+--
+
+INSERT INTO `contacts` (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Duc anh', 'anp93005@gmail.com', '0386036692', 'Đặt vé', 'tôi muốn đặt vé mà ko đc', 'resolved', '2025-11-25 23:05:53', '2025-11-25 23:14:00');
+
 -- --------------------------------------------------------
 
 --
@@ -2086,6 +2118,15 @@ ALTER TABLE `comments`
   ADD KEY `fk_comments_movie` (`movie_id`);
 
 --
+-- Indexes for table `contacts`
+--
+ALTER TABLE `contacts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_email` (`email`);
+
+--
 -- Indexes for table `customer_tiers`
 --
 ALTER TABLE `customer_tiers`
@@ -2193,7 +2234,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `booking_items`
@@ -2211,7 +2252,13 @@ ALTER TABLE `cinemas`
 -- AUTO_INCREMENT for table `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `contacts`
+--
+ALTER TABLE `contacts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `customer_tiers`

@@ -17,7 +17,8 @@ $formattedDate = date('d/m/Y', strtotime($showDate));
 $formattedTime = $showTime ? date('H:i', strtotime($showTime)) : '';
 
 // Format giá tiền
-function formatPrice($price) {
+function formatPrice($price)
+{
     return number_format($price, 0, ',', '.') . 'đ';
 }
 ?>
@@ -33,7 +34,8 @@ function formatPrice($price) {
             <div class="movie-info">
                 <div class="movie-poster">
                     <?php if ($movie && !empty($movie['image'])): ?>
-                        <img src="<?= BASE_URL . '/' . htmlspecialchars($movie['image']) ?>" alt="<?= htmlspecialchars($movie['title']) ?>" />
+                        <img src="<?= BASE_URL . '/' . htmlspecialchars($movie['image']) ?>"
+                            alt="<?= htmlspecialchars($movie['title']) ?>" />
                     <?php else: ?>
                         <img src="<?= BASE_URL ?>/image/logo.png" alt="Poster phim" />
                     <?php endif; ?>
@@ -44,7 +46,7 @@ function formatPrice($price) {
                     </div>
 
                     <div style="height: 12px"></div>
-                    
+
                     <!-- Thông tin chi tiết đặt vé -->
                     <div class="booking-details-section">
                         <div class="detail-row">
@@ -79,21 +81,22 @@ function formatPrice($price) {
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Định dạng:</span>
-                            <span class="detail-value format-badge"><?= htmlspecialchars($showtime['format'] ?? '2D') ?></span>
+                            <span
+                                class="detail-value format-badge"><?= htmlspecialchars($showtime['format'] ?? '2D') ?></span>
                         </div>
                         <?php if (isset($adultCount) && isset($studentCount)): ?>
-                        <div class="detail-row">
-                            <span class="detail-label">Số lượng vé:</span>
-                            <span class="detail-value">
-                                <?php if ($adultCount > 0): ?>
-                                    <span class="ticket-type"><?= $adultCount ?> Người lớn</span>
-                                <?php endif; ?>
-                                <?php if ($studentCount > 0): ?>
-                                    <?php if ($adultCount > 0): ?>, <?php endif; ?>
-                                    <span class="ticket-type"><?= $studentCount ?> Sinh viên</span>
-                                <?php endif; ?>
-                            </span>
-                        </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Số lượng vé:</span>
+                                <span class="detail-value">
+                                    <?php if ($adultCount > 0): ?>
+                                        <span class="ticket-type"><?= $adultCount ?> Người lớn</span>
+                                    <?php endif; ?>
+                                    <?php if ($studentCount > 0): ?>
+                                        <?php if ($adultCount > 0): ?>, <?php endif; ?>
+                                        <span class="ticket-type"><?= $studentCount ?> Sinh viên</span>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -114,25 +117,26 @@ function formatPrice($price) {
                 </thead>
                 <tbody>
                     <?php foreach ($selectedSeats as $seat): ?>
-                    <tr class="table-row">
-                        <td class="seat-info-cell">
-                            <div class="seat-info">
-                                <span class="seat-label">Ghế <?= htmlspecialchars($seat['label']) ?></span>
-                                <div class="seat-tags">
-                                    <?php if ($seat['type'] === 'vip'): ?>
-                                        <span class="seat-tag vip-tag">VIP</span>
-                                    <?php endif; ?>
-                                    <?php if (isset($seat['customer_type'])): ?>
-                                        <span class="seat-tag <?= $seat['customer_type'] === 'adult' ? 'adult-tag' : 'student-tag' ?>">
-                                            <?= $seat['customer_type'] === 'adult' ? 'Người lớn' : 'Sinh viên' ?>
-                                        </span>
-                                    <?php endif; ?>
+                        <tr class="table-row">
+                            <td class="seat-info-cell">
+                                <div class="seat-info">
+                                    <span class="seat-label">Ghế <?= htmlspecialchars($seat['label']) ?></span>
+                                    <div class="seat-tags">
+                                        <?php if ($seat['type'] === 'vip'): ?>
+                                            <span class="seat-tag vip-tag">VIP</span>
+                                        <?php endif; ?>
+                                        <?php if (isset($seat['customer_type'])): ?>
+                                            <span
+                                                class="seat-tag <?= $seat['customer_type'] === 'adult' ? 'adult-tag' : 'student-tag' ?>">
+                                                <?= $seat['customer_type'] === 'adult' ? 'Người lớn' : 'Sinh viên' ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td style="text-align: center">1</td>
-                        <td style="text-align: right" class="price-cell"><?= formatPrice($seat['price']) ?></td>
-                    </tr>
+                            </td>
+                            <td style="text-align: center">1</td>
+                            <td style="text-align: right" class="price-cell"><?= formatPrice($seat['price']) ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
@@ -145,20 +149,23 @@ function formatPrice($price) {
             <h3 class="section-title">Phương thức thanh toán</h3>
 
             <div class="methods" id="methods">
-                <label class="method" data-method="vietqr" tabindex="0">
-                    <div class="logo">
-                        <img src="<?= BASE_URL ?>/image/vietqr.png" alt="VietQR" />
-                    </div>
-                    <div class="txt">VietQR</div>
-                    <input type="radio" name="pay" value="vietqr" style="display: none" />
-                </label>
 
+                <!-- Phương thức thanh toán -->
+                <!-- VNPAY -->
                 <label class="method" data-method="vnpay" tabindex="0">
                     <div class="logo">
                         <img src="<?= BASE_URL ?>/image/vnpay.png" alt="VNPAY" />
                     </div>
                     <div class="txt">VNPAY</div>
                     <input type="radio" name="pay" value="vnpay" style="display: none" />
+                </label>
+
+                <label class="method" data-method="vietqr" tabindex="0">
+                    <div class="logo">
+                        <img src="<?= BASE_URL ?>/image/vietqr.png" alt="VietQR" />
+                    </div>
+                    <div class="txt">VietQR</div>
+                    <input type="radio" name="pay" value="vietqr" style="display: none" />
                 </label>
 
                 <label class="method" data-method="viettel" tabindex="0">
@@ -179,19 +186,16 @@ function formatPrice($price) {
             </div>
 
             <!-- Voucher code section -->
-            <div class="voucher-section" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <div class="voucher-section"
+                style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
                 <label for="voucherCode" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">
                     Mã giảm giá / Voucher
                 </label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" 
-                           id="voucherCode" 
-                           name="voucher_code" 
-                           placeholder="Nhập mã voucher" 
-                           style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                    <button type="button" 
-                            id="applyVoucherBtn" 
-                            style="padding: 10px 20px; background: #ff6978; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                    <input type="text" id="voucherCode" name="voucher_code" placeholder="Nhập mã voucher"
+                        style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    <button type="button" id="applyVoucherBtn"
+                        style="padding: 10px 20px; background: #ff6978; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
                         Áp dụng
                     </button>
                 </div>
@@ -245,44 +249,44 @@ function formatPrice($price) {
     let subtotal = originalTotal;
     let fee = 0;
     let appliedVoucher = null;
-    
+
     function fmt(v) {
         return new Intl.NumberFormat("vi-VN").format(v) + "đ";
     }
-    
+
     function updateTotals() {
         subtotal = originalTotal;
         const discount = appliedVoucher ? (subtotal * appliedVoucher.discount_percent / 100) : 0;
         fee = 0;
         const grandTotal = subtotal - discount + fee;
-        
+
         subtotalEl.textContent = fmt(subtotal);
         feeEl.textContent = fmt(fee);
-        
+
         if (discount > 0) {
             document.getElementById('discountRow').style.display = 'flex';
             document.getElementById('discountAmount').textContent = '-' + fmt(discount);
         } else {
             document.getElementById('discountRow').style.display = 'none';
         }
-        
+
         grandEl.textContent = fmt(grandTotal);
     }
-    
+
     updateTotals();
-    
+
     // Voucher code handler
-    document.getElementById('applyVoucherBtn').addEventListener('click', function() {
+    document.getElementById('applyVoucherBtn').addEventListener('click', function () {
         const voucherCode = document.getElementById('voucherCode').value.trim();
         const messageEl = document.getElementById('voucherMessage');
-        
+
         if (!voucherCode) {
             messageEl.innerHTML = '<span style="color: #dc3545;">Vui lòng nhập mã voucher</span>';
             return;
         }
-        
+
         messageEl.innerHTML = '<span style="color: #ffc107;">Đang kiểm tra mã voucher...</span>';
-        
+
         // Kiểm tra discount code qua API
         const url = '<?= BASE_URL ?>?act=check-voucher&code=' + encodeURIComponent(voucherCode) + '&total_amount=' + originalTotal;
         fetch(url)
@@ -344,11 +348,11 @@ function formatPrice($price) {
             alert("Vui lòng đồng ý điều khoản.");
             return;
         }
-        
+
         // Submit payment
         payBtn.disabled = true;
         payBtn.textContent = "Đang xử lý...";
-        
+
         const formData = new FormData();
         formData.append('showtime_id', '<?= $showtime['id'] ?? '' ?>');
         formData.append('seats', '<?= htmlspecialchars($seatIds) ?>');
@@ -356,40 +360,40 @@ function formatPrice($price) {
         formData.append('payment_method', selectedMethod);
         formData.append('adult_count', '<?= $adultCount ?? 0 ?>');
         formData.append('student_count', '<?= $studentCount ?? 0 ?>');
-        
+
         // Thêm voucher code nếu có
         const voucherCode = document.getElementById('voucherCode').value.trim();
         if (voucherCode) {
             formData.append('voucher_code', voucherCode);
         }
-        
+
         fetch('<?= BASE_URL ?>?act=payment-process', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (data.payment_method === 'vnpay' && data.payment_url) {
-                    // Chuyển hướng đến VNPay
-                    window.location.href = data.payment_url;
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.payment_method === 'vnpay' && data.payment_url) {
+                        // Chuyển hướng đến VNPay
+                        window.location.href = data.payment_url;
+                    } else {
+                        // Các phương thức thanh toán khác
+                        alert(data.message || 'Thanh toán thành công!');
+                        window.location.href = '<?= BASE_URL ?>?act=my-bookings';
+                    }
                 } else {
-                    // Các phương thức thanh toán khác
-                    alert(data.message || 'Thanh toán thành công!');
-                    window.location.href = '<?= BASE_URL ?>?act=my-bookings';
+                    alert(data.message || 'Có lỗi xảy ra khi thanh toán.');
+                    payBtn.disabled = false;
+                    payBtn.textContent = "Thanh toán";
                 }
-            } else {
-                alert(data.message || 'Có lỗi xảy ra khi thanh toán.');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi thanh toán.');
                 payBtn.disabled = false;
                 payBtn.textContent = "Thanh toán";
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi thanh toán.');
-            payBtn.disabled = false;
-            payBtn.textContent = "Thanh toán";
-        });
+            });
     });
 
     // Preselect first method

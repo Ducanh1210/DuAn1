@@ -71,103 +71,203 @@
               <div class="row-label me-3" style="min-width: 30px; font-weight: bold; text-align: center;">
                 <?= htmlspecialchars($rowLabel) ?>
               </div>
-              <div class="seat-row-content d-flex gap-1 flex-wrap">
-                <?php
-                // Tìm số ghế lớn nhất trong hàng để tạo khoảng trống nếu cần
-                $maxSeatNumber = 0;
-                foreach ($seats as $seat) {
-                  $maxSeatNumber = max($maxSeatNumber, $seat['seat_number']);
-                }
-                
-                // Tạo mảng ghế đầy đủ
-                $seatArray = [];
-                foreach ($seats as $seat) {
-                  $seatArray[$seat['seat_number']] = $seat;
-                }
-                
-                // Hiển thị ghế
-                for ($i = 1; $i <= $maxSeatNumber; $i++):
-                  $seat = $seatArray[$i] ?? null;
+              <div class="seat-row-content d-flex align-items-center gap-2">
+                <!-- Bên trái: ghế 1-6 -->
+                <div class="seat-side d-flex gap-1">
+                  <?php
+                  // Tạo mảng ghế bên trái (1-6)
+                  $leftSeats = [];
+                  foreach ($seats as $seat) {
+                    $seatNumber = $seat['seat_number'] ?? 0;
+                    if ($seatNumber >= 1 && $seatNumber <= 6) {
+                      $leftSeats[$seatNumber] = $seat;
+                    }
+                  }
                   
-                  if ($seat):
-                    $seatType = $seat['seat_type'] ?? 'normal';
-                    $status = $seat['status'] ?? 'available';
-                    // Nếu trạng thái không hợp lệ, mặc định là available
-                    $validStatuses = ['available', 'booked', 'maintenance', 'reserved'];
-                    if (!in_array($status, $validStatuses)) {
-                      $status = 'available';
+                  // Hiển thị ghế bên trái (1-6)
+                  for ($i = 1; $i <= 6; $i++):
+                    $seat = $leftSeats[$i] ?? null;
+                    
+                    if ($seat):
+                      $seatType = $seat['seat_type'] ?? 'normal';
+                      $status = $seat['status'] ?? 'available';
+                      // Nếu trạng thái không hợp lệ, mặc định là available
+                      $validStatuses = ['available', 'booked', 'maintenance', 'reserved'];
+                      if (!in_array($status, $validStatuses)) {
+                        $status = 'available';
+                      }
+                      
+                      // Màu sắc theo loại ghế (chỉ normal và vip)
+                      $typeColors = [
+                        'normal' => 'secondary',
+                        'vip' => 'warning'
+                      ];
+                      // Nếu là loại ghế không hợp lệ, mặc định là normal
+                      if (!isset($typeColors[$seatType])) {
+                        $seatType = 'normal';
+                      }
+                      $typeColor = $typeColors[$seatType] ?? 'secondary';
+                      
+                      // Màu sắc theo trạng thái
+                      $statusColors = [
+                        'available' => 'success',
+                        'booked' => 'danger',
+                        'maintenance' => 'warning',
+                        'reserved' => 'info'
+                      ];
+                      $statusColor = $statusColors[$status] ?? 'secondary';
+                      
+                      // Xử lý màu sắc và hiển thị
+                      $badgeColor = '';
+                      $textColor = '';
+                      $displayContent = $seat['seat_number'];
+                      $isMaintenance = ($status === 'maintenance');
+                      
+                      if ($isMaintenance) {
+                          // Ghế bảo trì: màu vàng với dấu X
+                          $badgeColor = 'warning';
+                          $textColor = 'text-dark';
+                          $displayContent = '✕';
+                      } elseif ($status === 'booked') {
+                          // Ghế đã đặt: màu đỏ
+                          $badgeColor = 'danger';
+                          $textColor = '';
+                      } elseif ($status === 'reserved') {
+                          // Ghế đã đặt trước: màu xanh nhạt
+                          $badgeColor = 'info';
+                          $textColor = '';
+                      } else {
+                          // Ghế available: hiển thị theo loại ghế
+                          $badgeColor = $typeColor;
+                          if ($seatType === 'vip') {
+                              $textColor = 'text-dark'; // VIP có chữ đen trên nền vàng
+                          }
+                      }
+                  ?>
+                    <a href="<?= BASE_URL ?>?act=seats-edit&id=<?= $seat['id'] ?>" 
+                       class="seat-badge badge bg-<?= $badgeColor ?> <?= $textColor ?> text-decoration-none <?= $isMaintenance ? 'maintenance-seat' : '' ?>" 
+                       style="
+                         width: 40px;
+                         height: 40px;
+                         display: inline-flex;
+                         align-items: center;
+                         justify-content: center;
+                         cursor: pointer;
+                         transition: transform 0.2s;
+                         font-size: <?= $isMaintenance ? '18px' : '12px' ?>;
+                         font-weight: <?= $isMaintenance ? 'bold' : 'normal' ?>;
+                         position: relative;
+                       "
+                       onmouseover="this.style.transform='scale(1.1)'"
+                       onmouseout="this.style.transform='scale(1)'"
+                       title="Ghế <?= htmlspecialchars($seat['row_label']) ?><?= $seat['seat_number'] ?> - <?= ucfirst($seatType) ?> - <?= ucfirst($status) ?>">
+                      <?= htmlspecialchars($displayContent) ?>
+                    </a>
+                  <?php else: ?>
+                    <span class="seat-badge" style="width: 40px; height: 40px; display: inline-block; opacity: 0.3;"></span>
+                  <?php endif; ?>
+                <?php endfor; ?>
+                </div>
+                
+                <!-- Khoảng trống giữa (aisle) -->
+                <div class="seat-aisle" style="width: 40px; flex-shrink: 0;"></div>
+                
+                <!-- Bên phải: ghế 7-12 -->
+                <div class="seat-side d-flex gap-1">
+                  <?php
+                  // Tạo mảng ghế bên phải (7-12)
+                  $rightSeats = [];
+                  foreach ($seats as $seat) {
+                    $seatNumber = $seat['seat_number'] ?? 0;
+                    if ($seatNumber >= 7 && $seatNumber <= 12) {
+                      $rightSeats[$seatNumber] = $seat;
                     }
+                  }
+                  
+                  // Hiển thị ghế bên phải (7-12)
+                  for ($i = 7; $i <= 12; $i++):
+                    $seat = $rightSeats[$i] ?? null;
                     
-                    // Màu sắc theo loại ghế (chỉ normal và vip)
-                    $typeColors = [
-                      'normal' => 'secondary',
-                      'vip' => 'warning'
-                    ];
-                    // Nếu là loại ghế không hợp lệ, mặc định là normal
-                    if (!isset($typeColors[$seatType])) {
-                      $seatType = 'normal';
-                    }
-                    $typeColor = $typeColors[$seatType] ?? 'secondary';
-                    
-                    // Màu sắc theo trạng thái
-                    $statusColors = [
-                      'available' => 'success',
-                      'booked' => 'danger',
-                      'maintenance' => 'warning',
-                      'reserved' => 'info'
-                    ];
-                    $statusColor = $statusColors[$status] ?? 'secondary';
-                    
-                    // Xử lý màu sắc và hiển thị
-                    $badgeColor = '';
-                    $textColor = '';
-                    $displayContent = $seat['seat_number'];
-                    $isMaintenance = ($status === 'maintenance');
-                    
-                    if ($isMaintenance) {
-                        // Ghế bảo trì: màu vàng với dấu X
-                        $badgeColor = 'warning';
-                        $textColor = 'text-dark';
-                        $displayContent = '✕';
-                    } elseif ($status === 'booked') {
-                        // Ghế đã đặt: màu đỏ
-                        $badgeColor = 'danger';
-                        $textColor = '';
-                    } elseif ($status === 'reserved') {
-                        // Ghế đã đặt trước: màu xanh nhạt
-                        $badgeColor = 'info';
-                        $textColor = '';
-                    } else {
-                        // Ghế available: hiển thị theo loại ghế
-                        $badgeColor = $typeColor;
-                        if ($seatType === 'vip') {
-                            $textColor = 'text-dark'; // VIP có chữ đen trên nền vàng
-                        }
-                    }
-                ?>
-                  <a href="<?= BASE_URL ?>?act=seats-edit&id=<?= $seat['id'] ?>" 
-                     class="seat-badge badge bg-<?= $badgeColor ?> <?= $textColor ?> text-decoration-none <?= $isMaintenance ? 'maintenance-seat' : '' ?>" 
-                     style="
-                       width: 40px;
-                       height: 40px;
-                       display: inline-flex;
-                       align-items: center;
-                       justify-content: center;
-                       cursor: pointer;
-                       transition: transform 0.2s;
-                       font-size: <?= $isMaintenance ? '18px' : '12px' ?>;
-                       font-weight: <?= $isMaintenance ? 'bold' : 'normal' ?>;
-                       position: relative;
-                     "
-                     onmouseover="this.style.transform='scale(1.1)'"
-                     onmouseout="this.style.transform='scale(1)'"
-                     title="Ghế <?= htmlspecialchars($seat['row_label']) ?><?= $seat['seat_number'] ?> - <?= ucfirst($seatType) ?> - <?= ucfirst($status) ?>">
-                    <?= htmlspecialchars($displayContent) ?>
-                  </a>
-                <?php else: ?>
-                  <span class="seat-badge" style="width: 40px; height: 40px; display: inline-block;"></span>
-                <?php endif; ?>
-              <?php endfor; ?>
+                    if ($seat):
+                      $seatType = $seat['seat_type'] ?? 'normal';
+                      $status = $seat['status'] ?? 'available';
+                      // Nếu trạng thái không hợp lệ, mặc định là available
+                      $validStatuses = ['available', 'booked', 'maintenance', 'reserved'];
+                      if (!in_array($status, $validStatuses)) {
+                        $status = 'available';
+                      }
+                      
+                      // Màu sắc theo loại ghế (chỉ normal và vip)
+                      $typeColors = [
+                        'normal' => 'secondary',
+                        'vip' => 'warning'
+                      ];
+                      // Nếu là loại ghế không hợp lệ, mặc định là normal
+                      if (!isset($typeColors[$seatType])) {
+                        $seatType = 'normal';
+                      }
+                      $typeColor = $typeColors[$seatType] ?? 'secondary';
+                      
+                      // Màu sắc theo trạng thái
+                      $statusColors = [
+                        'available' => 'success',
+                        'booked' => 'danger',
+                        'maintenance' => 'warning',
+                        'reserved' => 'info'
+                      ];
+                      $statusColor = $statusColors[$status] ?? 'secondary';
+                      
+                      // Xử lý màu sắc và hiển thị
+                      $badgeColor = '';
+                      $textColor = '';
+                      $displayContent = $seat['seat_number'];
+                      $isMaintenance = ($status === 'maintenance');
+                      
+                      if ($isMaintenance) {
+                          // Ghế bảo trì: màu vàng với dấu X
+                          $badgeColor = 'warning';
+                          $textColor = 'text-dark';
+                          $displayContent = '✕';
+                      } elseif ($status === 'booked') {
+                          // Ghế đã đặt: màu đỏ
+                          $badgeColor = 'danger';
+                          $textColor = '';
+                      } elseif ($status === 'reserved') {
+                          // Ghế đã đặt trước: màu xanh nhạt
+                          $badgeColor = 'info';
+                          $textColor = '';
+                      } else {
+                          // Ghế available: hiển thị theo loại ghế
+                          $badgeColor = $typeColor;
+                          if ($seatType === 'vip') {
+                              $textColor = 'text-dark'; // VIP có chữ đen trên nền vàng
+                          }
+                      }
+                  ?>
+                    <a href="<?= BASE_URL ?>?act=seats-edit&id=<?= $seat['id'] ?>" 
+                       class="seat-badge badge bg-<?= $badgeColor ?> <?= $textColor ?> text-decoration-none <?= $isMaintenance ? 'maintenance-seat' : '' ?>" 
+                       style="
+                         width: 40px;
+                         height: 40px;
+                         display: inline-flex;
+                         align-items: center;
+                         justify-content: center;
+                         cursor: pointer;
+                         transition: transform 0.2s;
+                         font-size: <?= $isMaintenance ? '18px' : '12px' ?>;
+                         font-weight: <?= $isMaintenance ? 'bold' : 'normal' ?>;
+                         position: relative;
+                       "
+                       onmouseover="this.style.transform='scale(1.1)'"
+                       onmouseout="this.style.transform='scale(1)'"
+                       title="Ghế <?= htmlspecialchars($seat['row_label']) ?><?= $seat['seat_number'] ?> - <?= ucfirst($seatType) ?> - <?= ucfirst($status) ?>">
+                      <?= htmlspecialchars($displayContent) ?>
+                    </a>
+                  <?php else: ?>
+                    <span class="seat-badge" style="width: 40px; height: 40px; display: inline-block; opacity: 0.3;"></span>
+                  <?php endif; ?>
+                <?php endfor; ?>
+                </div>
               </div>
             </div>
           <?php endforeach; ?>

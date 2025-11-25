@@ -325,11 +325,11 @@ if (session_status() === PHP_SESSION_NONE) {
                     <h4>Khám phá</h4>
                     <ul>
                         <li><a href="<?= BASE_URL ?>?act=trangchu">Trang Chủ</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=gioithieu">Giới thiệu</a></li>
                         <li><a href="<?= BASE_URL ?>?act=lichchieu">Lịch Chiếu</a></li>
                         <li><a href="<?= BASE_URL ?>?act=khuyenmai">Khuyến mãi</a></li>
                         <li><a href="<?= BASE_URL ?>?act=giave">Giá vé</a></li>
-                        <li><a href="<?= BASE_URL ?>?act=tintuc">Tin tức</a></li>
-                        <li><a href="<?= BASE_URL ?>?act=hoidap">Hỏi đáp</a></li>
+                        <li><a href="<?= BASE_URL ?>?act=lienhe">Liên hệ</a></li>
                     </ul>
                 </div>
 
@@ -377,9 +377,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     <p class="muted">Địa chỉ: Số 87 Láng Hạ, Phường
                         Ô Chợ Dừa, TP. Hà Nội</p>
                     <p class="muted">Điện thoại: <a href="tel:02435141791">024.3514.1791</a></p>
-                    <div class="certs">
-                        <img src="" alt="Đã thông báo" class="gov-badge">
-                    </div>
                 </div>
 
                 <!-- Subscribe -->
@@ -481,7 +478,7 @@ if (session_status() === PHP_SESSION_NONE) {
     })();
 
     // Promo Carousel - Tự động chạy và hỗ trợ vuốt (mỗi trang 3 ảnh)
-    (function() {
+    (function(){
         // ======= Thay ảnh ở đây =======
         const imagePaths = [
             '<?= BASE_URL ?>/image/banner1.jpg',
@@ -496,8 +493,8 @@ if (session_status() === PHP_SESSION_NONE) {
         const perPage = 3; // số ảnh trên 1 trang
         const pages = [];
 
-        for (let i = 0; i < imagePaths.length; i += perPage) {
-            pages.push(imagePaths.slice(i, i + perPage));
+        for(let i=0; i<imagePaths.length; i+=perPage){
+            pages.push(imagePaths.slice(i, i+perPage));
         }
 
         const track = document.getElementById('track');
@@ -535,34 +532,31 @@ if (session_status() === PHP_SESSION_NONE) {
         let pageIndex = 0;
         let autoTimer = null;
 
-        function update() {
+        function update(){
             track.style.transform = `translateX(-${pageIndex * 100}%)`;
             dotElems.forEach(d => d.classList.remove('active'));
-            if (dotElems[pageIndex]) dotElems[pageIndex].classList.add('active');
+            if(dotElems[pageIndex]) dotElems[pageIndex].classList.add('active');
         }
 
-        function goToPage(i) {
+        function goToPage(i){
             pageIndex = ((i % totalPages) + totalPages) % totalPages;
             update();
             restartAuto();
         }
 
         // auto-play (theo page)
-        function startAuto() {
+        function startAuto(){
             stopAuto();
             autoTimer = setInterval(() => {
                 goToPage(pageIndex + 1);
             }, 3500);
         }
 
-        function stopAuto() {
-            if (autoTimer) {
-                clearInterval(autoTimer);
-                autoTimer = null;
-            }
+        function stopAuto(){
+            if(autoTimer){ clearInterval(autoTimer); autoTimer = null; }
         }
 
-        function restartAuto() {
+        function restartAuto(){
             stopAuto();
             startAuto();
         }
@@ -575,12 +569,10 @@ if (session_status() === PHP_SESSION_NONE) {
             stopAuto();
             isDragging = true;
             startX = e.touches[0].clientX;
-        }, {
-            passive: true
-        });
+        }, {passive:true});
 
         viewport.addEventListener('touchend', (e) => {
-            if (!isDragging) return;
+            if(!isDragging) return;
             const endX = e.changedTouches[0].clientX;
             handleSwipe(startX, endX);
             isDragging = false;
@@ -595,19 +587,19 @@ if (session_status() === PHP_SESSION_NONE) {
         });
 
         window.addEventListener('mouseup', (e) => {
-            if (!isDragging) return;
+            if(!isDragging) return;
             const endX = e.clientX;
             handleSwipe(startX, endX);
             isDragging = false;
             restartAuto();
         });
 
-        function handleSwipe(start, end) {
+        function handleSwipe(start, end){
             const diff = end - start;
             const threshold = 40; // px để tính là swipe
-            if (diff < -threshold) {
+            if(diff < -threshold){
                 goToPage(pageIndex + 1);
-            } else if (diff > threshold) {
+            } else if(diff > threshold){
                 goToPage(pageIndex - 1);
             } else {
                 // small movement -> no change
@@ -629,44 +621,44 @@ if (session_status() === PHP_SESSION_NONE) {
 </script>
 
 <?php if (isset($_SESSION['user_id'])): ?>
-    <script>
-        // Client-side notifications
-        (function() {
-            const notificationIcon = document.getElementById('clientNotificationIcon');
-            const notificationBadge = document.getElementById('clientNotificationBadge');
-            const notificationDropdown = document.getElementById('clientNotificationDropdown');
-            const notificationList = document.getElementById('clientNotificationList');
-            const markAllReadBtn = document.getElementById('clientMarkAllReadBtn');
+<script>
+    // Client-side notifications
+    (function() {
+        const notificationIcon = document.getElementById('clientNotificationIcon');
+        const notificationBadge = document.getElementById('clientNotificationBadge');
+        const notificationDropdown = document.getElementById('clientNotificationDropdown');
+        const notificationList = document.getElementById('clientNotificationList');
+        const markAllReadBtn = document.getElementById('clientMarkAllReadBtn');
 
-            function loadNotifications() {
-                fetch('<?= BASE_URL ?>?act=api-client-notifications&unread_only=true')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            const notifications = data.notifications || [];
-                            updateNotificationBadge(data.unread_count || 0);
-                            renderNotifications(notifications);
-                        }
-                    })
-                    .catch(error => console.error('Error loading notifications:', error));
+        function loadNotifications() {
+            fetch('<?= BASE_URL ?>?act=api-client-notifications&unread_only=true')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const notifications = data.notifications || [];
+                        updateNotificationBadge(data.unread_count || 0);
+                        renderNotifications(notifications);
+                    }
+                })
+                .catch(error => console.error('Error loading notifications:', error));
+        }
+
+        function updateNotificationBadge(count) {
+            if (count > 0) {
+                notificationBadge.textContent = count > 99 ? '99+' : count;
+                notificationBadge.style.display = 'block';
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+        }
+
+        function renderNotifications(notifications) {
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                return;
             }
 
-            function updateNotificationBadge(count) {
-                if (count > 0) {
-                    notificationBadge.textContent = count > 99 ? '99+' : count;
-                    notificationBadge.style.display = 'block';
-                } else {
-                    notificationBadge.style.display = 'none';
-                }
-            }
-
-            function renderNotifications(notifications) {
-                if (notifications.length === 0) {
-                    notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
-                    return;
-                }
-
-                notificationList.innerHTML = notifications.map(notif => `
+            notificationList.innerHTML = notifications.map(notif => `
                 <div class="notification-item unread" data-id="${notif.id}">
                     <div class="notification-content">
                         <div class="notification-title">${notif.title}</div>
@@ -677,101 +669,101 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
             `).join('');
 
-                // Add click event to mark as read
-                notificationList.querySelectorAll('.notification-item').forEach(item => {
-                    item.addEventListener('click', function(e) {
-                        // Don't trigger if clicking the link
-                        if (e.target.tagName === 'A') return;
-
-                        const id = this.dataset.id;
-                        if (id) {
-                            markAsRead(id, this);
-                        }
-                    });
+            // Add click event to mark as read
+            notificationList.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Don't trigger if clicking the link
+                    if (e.target.tagName === 'A') return;
+                    
+                    const id = this.dataset.id;
+                    if (id) {
+                        markAsRead(id, this);
+                    }
                 });
-            }
+            });
+        }
 
-            function markAsRead(id, element) {
-                const formData = new FormData();
-                formData.append('id', id);
+        function markAsRead(id, element) {
+            const formData = new FormData();
+            formData.append('id', id);
+            
+            fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-read', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateNotificationBadge(data.unread_count || 0);
+                        // Remove the notification item from list
+                        if (element) {
+                            element.remove();
+                        // If no more notifications, show empty message
+                        if (notificationList.children.length === 0) {
+                            notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                        }
+                        }
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+        }
 
-                fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-read', {
-                        method: 'POST',
-                        body: formData
-                    })
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-all-read', {
+                    method: 'POST'
+                })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            updateNotificationBadge(data.unread_count || 0);
-                            // Remove the notification item from list
-                            if (element) {
-                                element.remove();
-                                // If no more notifications, show empty message
-                                if (notificationList.children.length === 0) {
-                                    notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
-                                }
-                            }
+                            // Update badge to 0 (will hide it)
+                            updateNotificationBadge(0);
+                            // Clear all notifications from list immediately
+                            notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
                         }
                     })
-                    .catch(error => console.error('Error marking notification as read:', error));
-            }
+                    .catch(error => console.error('Error marking all as read:', error));
+            });
+        }
 
-            if (markAllReadBtn) {
-                markAllReadBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-
-                    fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-all-read', {
-                            method: 'POST'
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Update badge to 0 (will hide it)
-                                updateNotificationBadge(0);
-                                // Clear all notifications from list immediately
-                                notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
-                            }
-                        })
-                        .catch(error => console.error('Error marking all as read:', error));
-                });
-            }
-
-            if (notificationIcon) {
-                notificationIcon.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
-                        notificationDropdown.style.display = 'block';
-                        loadNotifications();
-                    } else {
-                        notificationDropdown.style.display = 'none';
-                    }
-                });
-            }
-
-            document.addEventListener('click', function(e) {
-                if (notificationDropdown && notificationIcon &&
-                    !notificationDropdown.contains(e.target) &&
-                    !notificationIcon.contains(e.target) &&
-                    !e.target.closest('.notification-wrapper')) {
+        if (notificationIcon) {
+            notificationIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
+                    notificationDropdown.style.display = 'block';
+                    loadNotifications();
+                } else {
                     notificationDropdown.style.display = 'none';
                 }
             });
+        }
 
-            function formatTime(dateString) {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diff = Math.floor((now - date) / 1000);
-                if (diff < 60) return 'Vừa xong';
-                if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
-                if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
-                return date.toLocaleDateString('vi-VN');
+        document.addEventListener('click', function(e) {
+            if (notificationDropdown && notificationIcon && 
+                !notificationDropdown.contains(e.target) && 
+                !notificationIcon.contains(e.target) &&
+                !e.target.closest('.notification-wrapper')) {
+                notificationDropdown.style.display = 'none';
             }
+        });
 
-            // Load notifications on page load and refresh every 30 seconds
-            loadNotifications();
-            setInterval(loadNotifications, 30000);
-        })();
-    </script>
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            if (diff < 60) return 'Vừa xong';
+            if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        // Load notifications on page load and refresh every 30 seconds
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
+    })();
+</script>
 <?php endif; ?>
 
 </html>
