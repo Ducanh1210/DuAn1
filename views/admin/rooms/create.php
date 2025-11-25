@@ -68,15 +68,16 @@
             </div>
 
             <div class="mb-3">
-              <label for="seat_count" class="form-label">Số ghế <span class="text-danger">*</span></label>
+              <label for="seat_count" class="form-label">Số ghế (tùy chọn)</label>
               <input type="number" 
                      name="seat_count" 
                      id="seat_count" 
                      class="form-control <?= !empty($errors['seat_count']) ? 'is-invalid' : '' ?>" 
-                     value="<?= htmlspecialchars($_POST['seat_count'] ?? '') ?>" 
-                     min="1"
+                     value="<?= htmlspecialchars($_POST['seat_count'] ?? '0') ?>" 
+                     min="0"
                      
-                     placeholder="VD: 150, 200...">
+                     placeholder="Mặc định: 0 (sẽ tạo ghế ở quản lý ghế)">
+              <small class="text-muted">Mặc định: 0. Số ghế sẽ được cập nhật tự động khi bạn tạo ghế ở quản lý ghế.</small>
               <?php if (!empty($errors['seat_count'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['seat_count'] ?></div>
               <?php endif; ?>
@@ -154,8 +155,9 @@
       errors.push('Vui lòng nhập tên phòng');
     }
 
-    if (!seat_count || seat_count <= 0) {
-      errors.push('Vui lòng nhập số ghế hợp lệ (lớn hơn 0)');
+    // Số ghế không bắt buộc, mặc định là 0
+    if (seat_count && parseInt(seat_count) < 0) {
+      errors.push('Số ghế không được âm');
     }
 
     if (errors.length > 0) {

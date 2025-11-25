@@ -771,7 +771,57 @@ class MoviesController
      */
     public function lienhe()
     {
-        renderClient('client/lienhe.php', [], 'Liên Hệ');
+        $success = false;
+        $error = '';
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $name = trim($_POST['name'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $phone = trim($_POST['phone'] ?? '');
+            $subject = trim($_POST['subject'] ?? '');
+            $message = trim($_POST['message'] ?? '');
+            
+            // Validation
+            if (empty($name)) {
+                $error = 'Vui lòng nhập họ tên';
+            } elseif (empty($email)) {
+                $error = 'Vui lòng nhập email';
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $error = 'Email không hợp lệ';
+            } elseif (empty($phone)) {
+                $error = 'Vui lòng nhập số điện thoại';
+            } elseif (empty($subject)) {
+                $error = 'Vui lòng nhập chủ đề';
+            } elseif (empty($message)) {
+                $error = 'Vui lòng nhập nội dung tin nhắn';
+            } else {
+                // Lưu vào database
+                require_once __DIR__ . '/../models/Contact.php';
+                $contact = new Contact();
+                
+                $data = [
+                    'name' => $name,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'subject' => $subject,
+                    'message' => $message,
+                    'status' => 'pending'
+                ];
+                
+                $result = $contact->insert($data);
+                
+                if ($result) {
+                    $success = true;
+                } else {
+                    $error = 'Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.';
+                }
+            }
+        }
+        
+        renderClient('client/lienhe.php', [
+            'success' => $success,
+            'error' => $error
+        ], 'Liên Hệ');
     }
 
 

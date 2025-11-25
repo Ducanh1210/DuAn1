@@ -320,66 +320,141 @@ function renderSeatSelection(data, showtimeTime) {
         html += `
             <div class="seat-row" data-row-label="${rowLabel.toUpperCase()}">
                 <div class="row-label">${rowLabel}</div>
+                <div class="seat-row-content">
+                    <!-- Bên trái: ghế 1-6 -->
+                    <div class="seat-side seat-side-left">
         `;
         
         // Sắp xếp ghế theo số
         const sortedSeats = [...rowSeats].sort((a, b) => (a.seat_number || 0) - (b.seat_number || 0));
         
-        let prevSeatNumber = 0;
+        // Tạo mảng ghế bên trái (1-6) và bên phải (7-12)
+        const leftSeats = {};
+        const rightSeats = {};
+        
         sortedSeats.forEach(seat => {
             const seatNumber = seat.seat_number || 0;
-            const seatLabel = (seat.row_label || rowLabel) + seatNumber;
-            const seatKey = seatLabel;
-            const isBooked = bookedSeats.includes(seatKey);
             const seatType = (seat.seat_type || 'normal').toLowerCase();
-            const seatStatus = (seat.status || 'available').toLowerCase();
             
             // Bỏ qua ghế disabled và couple
             if (['disabled', 'couple'].includes(seatType)) {
                 return;
             }
             
-            // Thêm khoảng trống nếu cần
-            if (prevSeatNumber > 0 && (seatNumber - prevSeatNumber) > 1) {
-                if ((prevSeatNumber % 4 == 0)) {
-                    html += '<div class="seat-gap"></div>';
-                }
+            if (seatNumber >= 1 && seatNumber <= 6) {
+                leftSeats[seatNumber] = seat;
+            } else if (seatNumber >= 7 && seatNumber <= 12) {
+                rightSeats[seatNumber] = seat;
             }
-            
-            // Xác định class CSS cho ghế
-            let seatClass = 'available';
-            let onClick = `onclick="toggleSeat(this)"`;
-            let title = '';
-            
-            if (seatStatus === 'maintenance') {
-                seatClass = 'maintenance';
-                onClick = '';
-                title = 'title="Ghế đang bảo trì"';
-            } else if (isBooked) {
-                seatClass = 'booked';
-                onClick = '';
-                title = 'title="Ghế đã được đặt"';
-            } else if (seatType === 'vip') {
-                seatClass = 'vip';
-                title = 'title="Ghế VIP"';
-            }
-            
-            html += `
-                <div class="seat ${seatClass}" 
-                     data-seat-id="${seat.id}"
-                     data-seat-label="${seatLabel}"
-                     data-seat-type="${seatType}"
-                     data-seat-status="${seatStatus}"
-                     ${onClick}
-                     ${title}>
-                    ${seatNumber}
-                </div>
-            `;
-            
-            prevSeatNumber = seatNumber;
         });
         
+        // Hiển thị ghế bên trái (1-6)
+        for (let i = 1; i <= 6; i++) {
+            const seat = leftSeats[i];
+            
+            if (seat) {
+                const seatNumber = seat.seat_number || 0;
+                const seatLabel = (seat.row_label || rowLabel) + seatNumber;
+                const seatKey = seatLabel;
+                const isBooked = bookedSeats.includes(seatKey);
+                const seatType = (seat.seat_type || 'normal').toLowerCase();
+                const seatStatus = (seat.status || 'available').toLowerCase();
+                
+                // Xác định class CSS cho ghế
+                let seatClass = 'available';
+                let onClick = `onclick="toggleSeat(this)"`;
+                let title = '';
+                
+                if (seatStatus === 'maintenance') {
+                    seatClass = 'maintenance';
+                    onClick = '';
+                    title = 'title="Ghế đang bảo trì"';
+                } else if (isBooked) {
+                    seatClass = 'booked';
+                    onClick = '';
+                    title = 'title="Ghế đã được đặt"';
+                } else if (seatType === 'vip') {
+                    seatClass = 'vip';
+                    title = 'title="Ghế VIP"';
+                }
+                
+                html += `
+                    <div class="seat ${seatClass}" 
+                         data-seat-id="${seat.id}"
+                         data-seat-label="${seatLabel}"
+                         data-seat-type="${seatType}"
+                         data-seat-status="${seatStatus}"
+                         ${onClick}
+                         ${title}>
+                        ${seatNumber}
+                    </div>
+                `;
+            } else {
+                // Ghế không tồn tại, hiển thị ô trống
+                html += '<div class="seat seat-empty"></div>';
+            }
+        }
+        
         html += `
+                    </div>
+                    
+                    <!-- Khoảng trống giữa (aisle) -->
+                    <div class="seat-aisle" style="width: 40px; flex-shrink: 0;"></div>
+                    
+                    <!-- Bên phải: ghế 7-12 -->
+                    <div class="seat-side seat-side-right">
+        `;
+        
+        // Hiển thị ghế bên phải (7-12)
+        for (let i = 7; i <= 12; i++) {
+            const seat = rightSeats[i];
+            
+            if (seat) {
+                const seatNumber = seat.seat_number || 0;
+                const seatLabel = (seat.row_label || rowLabel) + seatNumber;
+                const seatKey = seatLabel;
+                const isBooked = bookedSeats.includes(seatKey);
+                const seatType = (seat.seat_type || 'normal').toLowerCase();
+                const seatStatus = (seat.status || 'available').toLowerCase();
+                
+                // Xác định class CSS cho ghế
+                let seatClass = 'available';
+                let onClick = `onclick="toggleSeat(this)"`;
+                let title = '';
+                
+                if (seatStatus === 'maintenance') {
+                    seatClass = 'maintenance';
+                    onClick = '';
+                    title = 'title="Ghế đang bảo trì"';
+                } else if (isBooked) {
+                    seatClass = 'booked';
+                    onClick = '';
+                    title = 'title="Ghế đã được đặt"';
+                } else if (seatType === 'vip') {
+                    seatClass = 'vip';
+                    title = 'title="Ghế VIP"';
+                }
+                
+                html += `
+                    <div class="seat ${seatClass}" 
+                         data-seat-id="${seat.id}"
+                         data-seat-label="${seatLabel}"
+                         data-seat-type="${seatType}"
+                         data-seat-status="${seatStatus}"
+                         ${onClick}
+                         ${title}>
+                        ${seatNumber}
+                    </div>
+                `;
+            } else {
+                // Ghế không tồn tại, hiển thị ô trống
+                html += '<div class="seat seat-empty"></div>';
+            }
+        }
+        
+        html += `
+                    </div>
+                </div>
             </div>
         `;
     });

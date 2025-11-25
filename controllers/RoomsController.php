@@ -20,6 +20,14 @@ class RoomsController
         
         $result = $this->room->paginate($page, 10);
         
+        // Lấy số ghế thực tế từ bảng seats cho mỗi phòng
+        require_once __DIR__ . '/../models/Seat.php';
+        $seatModel = new Seat();
+        
+        foreach ($result['data'] as &$room) {
+            $room['actual_seat_count'] = $seatModel->getCountByRoom($room['id']);
+        }
+        
         render('admin/rooms/list.php', [
             'data' => $result['data'],
             'pagination' => [
@@ -54,8 +62,10 @@ class RoomsController
                 $errors['name'] = "Bạn vui lòng nhập tên phòng";
             }
 
-            if (empty(trim($_POST['seat_count'] ?? '')) || (int)$_POST['seat_count'] <= 0) {
-                $errors['seat_count'] = "Bạn vui lòng nhập số ghế hợp lệ (lớn hơn 0)";
+            // Số ghế mặc định là 0 (sẽ được cập nhật khi tạo ghế)
+            $seatCount = isset($_POST['seat_count']) ? (int)trim($_POST['seat_count']) : 0;
+            if ($seatCount < 0) {
+                $errors['seat_count'] = "Số ghế không được âm";
             }
 
             // Nếu không có lỗi, lưu vào database
@@ -64,7 +74,7 @@ class RoomsController
                     'cinema_id' => trim($_POST['cinema_id']),
                     'room_code' => trim($_POST['room_code']),
                     'name' => trim($_POST['name']),
-                    'seat_count' => (int)trim($_POST['seat_count'])
+                    'seat_count' => $seatCount // Mặc định 0, sẽ được cập nhật khi tạo ghế
                 ];
                 
                 $result = $this->room->insert($data);
@@ -116,8 +126,17 @@ class RoomsController
                 $errors['name'] = "Bạn vui lòng nhập tên phòng";
             }
 
-            if (empty(trim($_POST['seat_count'] ?? '')) || (int)$_POST['seat_count'] <= 0) {
-                $errors['seat_count'] = "Bạn vui lòng nhập số ghế hợp lệ (lớn hơn 0)";
+            // Số ghế mặc định là 0 hoặc lấy từ số ghế thực tế
+            $seatCount = isset($_POST['seat_count']) ? (int)trim($_POST['seat_count']) : 0;
+            if ($seatCount < 0) {
+                $errors['seat_count'] = "Số ghế không được âm";
+            }
+            
+            // Nếu không nhập số ghế, lấy số ghế thực tế từ bảng seats
+            if ($seatCount == 0) {
+                require_once __DIR__ . '/../models/Seat.php';
+                $seatModel = new Seat();
+                $seatCount = $seatModel->getCountByRoom($id);
             }
 
             // Nếu không có lỗi, cập nhật vào database
@@ -126,7 +145,7 @@ class RoomsController
                     'cinema_id' => trim($_POST['cinema_id']),
                     'room_code' => trim($_POST['room_code']),
                     'name' => trim($_POST['name']),
-                    'seat_count' => (int)trim($_POST['seat_count'])
+                    'seat_count' => $seatCount // Sẽ được cập nhật tự động từ số ghế thực tế
                 ];
                 
                 $result = $this->room->update($id, $data);

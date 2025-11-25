@@ -182,7 +182,17 @@ class Seat
                 ':extra_price' => $data['extra_price'] ?? 0,
                 ':status' => $data['status'] ?? 'available'
             ]);
-            return $this->conn->lastInsertId();
+            
+            $seatId = $this->conn->lastInsertId();
+            
+            // Tự động cập nhật số ghế của phòng
+            if ($seatId && !empty($data['room_id'])) {
+                require_once __DIR__ . '/Room.php';
+                $roomModel = new Room();
+                $roomModel->updateSeatCount($data['room_id']);
+            }
+            
+            return $seatId;
         } catch (Exception $e) {
             debug($e);
             return false;
@@ -191,6 +201,8 @@ class Seat
 
     /**
      * Thêm nhiều ghế cùng lúc (tự động tạo sơ đồ ghế)
+     * Chia đều 2 bên: mỗi bên 6 ghế/hàng (tổng 12 ghế/hàng)
+     * Tối ưu hóa bằng batch insert để tăng tốc độ
      */
     public function insertBulk($room_id, $rows, $seatsPerRow, $seatType = 'normal', $extraPrice = 0, $maxCapacity = null)
     {
@@ -206,29 +218,102 @@ class Seat
                 $targetSeats = min($targetSeats, $maxCapacity);
             }
             
-            for ($i = 0; $i < $rows && $inserted < $targetSeats; $i++) {
+            // Tính lại số hàng dựa trên targetSeats và chia đều 2 bên (mỗi bên 6 ghế/hàng = 12 ghế/hàng)
+            // Số hàng thực tế = ceil(targetSeats / 12)
+            $actualRows = ceil($targetSeats / 12);
+            
+            // Thu thập tất cả dữ liệu ghế vào mảng để batch insert
+            $seatsData = [];
+            
+            for ($i = 0; $i < $actualRows && $inserted < $targetSeats; $i++) {
                 $rowLabel = $rowLabels[$i] ?? chr(65 + $i); // A, B, C...
                 
-                // Tính số ghế cần tạo trong hàng này
-                $seatsInThisRow = min($seatsPerRow, $targetSeats - $inserted);
+                // Tính số ghế còn lại cần tạo
+                $remainingSeats = $targetSeats - $inserted;
                 
-                for ($j = 1; $j <= $seatsInThisRow && $inserted < $targetSeats; $j++) {
-                    $sql = "INSERT INTO seats (room_id, row_label, seat_number, seat_type, extra_price, status) 
-                            VALUES (:room_id, :row_label, :seat_number, :seat_type, :extra_price, :status)";
-                    $stmt = $this->conn->prepare($sql);
-                    $stmt->execute([
-                        ':room_id' => $room_id,
-                        ':row_label' => $rowLabel,
-                        ':seat_number' => $j,
-                        ':seat_type' => $seatType,
-                        ':extra_price' => $extraPrice,
-                        ':status' => 'available'
-                    ]);
+                // Tạo ghế bên trái (1-6) - ưu tiên tạo đủ 6 ghế bên trái trước
+                $leftSeatsToCreate = min(6, $remainingSeats);
+                for ($j = 1; $j <= $leftSeatsToCreate && $inserted < $targetSeats; $j++) {
+                    $seatsData[] = [
+                        'room_id' => $room_id,
+                        'row_label' => $rowLabel,
+                        'seat_number' => $j,
+                        'seat_type' => $seatType,
+                        'extra_price' => $extraPrice,
+                        'status' => 'available'
+                    ];
                     $inserted++;
+                }
+                
+                // Tính lại số ghế còn lại sau khi tạo bên trái
+                $remainingSeats = $targetSeats - $inserted;
+                
+                // Tạo ghế bên phải (7-12) - chỉ tạo nếu còn ghế cần tạo
+                if ($remainingSeats > 0) {
+                    $rightSeatsToCreate = min(6, $remainingSeats);
+                    for ($j = 7; $j <= (7 + $rightSeatsToCreate - 1) && $inserted < $targetSeats; $j++) {
+                        $seatsData[] = [
+                            'room_id' => $room_id,
+                            'row_label' => $rowLabel,
+                            'seat_number' => $j,
+                            'seat_type' => $seatType,
+                            'extra_price' => $extraPrice,
+                            'status' => 'available'
+                        ];
+                        $inserted++;
+                    }
                 }
             }
             
+            // Batch insert: chia thành các batch 500 ghế/batch để tránh query quá dài
+            $batchSize = 500;
+            $totalBatches = ceil(count($seatsData) / $batchSize);
+            
+            for ($batch = 0; $batch < $totalBatches; $batch++) {
+                $batchData = array_slice($seatsData, $batch * $batchSize, $batchSize);
+                
+                if (empty($batchData)) {
+                    continue;
+                }
+                
+                // Tạo câu INSERT với nhiều VALUES
+                $values = [];
+                $params = [];
+                $paramIndex = 0;
+                
+                foreach ($batchData as $seat) {
+                    $values[] = "(:room_id_{$paramIndex}, :row_label_{$paramIndex}, :seat_number_{$paramIndex}, :seat_type_{$paramIndex}, :extra_price_{$paramIndex}, :status_{$paramIndex})";
+                    $params[":room_id_{$paramIndex}"] = $seat['room_id'];
+                    $params[":row_label_{$paramIndex}"] = $seat['row_label'];
+                    $params[":seat_number_{$paramIndex}"] = $seat['seat_number'];
+                    $params[":seat_type_{$paramIndex}"] = $seat['seat_type'];
+                    $params[":extra_price_{$paramIndex}"] = $seat['extra_price'];
+                    $params[":status_{$paramIndex}"] = $seat['status'];
+                    $paramIndex++;
+                }
+                
+                $sql = "INSERT INTO seats (room_id, row_label, seat_number, seat_type, extra_price, status) 
+                        VALUES " . implode(', ', $values);
+                
+                $stmt = $this->conn->prepare($sql);
+                $stmt->execute($params);
+            }
+            
+            // Commit transaction trước khi cập nhật số ghế để tránh lock timeout
             $this->conn->commit();
+            
+            // Tự động cập nhật số ghế của phòng sau khi commit (ngoài transaction)
+            // Sử dụng try-catch để không ảnh hưởng đến kết quả tạo ghế nếu cập nhật thất bại
+            try {
+                require_once __DIR__ . '/Room.php';
+                $roomModel = new Room();
+                $roomModel->updateSeatCount($room_id);
+            } catch (Exception $e) {
+                // Log lỗi nhưng không throw để không ảnh hưởng đến kết quả tạo ghế
+                // Số ghế sẽ được cập nhật đúng khi hiển thị (lấy từ bảng seats)
+                error_log("Failed to update seat count for room {$room_id}: " . $e->getMessage());
+            }
+            
             return $inserted;
         } catch (Exception $e) {
             $this->conn->rollBack();
@@ -274,9 +359,21 @@ class Seat
     public function delete($id)
     {
         try {
+            // Lấy thông tin phòng trước khi xóa
+            $seat = $this->find($id);
+            $roomId = $seat['room_id'] ?? null;
+            
             $sql = "DELETE FROM seats WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
+            
+            // Tự động cập nhật số ghế của phòng sau khi xóa
+            if ($roomId) {
+                require_once __DIR__ . '/Room.php';
+                $roomModel = new Room();
+                $roomModel->updateSeatCount($roomId);
+            }
+            
             return true;
         } catch (Exception $e) {
             debug($e);
@@ -293,6 +390,12 @@ class Seat
             $sql = "DELETE FROM seats WHERE room_id = :room_id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':room_id' => $room_id]);
+            
+            // Tự động cập nhật số ghế của phòng về 0
+            require_once __DIR__ . '/Room.php';
+            $roomModel = new Room();
+            $roomModel->updateSeatCount($room_id);
+            
             return true;
         } catch (Exception $e) {
             debug($e);
@@ -332,6 +435,23 @@ class Seat
         } catch (Exception $e) {
             debug($e);
             return false;
+        }
+    }
+
+    /**
+     * Đếm số ghế của phòng
+     */
+    public function getCountByRoom($room_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM seats WHERE room_id = :room_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':room_id' => $room_id]);
+            $result = $stmt->fetch();
+            return $result['total'] ?? 0;
+        } catch (Exception $e) {
+            debug($e);
+            return 0;
         }
     }
 }

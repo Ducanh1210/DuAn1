@@ -64,6 +64,9 @@
     <a href="?act=ticket-prices" class="<?= in_array($_GET['act'] ?? '', ['ticket-prices', 'ticket-prices-update']) ? 'active' : '' ?>">
       <i class="bi bi-cash-coin"></i><span class="label">Quản lý Giá Vé</span>
     </a>
+    <a href="?act=contacts" class="<?= in_array($_GET['act'] ?? '', ['contacts', 'contacts-show', 'contacts-delete']) ? 'active' : '' ?>">
+      <i class="bi bi-envelope"></i><span class="label">Quản lý Liên hệ</span>
+    </a>
     <a href="?act=thongke" class="<?= ($_GET['act'] ?? '') == 'thongke' ? 'active' : '' ?>">
       <i class="bi bi-bar-chart"></i><span class="label">Thống Kê</span>
     </a>
@@ -132,6 +135,9 @@
             'discounts-create' => 'Thêm mã khuyến mại',
             'discounts-edit' => 'Sửa mã khuyến mại',
             'ticket-prices' => 'Quản lý Giá Vé',
+            'contacts' => 'Quản lý Liên hệ',
+            'contacts-show' => 'Chi tiết liên hệ',
+            'contacts-edit' => 'Sửa liên hệ',
             'thongke' => 'Thống kê'
           ];
           echo htmlspecialchars($titles[$act] ?? ucfirst($act));

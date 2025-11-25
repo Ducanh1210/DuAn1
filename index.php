@@ -42,6 +42,9 @@ require_once('./models/DiscountCode.php');
 require_once('./controllers/DiscountCodesController.php');
 require_once('./controllers/NotificationController.php');
 require_once('./models/Notification.php');
+require_once('./controllers/ContactsController.php');
+require_once('./models/Contact.php');
+require_once('./controllers/StatisticsController.php');
 //route
 
 $act = $_GET['act'] ?? 'trangchu';
@@ -156,6 +159,16 @@ match ($act) {
     'discounts-create' => (new DiscountCodesController)->create(),
     'discounts-edit' => (new DiscountCodesController)->edit(),
     'discounts-delete' => (new DiscountCodesController)->delete(),
+
+    // Contacts routes (Admin)
+    'contacts' => (new ContactsController)->list(),
+    'contacts-show' => (new ContactsController)->show(),
+    'contacts-edit' => (new ContactsController)->edit(),
+    'contacts-update-status' => (new ContactsController)->updateStatus(),
+    'contacts-delete' => (new ContactsController)->delete(),
+
+    // Statistics routes (Admin)
+    'thongke' => (new StatisticsController)->index(),
 
     // Notifications API routes (Admin)
     'api-notifications' => (new NotificationController)->getNotifications(),

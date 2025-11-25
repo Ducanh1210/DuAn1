@@ -196,6 +196,51 @@ class Room
             return false;
         }
     }
+
+    /**
+     * Cập nhật số ghế của phòng dựa trên số ghế thực tế trong bảng seats
+     */
+    public function updateSeatCount($room_id)
+    {
+        try {
+            // Đếm số ghế thực tế trong bảng seats
+            $sql = "SELECT COUNT(*) as total FROM seats WHERE room_id = :room_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':room_id' => $room_id]);
+            $result = $stmt->fetch();
+            $actualSeatCount = $result['total'] ?? 0;
+            
+            // Cập nhật seat_count trong bảng rooms
+            $updateSql = "UPDATE rooms SET seat_count = :seat_count WHERE id = :room_id";
+            $updateStmt = $this->conn->prepare($updateSql);
+            $updateStmt->execute([
+                ':seat_count' => $actualSeatCount,
+                ':room_id' => $room_id
+            ]);
+            
+            return $actualSeatCount;
+        } catch (Exception $e) {
+            debug($e);
+            return false;
+        }
+    }
+
+    /**
+     * Lấy số ghế thực tế từ bảng seats
+     */
+    public function getActualSeatCount($room_id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM seats WHERE room_id = :room_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':room_id' => $room_id]);
+            $result = $stmt->fetch();
+            return $result['total'] ?? 0;
+        } catch (Exception $e) {
+            debug($e);
+            return 0;
+        }
+    }
 }
 
 ?>
