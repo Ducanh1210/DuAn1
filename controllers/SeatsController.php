@@ -20,12 +20,12 @@ class SeatsController
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $page = max(1, $page);
         $roomId = $_GET['room_id'] ?? null;
-        
+
         $result = $this->seat->paginate($page, 20, $roomId);
-        
+
         // Lấy danh sách phòng để filter
         $rooms = $this->room->all();
-        
+
         render('admin/seats/list.php', [
             'data' => $result['data'],
             'rooms' => $rooms,
@@ -45,7 +45,7 @@ class SeatsController
     public function seatMap()
     {
         $roomId = $_GET['room_id'] ?? null;
-        
+
         if (!$roomId) {
             header('Location: ' . BASE_URL . '?act=seats');
             exit;
@@ -59,10 +59,10 @@ class SeatsController
 
         // Lấy sơ đồ ghế
         $seatMap = $this->seat->getSeatMapByRoom($roomId);
-        
+
         // Lấy danh sách phòng để chọn
         $rooms = $this->room->all();
-        
+
         render('admin/seats/seatmap.php', [
             'room' => $room,
             'seatMap' => $seatMap,
@@ -102,14 +102,14 @@ class SeatsController
             if (empty($errors)) {
                 // Lấy thông tin phòng để kiểm tra capacity
                 $room = $this->room->find($roomId);
-                $roomCapacity = $room['capacity'] ?? 0;
+                $roomCapacity = $room['seat_count'] ?? $room['capacity'] ?? 0;
                 $totalSeatsToCreate = $rows * $seatsPerRow;
-                
+
                 // Kiểm tra nếu phòng có capacity và tổng số ghế tạo ra khác capacity
                 if ($roomCapacity > 0 && $totalSeatsToCreate != $roomCapacity) {
                     $errors['general'] = "Phòng này có {$roomCapacity} ghế, nhưng bạn đang tạo {$totalSeatsToCreate} ghế ({$rows} hàng x {$seatsPerRow} ghế). Vui lòng điều chỉnh để khớp với số ghế của phòng.";
                 }
-                
+
                 if (empty($errors)) {
                     // Xóa ghế cũ nếu được chọn
                     if ($clearExisting) {
@@ -118,7 +118,7 @@ class SeatsController
 
                     // Tạo ghế mới với giới hạn capacity
                     $result = $this->seat->insertBulk($roomId, $rows, $seatsPerRow, $seatType, $extraPrice, $roomCapacity);
-                    
+
                     if ($result !== false) {
                         header('Location: ' . BASE_URL . '?act=seats-seatmap&room_id=' . $roomId);
                         exit;
@@ -175,9 +175,9 @@ class SeatsController
                     'extra_price' => $extraPrice,
                     'status' => $status
                 ];
-                
+
                 $result = $this->seat->insert($data);
-                
+
                 if ($result) {
                     header('Location: ' . BASE_URL . '?act=seats-seatmap&room_id=' . $roomId);
                     exit;
@@ -245,9 +245,9 @@ class SeatsController
                     'extra_price' => $extraPrice,
                     'status' => $status
                 ];
-                
+
                 $result = $this->seat->update($id, $data);
-                
+
                 if ($result) {
                     header('Location: ' . BASE_URL . '?act=seats-seatmap&room_id=' . $roomId);
                     exit;
@@ -267,7 +267,7 @@ class SeatsController
     {
         $id = $_GET['id'] ?? null;
         $roomId = $_GET['room_id'] ?? null;
-        
+
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=seats');
             exit;
@@ -306,6 +306,3 @@ class SeatsController
         render('admin/seats/show.php', ['seat' => $seat]);
     }
 }
-
-?>
-

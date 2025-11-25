@@ -5,6 +5,9 @@ $room = $room ?? null;
 $seatsByRow = $seatsByRow ?? [];
 $bookedSeats = $bookedSeats ?? [];
 $countdownSeconds = $countdownSeconds ?? 900;
+
+// TẤT CẢ PHÒNG ĐỀU HIỂN THỊ 12 CỘT (2 khối, mỗi khối 6 cột)
+$maxColumns = 12;
 ?>
 
 <style>
@@ -98,20 +101,23 @@ $countdownSeconds = $countdownSeconds ?? 900;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
+        justify-content: center !important;
     }
 
     .seat-selection-container .seat-row {
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        margin-bottom: 3px !important;
-        gap: 2px !important;
+        margin-bottom: 6px !important;
+        gap: 4px !important;
         transition: opacity 0.3s, transform 0.3s;
         flex-wrap: nowrap !important;
-        width: 100% !important;
+        width: auto !important;
         min-height: auto !important;
-        padding: 0 !important;
+        padding: 0 25px 0 55px !important;
         position: relative !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 
     .seat-selection-container .seat-row::after {
@@ -140,6 +146,7 @@ $countdownSeconds = $countdownSeconds ?? 900;
         flex-shrink: 0 !important;
         position: absolute !important;
         left: 0 !important;
+        transform: translateX(-45px) !important;
         z-index: 1 !important;
     }
 
@@ -231,9 +238,33 @@ $countdownSeconds = $countdownSeconds ?? 900;
     }
 
     .seat-selection-container .seat-gap {
-        width: 10px !important;
+        width: 60px !important;
+        min-width: 60px !important;
         flex-shrink: 0 !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-left: 3px dashed rgba(255, 255, 255, 0.3) !important;
+        border-right: 3px dashed rgba(255, 255, 255, 0.3) !important;
+        margin: 0 10px !important;
+        position: relative !important;
     }
+
+    .seat-selection-container .seat-gap::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 2px !important;
+        height: 100% !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .seat-selection-container .seat.disabled-column {
+        opacity: 0.3 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+    }
+
 
     .seat-legend {
         display: flex;
@@ -447,7 +478,6 @@ $countdownSeconds = $countdownSeconds ?? 900;
     </div>
 
     <div class="screen-container">
-        <div class="screen">MÀN HÌNH</div>
         <div class="room-title">
             <?php
             // Hiển thị số phòng từ name hoặc room_code
@@ -474,6 +504,10 @@ $countdownSeconds = $countdownSeconds ?? 900;
             }
             ?>
         </div>
+        <div class="room-title" style="font-size: 14px; opacity: 0.8; margin-top: 4px;">
+            <?= htmlspecialchars($room['cinema_name'] ?? ($room['room_code'] ?? '')) ?>
+        </div>
+        <div class="screen">MÀN HÌNH</div>
     </div>
 
     <div class="seats-grid" id="seatsGrid">
@@ -481,10 +515,21 @@ $countdownSeconds = $countdownSeconds ?? 900;
             <div class="seat-row" data-row-label="<?= strtoupper(htmlspecialchars($rowLabel)) ?>">
                 <div class="row-label"><?= htmlspecialchars($rowLabel) ?></div>
                 <?php
+                // Sắp xếp ghế theo seat_number để đảm bảo hiển thị đúng thứ tự
+                usort($rowSeats, function ($a, $b) {
+                    return ($a['seat_number'] ?? 0) - ($b['seat_number'] ?? 0);
+                });
+
                 $prevSeatNumber = 0;
                 foreach ($rowSeats as $seat):
                     $seatId = $seat['id'];
                     $seatNumber = $seat['seat_number'] ?? 0;
+
+                    // CHỈ HIỂN THỊ SỐ CỘT TỐI ĐA CHO PHÒNG NÀY
+                    if ($seatNumber > $maxColumns) {
+                        continue;
+                    }
+
                     $seatLabel = ($seat['row_label'] ?? '') . $seatNumber;
                     $seatKey = $seatLabel;
                     $isBooked = in_array($seatKey, $bookedSeats);
@@ -497,17 +542,9 @@ $countdownSeconds = $countdownSeconds ?? 900;
                         continue;
                     }
 
-                    // Thêm khoảng trống nếu cần (sau mỗi 4 ghế)
-                    if ($prevSeatNumber > 0 && ($seatNumber - $prevSeatNumber) > 1) {
-                        // Có khoảng trống giữa các ghế
-                        for ($i = $prevSeatNumber + 1; $i < $seatNumber; $i++) {
-                            // Thêm khoảng trống sau mỗi 4 ghế
-                            if (($i - 1) % 4 == 0 && $i > 1) {
-                                echo '<div class="seat-gap"></div>';
-                            }
-                        }
-                    } elseif ($prevSeatNumber > 0 && ($prevSeatNumber % 4 == 0)) {
-                        // Thêm khoảng trống sau mỗi 4 ghế liên tiếp
+                    // Thêm khoảng trống lớn sau cột 6 (chia 2 bên, mỗi bên 6 cột)
+                    // Block 1: Cột 1-6 | Gap | Block 2: Cột 7-12
+                    if ($prevSeatNumber == 6 && $seatNumber == 7) {
                         echo '<div class="seat-gap"></div>';
                     }
 
@@ -523,12 +560,15 @@ $countdownSeconds = $countdownSeconds ?? 900;
 
                     $onClick = '';
                     $title = '';
+                    $disabledColumn = false;
                     if ($isBooked) {
                         $title = 'title="Ghế đã được đặt"';
                     } elseif ($isMaintenance) {
                         $title = 'title="Ghế đang bảo trì"';
                     } else {
+                        // Thêm data-seat-column để kiểm tra cột
                         $onClick = 'onclick="toggleSeat(this)"';
+                        $disabledColumn = false; // Sẽ được kiểm tra bằng JavaScript
                     }
                 ?>
                     <div class="seat <?= $seatClass ?>"
@@ -536,6 +576,7 @@ $countdownSeconds = $countdownSeconds ?? 900;
                         data-seat-label="<?= htmlspecialchars($seatLabel) ?>"
                         data-seat-type="<?= htmlspecialchars($seatType) ?>"
                         data-seat-status="<?= htmlspecialchars($seatStatus) ?>"
+                        data-seat-column="<?= $seatNumber ?>"
                         <?= $title ?> <?= $onClick ?>>
                         <?= htmlspecialchars($seatNumber) ?>
                     </div>
@@ -596,10 +637,13 @@ $countdownSeconds = $countdownSeconds ?? 900;
     let adultCount = 0;
     let studentCount = 0;
     let selectedAdjacentCount = 0;
+    let lastAdultCount = 0;
+    let lastStudentCount = 0;
     const adultNormalPrice = <?= $normalPrice ?? 70000 ?>; // Giá ghế thường người lớn từ database
     const adultVipPrice = <?= $vipPrice ?? 80000 ?>; // Giá ghế VIP người lớn từ database
     const studentNormalPrice = <?= $studentNormalPrice ?? 60000 ?>; // Giá ghế thường sinh viên từ database
     const studentVipPrice = <?= $studentVipPrice ?? 70000 ?>; // Giá ghế VIP sinh viên từ database
+    const maxColumns = 12; // TẤT CẢ PHÒNG ĐỀU 12 CỘT (2 khối, mỗi khối 6 cột)
 
     // Countdown timer
     let countdown = <?= $countdownSeconds ?>;
@@ -635,6 +679,16 @@ $countdownSeconds = $countdownSeconds ?? 900;
             return;
         }
 
+        // Kiểm tra nếu chọn 1 vé, chỉ cho phép các cột: 1, 3, 4, 6, 7, 9, 10, 12
+        if (totalPeople === 1 && selectedAdjacentCount === 1) {
+            const seatColumn = parseInt(seatElement.getAttribute('data-seat-column')) || 0;
+            const allowedColumns = [1, 3, 4, 6, 7, 9, 10, 12];
+            if (!allowedColumns.includes(seatColumn)) {
+                alert('Khi chọn 1 vé, bạn chỉ có thể chọn các cột: 1, 3, 4, 6, 7, 9, 10, 12');
+                return;
+            }
+        }
+
         const seatId = seatElement.getAttribute('data-seat-id');
         const seatLabel = seatElement.getAttribute('data-seat-label');
         const seatType = seatElement.getAttribute('data-seat-type');
@@ -655,8 +709,8 @@ $countdownSeconds = $countdownSeconds ?? 900;
 
             // Nếu chọn ghế liền nhau, cần chọn đúng số lượng
             if (remainingSeats >= selectedAdjacentCount) {
-                // Chọn nhóm ghế mới
-                const groupSeats = selectAdjacentSeats(seatElement, selectedAdjacentCount);
+                // Chọn nhóm ghế mới với logic thông minh
+                const groupSeats = selectAdjacentSeatsSmart(seatElement, selectedAdjacentCount);
                 if (groupSeats.length > 0) {
                     selectedGroups.push({
                         count: selectedAdjacentCount,
@@ -667,7 +721,7 @@ $countdownSeconds = $countdownSeconds ?? 900;
                 }
             } else {
                 // Chọn số ghế còn lại
-                const groupSeats = selectAdjacentSeats(seatElement, remainingSeats);
+                const groupSeats = selectAdjacentSeatsSmart(seatElement, remainingSeats);
                 if (groupSeats.length > 0) {
                     selectedGroups.push({
                         count: remainingSeats,
@@ -680,6 +734,28 @@ $countdownSeconds = $countdownSeconds ?? 900;
         }
 
         updateSummary();
+        updateDisabledColumns(); // Cập nhật lại disabled columns sau khi chọn ghế
+    }
+
+    function resetAllSelections() {
+        if (selectedSeats.length > 0) {
+            selectedSeats.forEach(seat => {
+                const seatEl = document.querySelector(`[data-seat-id="${seat.id}"]`);
+                if (seatEl) {
+                    seatEl.classList.remove('selected');
+                    if (seat.type === 'vip') {
+                        seatEl.classList.add('vip');
+                    } else {
+                        seatEl.classList.add('available');
+                    }
+                }
+            });
+        }
+        selectedSeats = [];
+        selectedGroups = [];
+        remainingSeats = adultCount + studentCount;
+        updateSummary();
+        updateDisabledColumns();
     }
 
     function removeSeatFromGroup(seatId) {
@@ -706,6 +782,7 @@ $countdownSeconds = $countdownSeconds ?? 900;
                 // Xóa nhóm
                 selectedGroups.splice(i, 1);
                 remainingSeats = (adultCount + studentCount) - selectedSeats.length;
+                updateDisabledColumns(); // Cập nhật lại disabled columns sau khi bỏ chọn
                 break;
             }
         }
@@ -715,6 +792,7 @@ $countdownSeconds = $countdownSeconds ?? 900;
         // Tìm các ghế liền nhau từ ghế bắt đầu
         const row = startSeatElement.closest('.seat-row');
         if (!row) return [];
+        const rowLabel = (row.getAttribute('data-row-label') || '').toUpperCase();
 
         const allSeats = Array.from(row.querySelectorAll('.seat:not(.booked):not(.maintenance):not(.selected)'));
         const startIndex = allSeats.indexOf(startSeatElement);
@@ -735,6 +813,7 @@ $countdownSeconds = $countdownSeconds ?? 900;
             const seatLabel = seat.getAttribute('data-seat-label');
             const seatType = seat.getAttribute('data-seat-type');
             const seatStatus = seat.getAttribute('data-seat-status');
+            const seatColumn = parseInt(seat.getAttribute('data-seat-column')) || 0;
 
             // Kiểm tra ghế đã được chọn chưa
             if (seat.classList.contains('selected')) {
@@ -747,11 +826,148 @@ $countdownSeconds = $countdownSeconds ?? 900;
                 id: seatId,
                 label: seatLabel,
                 type: seatType,
-                status: seatStatus
+                status: seatStatus,
+                row: rowLabel,
+                column: seatColumn
             });
         }
 
         return seatsToSelect;
+    }
+
+    function selectAdjacentSeatsSmart(startSeatElement, count) {
+        const row = startSeatElement.closest('.seat-row');
+        if (!row) return [];
+
+        const rowLabel = (row.getAttribute('data-row-label') || '').toUpperCase();
+        const startColumn = parseInt(startSeatElement.getAttribute('data-seat-column')) || 0;
+        if (!startColumn) {
+            alert('Không xác định được vị trí ghế, vui lòng chọn lại!');
+            return [];
+        }
+
+        const seatMap = {};
+        row.querySelectorAll('.seat').forEach(seat => {
+            const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+            if (col > 0) {
+                seatMap[col] = seat;
+            }
+        });
+
+        const isSeatSelectable = seat =>
+            seat &&
+            !seat.classList.contains('booked') &&
+            !seat.classList.contains('maintenance') &&
+            !seat.classList.contains('selected');
+
+        if (!isSeatSelectable(seatMap[startColumn])) {
+            alert('Ghế này không thể chọn, vui lòng chọn ghế khác!');
+            return [];
+        }
+
+        const sameRowSelectedCols = selectedSeats
+            .filter(seat => seat.row === rowLabel)
+            .map(seat => seat.column || 0)
+            .filter(col => col > 0)
+            .sort((a, b) => a - b);
+
+        const candidates = [];
+
+        for (let offset = 0; offset < count; offset++) {
+            const blockStart = startColumn - offset;
+            const blockEnd = blockStart + count - 1;
+
+            if (blockStart < 1 || blockEnd > maxColumns) {
+                continue;
+            }
+
+            const seatsList = [];
+            let isValidBlock = true;
+
+            for (let col = blockStart; col <= blockEnd; col++) {
+                const seat = seatMap[col];
+                if (!isSeatSelectable(seat)) {
+                    isValidBlock = false;
+                    break;
+                }
+                seatsList.push(seat);
+            }
+
+            if (!isValidBlock) {
+                continue;
+            }
+
+            const nearestLeft = (() => {
+                for (let i = sameRowSelectedCols.length - 1; i >= 0; i--) {
+                    if (sameRowSelectedCols[i] < blockStart) {
+                        return sameRowSelectedCols[i];
+                    }
+                }
+                return null;
+            })();
+
+            const nearestRight = (() => {
+                for (let i = 0; i < sameRowSelectedCols.length; i++) {
+                    if (sameRowSelectedCols[i] > blockEnd) {
+                        return sameRowSelectedCols[i];
+                    }
+                }
+                return null;
+            })();
+
+            const gapLeftRaw = nearestLeft !== null ? blockStart - nearestLeft - 1 : Infinity;
+            const gapRightRaw = nearestRight !== null ? nearestRight - blockEnd - 1 : Infinity;
+            const gapLeft = Number.isFinite(gapLeftRaw) ? gapLeftRaw : 99;
+            const gapRight = Number.isFinite(gapRightRaw) ? gapRightRaw : 99;
+
+            const touchesLeftBlock = gapLeft === 0 ? 0 : 1;
+            const leavesSingleGap = (gapLeft === 1 ? 1 : 0) + (gapRight === 1 ? 1 : 0);
+            const centerDistance = Math.abs(startColumn - ((blockStart + blockEnd) / 2));
+            const leanOffset = offset;
+
+            candidates.push({
+                seats: seatsList,
+                rowLabel,
+                priority: {
+                    touchesLeftBlock,
+                    leavesSingleGap,
+                    gapLeft,
+                    centerDistance,
+                    leanOffset,
+                    blockStart
+                }
+            });
+        }
+
+        if (candidates.length === 0) {
+            alert(`Không đủ ${count} ghế liền nhau từ vị trí này!`);
+            return [];
+        }
+
+        candidates.sort((a, b) => {
+            const keys = ['touchesLeftBlock', 'leavesSingleGap', 'gapLeft', 'centerDistance', 'leanOffset', 'blockStart'];
+            for (const key of keys) {
+                const diff = a.priority[key] - b.priority[key];
+                if (Math.abs(diff) > 0.0001) {
+                    return diff;
+                }
+            }
+            return 0;
+        });
+
+        const best = candidates[0];
+        return best.seats.map(seat => {
+            seat.classList.add('selected');
+            seat.classList.remove('vip', 'available');
+            return {
+                id: seat.getAttribute('data-seat-id'),
+                label: seat.getAttribute('data-seat-label'),
+                type: seat.getAttribute('data-seat-type'),
+                status: seat.getAttribute('data-seat-status'),
+                row: best.rowLabel,
+                column: parseInt(seat.getAttribute('data-seat-column')) || 0
+            };
+        });
     }
 
     function updateSummary() {
@@ -907,42 +1123,46 @@ $countdownSeconds = $countdownSeconds ?? 900;
     }
 
     function updateTicketSelection() {
-        adultCount = parseInt(document.getElementById('adultQuantity').value) || 0;
-        studentCount = parseInt(document.getElementById('studentQuantity').value) || 0;
-        const totalPeople = adultCount + studentCount;
+        const adultSelect = document.getElementById('adultQuantity');
+        const studentSelect = document.getElementById('studentQuantity');
 
-        // Xóa các ghế đã chọn nếu thay đổi số lượng
-        if (selectedSeats.length > 0) {
-            selectedSeats.forEach(seat => {
-                const seatEl = document.querySelector(`[data-seat-id="${seat.id}"]`);
-                if (seatEl) {
-                    seatEl.classList.remove('selected');
-                    if (seat.type === 'vip') {
-                        seatEl.classList.add('vip');
-                    } else {
-                        seatEl.classList.add('available');
-                    }
-                }
-            });
-            selectedSeats = [];
-            selectedGroups = [];
-            remainingSeats = totalPeople;
-            updateSummary();
-        }
-
-        // Cập nhật các ô chọn ghế liền nhau
-        const adjacentOptions = document.getElementById('adjacentOptions');
-        if (!adjacentOptions) return;
-
-        adjacentOptions.innerHTML = '';
-        selectedAdjacentCount = 0;
-        remainingSeats = totalPeople;
-
-        if (totalPeople === 0) {
+        if (!adultSelect || !studentSelect) {
             return;
         }
 
-        // Logic chọn ghế liền nhau dựa trên số lượng người
+        const prevAdult = lastAdultCount;
+        const prevStudent = lastStudentCount;
+
+        adultCount = parseInt(adultSelect.value) || 0;
+        studentCount = parseInt(studentSelect.value) || 0;
+        const totalPeople = adultCount + studentCount;
+
+        if (adultCount !== prevAdult || studentCount !== prevStudent) {
+            resetAllSelections();
+        } else {
+            remainingSeats = totalPeople - selectedSeats.length;
+        }
+
+        lastAdultCount = adultCount;
+        lastStudentCount = studentCount;
+
+        const adjacentOptions = document.getElementById('adjacentOptions');
+        if (!adjacentOptions) {
+            updateDisabledColumns();
+            return;
+        }
+
+        adjacentOptions.innerHTML = '';
+        selectedAdjacentCount = 0;
+
+        if (totalPeople === 0) {
+            remainingSeats = 0;
+            updateDisabledColumns();
+            return;
+        }
+
+        remainingSeats = totalPeople - selectedSeats.length;
+
         let availableOptions = [];
 
         if (totalPeople === 1) {
@@ -966,7 +1186,8 @@ $countdownSeconds = $countdownSeconds ?? 900;
             availableOptions = [2, 3, 4];
         }
 
-        // Render các ô chọn
+        updateDisabledColumns();
+
         availableOptions.forEach(count => {
             const option = document.createElement('div');
             option.className = 'adjacent-option';
@@ -986,7 +1207,6 @@ $countdownSeconds = $countdownSeconds ?? 900;
             option.appendChild(radio);
             option.appendChild(seatsContainer);
 
-            // Tự động active cho 1, 2, 3
             if (totalPeople <= 3 && count === totalPeople) {
                 option.classList.add('active');
                 selectedAdjacentCount = count;
@@ -997,26 +1217,63 @@ $countdownSeconds = $countdownSeconds ?? 900;
                     opt.classList.remove('active');
                 });
                 this.classList.add('active');
-                selectedAdjacentCount = count;
-                remainingSeats = totalPeople;
-                selectedGroups = [];
-
-                // Xóa các ghế đã chọn trước đó
-                selectedSeats.forEach(seat => {
-                    const seatEl = document.querySelector(`[data-seat-id="${seat.id}"]`);
-                    if (seatEl) {
-                        seatEl.classList.remove('selected');
-                        if (seat.type === 'vip') {
-                            seatEl.classList.add('vip');
-                        } else {
-                            seatEl.classList.add('available');
-                        }
-                    }
-                });
-                selectedSeats = [];
+                const newAdjacentCount = parseInt(this.getAttribute('data-count'), 10);
+                selectedAdjacentCount = newAdjacentCount;
+                remainingSeats = totalPeople - selectedSeats.length;
+                updateDisabledColumns();
                 updateSummary();
             };
+
             adjacentOptions.appendChild(option);
         });
+
+        setTimeout(updateDisabledColumns, 100);
+    }
+
+    function updateDisabledColumns() {
+        const totalPeople = adultCount + studentCount;
+        const allowedColumns = [1, 3, 4, 6, 7, 9, 10, 12];
+
+        document.querySelectorAll('.seat').forEach(seat => {
+            const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+
+            if (totalPeople === 1 && selectedAdjacentCount === 1) {
+                // Khi chọn 1 vé, chỉ cho phép các cột được chỉ định
+                if (col > 0 && !allowedColumns.includes(col) &&
+                    !seat.classList.contains('booked') &&
+                    !seat.classList.contains('maintenance') &&
+                    !seat.classList.contains('selected')) {
+                    seat.classList.add('disabled-column');
+                } else {
+                    seat.classList.remove('disabled-column');
+                }
+            } else {
+                // Bỏ disabled khi không phải chọn 1 vé
+                seat.classList.remove('disabled-column');
+            }
+        });
+    }
+
+    // Ẩn tất cả ghế có seat_number > 12
+    function hideSeatsOver12() {
+        document.querySelectorAll('.seat-selection-container .seat[data-seat-column]').forEach(seat => {
+            const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+            if (col > 12) {
+                seat.style.display = 'none';
+                seat.style.visibility = 'hidden';
+            }
+        });
+    }
+
+    // Gọi updateDisabledColumns và hideSeatsOver12 khi trang tải xong
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            hideSeatsOver12();
+            updateDisabledColumns();
+        });
+    } else {
+        // DOM đã tải xong
+        hideSeatsOver12();
+        updateDisabledColumns();
     }
 </script>

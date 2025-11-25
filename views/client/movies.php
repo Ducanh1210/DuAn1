@@ -144,6 +144,8 @@ let remainingSeats = 0;
 let adultCount = 0;
 let studentCount = 0;
 let selectedAdjacentCount = 0;
+const MAX_COLUMNS = 12;
+const ALLOWED_SINGLE_COLUMNS = [1, 3, 4, 6, 7, 9, 10, 12];
 let currentShowtimeId = null;
 let countdownInterval = null;
 let countdown = 900;
@@ -151,6 +153,8 @@ let adultPrice = 70000; // Giá vé người lớn ghế thường (sẽ đượ
 let studentPrice = 60000; // Giá vé sinh viên ghế thường (sẽ được cập nhật từ API)
 let adultVipPrice = 80000; // Giá vé người lớn ghế VIP (sẽ được cập nhật từ API)
 let studentVipPrice = 70000; // Giá vé sinh viên ghế VIP (sẽ được cập nhật từ API)
+let lastAdultCount = 0;
+let lastStudentCount = 0;
 
 function showSeatSelection(button) {
     const showtimeId = button.getAttribute('data-showtime-id');
@@ -180,6 +184,9 @@ function loadSeatData(showtimeId, showtimeTime) {
     adultCount = 0;
     studentCount = 0;
     selectedAdjacentCount = 0;
+    lastAdultCount = 0;
+    lastStudentCount = 0;
+    remainingSeats = 0;
     
     // Reset countdown
     countdown = 900;
@@ -235,6 +242,7 @@ function renderSeatSelection(data, showtimeTime) {
         }
         }
     }
+    const cinemaName = room && room.cinema_name ? room.cinema_name : '';
     
     let html = `
         <div class="seat-selection-wrapper">
@@ -304,8 +312,9 @@ function renderSeatSelection(data, showtimeTime) {
             </div>
             
             <div class="screen-container">
-                <div class="screen">MÀN HÌNH</div>
                 <div class="room-title">${roomDisplay}</div>
+                <div class="room-subtitle">${cinemaName}</div>
+                <div class="screen">MÀN HÌNH</div>
             </div>
             
             <div class="seats-grid" id="seatsGrid">
@@ -324,10 +333,12 @@ function renderSeatSelection(data, showtimeTime) {
         
         // Sắp xếp ghế theo số
         const sortedSeats = [...rowSeats].sort((a, b) => (a.seat_number || 0) - (b.seat_number || 0));
-        
         let prevSeatNumber = 0;
         sortedSeats.forEach(seat => {
             const seatNumber = seat.seat_number || 0;
+            if (seatNumber < 1 || seatNumber > MAX_COLUMNS) {
+                return;
+            }
             const seatLabel = (seat.row_label || rowLabel) + seatNumber;
             const seatKey = seatLabel;
             const isBooked = bookedSeats.includes(seatKey);
@@ -339,11 +350,9 @@ function renderSeatSelection(data, showtimeTime) {
                 return;
             }
             
-            // Thêm khoảng trống nếu cần
-            if (prevSeatNumber > 0 && (seatNumber - prevSeatNumber) > 1) {
-                if ((prevSeatNumber % 4 == 0)) {
-                    html += '<div class="seat-gap"></div>';
-                }
+            // Chia 2 block 6 ghế với lối đi giữa
+            if (prevSeatNumber === 6 && seatNumber === 7) {
+                html += '<div class="seat-gap"></div>';
             }
             
             // Xác định class CSS cho ghế
@@ -370,6 +379,7 @@ function renderSeatSelection(data, showtimeTime) {
                      data-seat-label="${seatLabel}"
                      data-seat-type="${seatType}"
                      data-seat-status="${seatStatus}"
+                     data-seat-column="${seatNumber}"
                      ${onClick}
                      ${title}>
                     ${seatNumber}
@@ -452,6 +462,8 @@ function renderSeatSelection(data, showtimeTime) {
     
     content.innerHTML = html;
     
+    hideSeatsOver12();
+    updateDisabledColumns();
     // Khởi tạo phần chọn ghế liền nhau
     updateTicketSelection();
     
@@ -495,9 +507,16 @@ function toggleSeat(seatElement) {
         alert('Vui lòng chọn số lượng ghế liền nhau!');
         return;
     }
+
+    if (totalPeople === 1 && selectedAdjacentCount === 1) {
+        const seatColumn = parseInt(seatElement.getAttribute('data-seat-column')) || 0;
+        if (!ALLOWED_SINGLE_COLUMNS.includes(seatColumn)) {
+            alert('Khi chọn 1 vé, bạn chỉ có thể chọn các cột: 1, 3, 4, 6, 7, 9, 10, 12');
+            return;
+        }
+    }
     
     const seatId = seatElement.getAttribute('data-seat-id');
-    const seatLabel = seatElement.getAttribute('data-seat-label');
     const seatType = seatElement.getAttribute('data-seat-type');
     
     if (seatElement.classList.contains('selected')) {
@@ -511,7 +530,7 @@ function toggleSeat(seatElement) {
         remainingSeats = totalPeople - selectedSeats.length;
         
         if (remainingSeats >= selectedAdjacentCount) {
-            const groupSeats = selectAdjacentSeats(seatElement, selectedAdjacentCount);
+            const groupSeats = selectAdjacentSeatsSmart(seatElement, selectedAdjacentCount);
             if (groupSeats.length > 0) {
                 selectedGroups.push({
                     count: selectedAdjacentCount,
@@ -521,7 +540,7 @@ function toggleSeat(seatElement) {
                 remainingSeats = totalPeople - selectedSeats.length;
             }
         } else {
-            const groupSeats = selectAdjacentSeats(seatElement, remainingSeats);
+            const groupSeats = selectAdjacentSeatsSmart(seatElement, remainingSeats);
             if (groupSeats.length > 0) {
                 selectedGroups.push({
                     count: remainingSeats,
@@ -534,6 +553,28 @@ function toggleSeat(seatElement) {
     }
     
     updateSummary();
+    updateDisabledColumns();
+}
+
+function resetAllSelections() {
+    if (selectedSeats.length > 0) {
+        selectedSeats.forEach(seat => {
+            const seatEl = document.querySelector(`[data-seat-id="${seat.id}"]`);
+            if (seatEl) {
+                seatEl.classList.remove('selected');
+                if (seat.type === 'vip') {
+                    seatEl.classList.add('vip');
+                } else {
+                    seatEl.classList.add('available');
+                }
+            }
+        });
+    }
+    selectedSeats = [];
+    selectedGroups = [];
+    remainingSeats = adultCount + studentCount;
+    updateSummary();
+    updateDisabledColumns();
 }
 
 function removeSeatFromGroup(seatId) {
@@ -555,46 +596,145 @@ function removeSeatFromGroup(seatId) {
             selectedSeats = selectedSeats.filter(s => !group.seats.some(gs => gs.id === s.id));
             selectedGroups.splice(i, 1);
             remainingSeats = (adultCount + studentCount) - selectedSeats.length;
+            updateDisabledColumns();
             break;
         }
     }
 }
 
-function selectAdjacentSeats(startSeatElement, count) {
+function selectAdjacentSeatsSmart(startSeatElement, count) {
     const row = startSeatElement.closest('.seat-row');
     if (!row) return [];
-    
-    const allSeats = Array.from(row.querySelectorAll('.seat:not(.booked):not(.maintenance):not(.selected)'));
-    const startIndex = allSeats.indexOf(startSeatElement);
-    
-    if (startIndex === -1) return [];
-    
-    if (startIndex + count > allSeats.length) {
+
+    const rowLabel = (row.getAttribute('data-row-label') || '').toUpperCase();
+    const startColumn = parseInt(startSeatElement.getAttribute('data-seat-column')) || 0;
+    if (!startColumn) {
+        alert('Không xác định được vị trí ghế, vui lòng chọn lại!');
+        return [];
+    }
+
+    const seatMap = {};
+    row.querySelectorAll('.seat').forEach(seat => {
+        const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+        if (col > 0) {
+            seatMap[col] = seat;
+        }
+    });
+
+    const isSeatSelectable = seat =>
+        seat &&
+        !seat.classList.contains('booked') &&
+        !seat.classList.contains('maintenance') &&
+        !seat.classList.contains('selected');
+
+    if (!isSeatSelectable(seatMap[startColumn])) {
+        alert('Ghế này không thể chọn, vui lòng chọn ghế khác!');
+        return [];
+    }
+
+    const sameRowSelectedCols = selectedSeats
+        .filter(seat => seat.row === rowLabel)
+        .map(seat => seat.column || 0)
+        .filter(col => col > 0)
+        .sort((a, b) => a - b);
+
+    const candidates = [];
+
+    for (let offset = 0; offset < count; offset++) {
+        const blockStart = startColumn - offset;
+        const blockEnd = blockStart + count - 1;
+
+        if (blockStart < 1 || blockEnd > MAX_COLUMNS) {
+            continue;
+        }
+
+        const seatsList = [];
+        let isValidBlock = true;
+
+        for (let col = blockStart; col <= blockEnd; col++) {
+            const seat = seatMap[col];
+            if (!isSeatSelectable(seat)) {
+                isValidBlock = false;
+                break;
+            }
+            seatsList.push(seat);
+        }
+
+        if (!isValidBlock) {
+            continue;
+        }
+
+        const nearestLeft = (() => {
+            for (let i = sameRowSelectedCols.length - 1; i >= 0; i--) {
+                if (sameRowSelectedCols[i] < blockStart) {
+                    return sameRowSelectedCols[i];
+                }
+            }
+            return null;
+        })();
+
+        const nearestRight = (() => {
+            for (let i = 0; i < sameRowSelectedCols.length; i++) {
+                if (sameRowSelectedCols[i] > blockEnd) {
+                    return sameRowSelectedCols[i];
+                }
+            }
+            return null;
+        })();
+
+        const gapLeftRaw = nearestLeft !== null ? blockStart - nearestLeft - 1 : Infinity;
+        const gapRightRaw = nearestRight !== null ? nearestRight - blockEnd - 1 : Infinity;
+        const gapLeft = Number.isFinite(gapLeftRaw) ? gapLeftRaw : 99;
+        const gapRight = Number.isFinite(gapRightRaw) ? gapRightRaw : 99;
+
+        const touchesLeftBlock = gapLeft === 0 ? 0 : 1;
+        const leavesSingleGap = (gapLeft === 1 ? 1 : 0) + (gapRight === 1 ? 1 : 0);
+        const centerDistance = Math.abs(startColumn - ((blockStart + blockEnd) / 2));
+        const leanOffset = offset;
+
+        candidates.push({
+            seats: seatsList,
+            rowLabel,
+            priority: {
+                touchesLeftBlock,
+                leavesSingleGap,
+                gapLeft,
+                centerDistance,
+                leanOffset,
+                blockStart
+            }
+        });
+    }
+
+    if (candidates.length === 0) {
         alert(`Không đủ ${count} ghế liền nhau từ vị trí này!`);
         return [];
     }
-    
-    const seatsToSelect = [];
-    for (let i = 0; i < count; i++) {
-        const seat = allSeats[startIndex + i];
-        const seatId = seat.getAttribute('data-seat-id');
-        const seatLabel = seat.getAttribute('data-seat-label');
-        const seatType = seat.getAttribute('data-seat-type');
-        
-        if (seat.classList.contains('selected')) {
-            continue;
+
+    candidates.sort((a, b) => {
+        const keys = ['touchesLeftBlock', 'leavesSingleGap', 'gapLeft', 'centerDistance', 'leanOffset', 'blockStart'];
+        for (const key of keys) {
+            const diff = a.priority[key] - b.priority[key];
+            if (Math.abs(diff) > 0.0001) {
+                return diff;
+            }
         }
-        
+        return 0;
+    });
+
+    const best = candidates[0];
+    return best.seats.map(seat => {
         seat.classList.add('selected');
         seat.classList.remove('vip', 'available');
-        seatsToSelect.push({
-            id: seatId,
-            label: seatLabel,
-            type: seatType
-        });
-    }
-    
-    return seatsToSelect;
+        return {
+            id: seat.getAttribute('data-seat-id'),
+            label: seat.getAttribute('data-seat-label'),
+            type: seat.getAttribute('data-seat-type'),
+            status: seat.getAttribute('data-seat-status'),
+            row: best.rowLabel,
+            column: parseInt(seat.getAttribute('data-seat-column')) || 0
+        };
+    });
 }
 
 function updatePriceDisplay() {
@@ -687,8 +827,13 @@ function goBackToShowtimes() {
         btn.classList.remove('active');
     });
     
-    selectedSeats = [];
-    selectedGroups = [];
+    resetAllSelections();
+    adultCount = 0;
+    studentCount = 0;
+    lastAdultCount = 0;
+    lastStudentCount = 0;
+    selectedAdjacentCount = 0;
+    remainingSeats = 0;
     
     if (countdownInterval) {
         clearInterval(countdownInterval);
@@ -732,38 +877,38 @@ function updateTicketSelection() {
     
     if (!adultSelect || !studentSelect) return;
     
+    const prevAdult = lastAdultCount;
+    const prevStudent = lastStudentCount;
+    
     adultCount = parseInt(adultSelect.value) || 0;
     studentCount = parseInt(studentSelect.value) || 0;
     const totalPeople = adultCount + studentCount;
     
-    if (selectedSeats.length > 0) {
-        selectedSeats.forEach(seat => {
-            const seatEl = document.querySelector(`[data-seat-id="${seat.id}"]`);
-            if (seatEl) {
-                seatEl.classList.remove('selected');
-                if (seat.type === 'vip') {
-                    seatEl.classList.add('vip');
-                } else {
-                    seatEl.classList.add('available');
-                }
-            }
-        });
-        selectedSeats = [];
-        selectedGroups = [];
-        remainingSeats = totalPeople;
-        updateSummary();
+    if (adultCount !== prevAdult || studentCount !== prevStudent) {
+        resetAllSelections();
+    } else {
+        remainingSeats = totalPeople - selectedSeats.length;
     }
     
+    lastAdultCount = adultCount;
+    lastStudentCount = studentCount;
+    
     const adjacentOptions = document.getElementById('adjacentOptions');
-    if (!adjacentOptions) return;
+    if (!adjacentOptions) {
+        updateDisabledColumns();
+        return;
+    }
     
     adjacentOptions.innerHTML = '';
     selectedAdjacentCount = 0;
-    remainingSeats = totalPeople;
     
     if (totalPeople === 0) {
+        remainingSeats = 0;
+        updateDisabledColumns();
         return;
     }
+    
+    remainingSeats = totalPeople - selectedSeats.length;
     
     let availableOptions = [];
     
@@ -780,13 +925,24 @@ function updateTicketSelection() {
         availableOptions = [2, 4];
     } else if (totalPeople === 5) {
         availableOptions = [2, 3];
-    } else if (totalPeople === 6) {
-        availableOptions = [2, 3, 4];
-    } else if (totalPeople === 7) {
-        availableOptions = [2, 3, 4];
-    } else if (totalPeople === 8) {
+    } else if (totalPeople >= 6 && totalPeople <= 8) {
         availableOptions = [2, 3, 4];
     }
+    
+    const radioBaseStyle = 'width: 24px; height: 24px; border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 50%; background: transparent; position: relative; flex-shrink: 0; transition: all 0.2s;';
+    const activateOption = (optionEl, isActive) => {
+        const radio = optionEl.querySelector('.adjacent-option-radio');
+        if (!radio) return;
+        if (isActive) {
+            radio.style.cssText = `${radioBaseStyle}border-color: #ff8c00; background: #ff8c00;`;
+            radio.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border-radius: 50%; background: #fff;"></div>';
+            optionEl.classList.add('active');
+        } else {
+            radio.style.cssText = radioBaseStyle;
+            radio.innerHTML = '';
+            optionEl.classList.remove('active');
+        }
+    };
     
     availableOptions.forEach(count => {
         const option = document.createElement('div');
@@ -796,7 +952,7 @@ function updateTicketSelection() {
         
         const radio = document.createElement('div');
         radio.className = 'adjacent-option-radio';
-        radio.style.cssText = 'width: 24px; height: 24px; border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 50%; background: transparent; position: relative; flex-shrink: 0; transition: all 0.2s;';
+        radio.style.cssText = radioBaseStyle;
         
         const seatsContainer = document.createElement('div');
         seatsContainer.className = 'adjacent-option-seats';
@@ -812,42 +968,57 @@ function updateTicketSelection() {
         option.appendChild(seatsContainer);
         
         if (totalPeople <= 3 && count === totalPeople) {
-            option.classList.add('active');
+            activateOption(option, true);
             selectedAdjacentCount = count;
-            radio.style.cssText += 'border-color: #ff8c00; background: #ff8c00;';
-            radio.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border-radius: 50%; background: #fff;"></div>';
         }
         
         option.onclick = function() {
-            document.querySelectorAll('.adjacent-option').forEach(opt => {
-                opt.classList.remove('active');
-                const optRadio = opt.querySelector('.adjacent-option-radio');
-                optRadio.style.cssText = 'width: 24px; height: 24px; border: 2px solid rgba(255, 255, 255, 0.5); border-radius: 50%; background: transparent; position: relative; flex-shrink: 0; transition: all 0.2s;';
-                optRadio.innerHTML = '';
-            });
-            this.classList.add('active');
-            const thisRadio = this.querySelector('.adjacent-option-radio');
-            thisRadio.style.cssText += 'border-color: #ff8c00; background: #ff8c00;';
-            thisRadio.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; border-radius: 50%; background: #fff;"></div>';
+            document.querySelectorAll('.adjacent-option').forEach(opt => activateOption(opt, false));
+            activateOption(this, true);
             selectedAdjacentCount = count;
-            remainingSeats = totalPeople;
-            selectedGroups = [];
-            
-            selectedSeats.forEach(seat => {
-                const seatEl = document.querySelector(`[data-seat-id="${seat.id}"]`);
-                if (seatEl) {
-                    seatEl.classList.remove('selected');
-                    if (seat.type === 'vip') {
-                        seatEl.classList.add('vip');
-                    } else {
-                        seatEl.classList.add('available');
-                    }
-                }
-            });
-            selectedSeats = [];
+            remainingSeats = totalPeople - selectedSeats.length;
+            updateDisabledColumns();
             updateSummary();
         };
+        
         adjacentOptions.appendChild(option);
+    });
+    
+    updateDisabledColumns();
+    setTimeout(updateDisabledColumns, 100);
+}
+
+function updateDisabledColumns() {
+    const totalPeople = adultCount + studentCount;
+    const seats = document.querySelectorAll('#seatsGrid .seat');
+    seats.forEach(seat => {
+        const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+        if (totalPeople === 1 && selectedAdjacentCount === 1) {
+            if (col > 0 && !ALLOWED_SINGLE_COLUMNS.includes(col) &&
+                !seat.classList.contains('booked') &&
+                !seat.classList.contains('maintenance') &&
+                !seat.classList.contains('selected')) {
+                seat.classList.add('disabled-column');
+            } else {
+                seat.classList.remove('disabled-column');
+            }
+        } else {
+            seat.classList.remove('disabled-column');
+        }
+    });
+}
+
+function hideSeatsOver12() {
+    const seats = document.querySelectorAll('#seatsGrid .seat[data-seat-column]');
+    seats.forEach(seat => {
+        const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+        if (col > MAX_COLUMNS) {
+            seat.style.display = 'none';
+            seat.style.visibility = 'hidden';
+        } else {
+            seat.style.display = '';
+            seat.style.visibility = '';
+        }
     });
 }
 

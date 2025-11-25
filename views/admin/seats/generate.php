@@ -19,10 +19,10 @@
               <select name="room_id" id="room_id" class="form-select" required onchange="updateSeatConfig()">
                 <option value="">-- Chọn phòng --</option>
                 <?php foreach ($rooms as $room): ?>
-                  <option value="<?= $room['id'] ?>" 
-                          data-capacity="<?= $room['capacity'] ?? 0 ?>"
-                          <?= (isset($_GET['room_id']) && $_GET['room_id'] == $room['id']) ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($room['name'] ?? '') ?> (<?= htmlspecialchars($room['room_code'] ?? '') ?>) - <?= $room['capacity'] ?? 0 ?> ghế
+                  <option value="<?= $room['id'] ?>"
+                    data-capacity="<?= $room['seat_count'] ?? $room['capacity'] ?? 0 ?>"
+                    <?= (isset($_GET['room_id']) && $_GET['room_id'] == $room['id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($room['name'] ?? '') ?> (<?= htmlspecialchars($room['room_code'] ?? '') ?>) - <?= $room['seat_count'] ?? $room['capacity'] ?? 0 ?> ghế
                   </option>
                 <?php endforeach; ?>
               </select>
@@ -105,181 +105,228 @@
 </div>
 
 <script>
-// Dữ liệu phòng với capacity
-const roomsData = {
-  <?php foreach ($rooms as $room): ?>
-    <?= $room['id'] ?>: { capacity: <?= $room['capacity'] ?? 0 ?> },
-  <?php endforeach; ?>
-};
+  // Dữ liệu phòng với capacity
+  const roomsData = <?= json_encode(array_reduce($rooms, function ($carry, $room) {
+                      $carry[$room['id']] = ['capacity' => $room['seat_count'] ?? $room['capacity'] ?? 0];
+                      return $carry;
+                    }, [])) ?>;
 
-// Hàm tính toán số hàng và số ghế mỗi hàng dựa trên capacity
-function calculateSeatConfig(capacity) {
-  if (!capacity || capacity <= 0) {
-    return { rows: 10, seatsPerRow: 15 }; // Mặc định
-  }
+  // Cấu hình sơ đồ ghế cho các phòng cụ thể (12 cột cho tất cả)
+  const roomSeatConfig = {
+    // Phòng Chiếu 1: 10 hàng x 12 cột
+    17: {
+      rows: 10,
+      seatsPerRow: 12
+    },
+    // Phòng Chiếu 2: 12 hàng x 12 cột
+    18: {
+      rows: 12,
+      seatsPerRow: 12
+    },
+    // Phòng Chiếu 3: 14 hàng x 12 cột
+    19: {
+      rows: 14,
+      seatsPerRow: 12
+    }
+  };
 
-  let bestRows = null;
-  let bestSeatsPerRow = null;
-  let bestDiff = Infinity;
-  
-  // Thử các cách chia từ 5 đến 26 hàng
-  // Ưu tiên số hàng từ 8-15 để có sơ đồ đẹp hơn
-  let exactMatches = []; // Lưu các cách chia chính xác
-  let bestApprox = null; // Cách chia gần nhất (nếu không có cách chính xác)
-  
-  for (let rows = 5; rows <= 26; rows++) {
-    // Kiểm tra xem capacity có chia hết cho rows không
-    if (capacity % rows === 0) {
-      // Chia hết, đây là cách chia chính xác
-      const seatsPerRow = capacity / rows;
-      
-      if (seatsPerRow <= 50 && seatsPerRow > 0) {
-        exactMatches.push({ rows: rows, seatsPerRow: seatsPerRow });
-      }
-    } else {
-      // Không chia hết, thử Math.ceil và Math.floor
-      const seatsPerRowCeil = Math.ceil(capacity / rows);
-      const seatsPerRowFloor = Math.floor(capacity / rows);
-      
-      // Chỉ xét nếu chưa có cách chia chính xác
-      if (exactMatches.length === 0) {
-        // Kiểm tra với Math.ceil
-        if (seatsPerRowCeil <= 50) {
-          const totalSeats = rows * seatsPerRowCeil;
-          const diff = Math.abs(totalSeats - capacity);
-          
-          if (bestApprox === null || diff < bestApprox.diff) {
-            bestApprox = { rows: rows, seatsPerRow: seatsPerRowCeil, diff: diff };
-          } else if (diff === bestApprox.diff && rows < bestApprox.rows) {
-            bestApprox = { rows: rows, seatsPerRow: seatsPerRowCeil, diff: diff };
-          }
+  // Hàm tính toán số hàng và số ghế mỗi hàng dựa trên capacity
+  function calculateSeatConfig(capacity, roomId) {
+    // Kiểm tra xem phòng có cấu hình riêng không
+    if (roomId && roomSeatConfig[roomId]) {
+      return roomSeatConfig[roomId];
+    }
+
+    if (!capacity || capacity <= 0) {
+      return {
+        rows: 10,
+        seatsPerRow: 12
+      }; // Mặc định 12 cột
+    }
+
+    let bestRows = null;
+    let bestSeatsPerRow = null;
+    let bestDiff = Infinity;
+
+    // Thử các cách chia từ 5 đến 26 hàng
+    // Ưu tiên số hàng từ 8-15 để có sơ đồ đẹp hơn
+    let exactMatches = []; // Lưu các cách chia chính xác
+    let bestApprox = null; // Cách chia gần nhất (nếu không có cách chính xác)
+
+    for (let rows = 5; rows <= 26; rows++) {
+      // Kiểm tra xem capacity có chia hết cho rows không
+      if (capacity % rows === 0) {
+        // Chia hết, đây là cách chia chính xác
+        const seatsPerRow = capacity / rows;
+
+        if (seatsPerRow <= 50 && seatsPerRow > 0) {
+          exactMatches.push({
+            rows: rows,
+            seatsPerRow: seatsPerRow
+          });
         }
-        
-        // Kiểm tra với Math.floor (nếu khác với ceil)
-        if (seatsPerRowFloor > 0 && seatsPerRowFloor !== seatsPerRowCeil && seatsPerRowFloor <= 50) {
-          const totalSeats = rows * seatsPerRowFloor;
-          const diff = Math.abs(totalSeats - capacity);
-          
-          if (bestApprox === null || diff < bestApprox.diff) {
-            bestApprox = { rows: rows, seatsPerRow: seatsPerRowFloor, diff: diff };
-          } else if (diff === bestApprox.diff && rows < bestApprox.rows) {
-            bestApprox = { rows: rows, seatsPerRow: seatsPerRowFloor, diff: diff };
+      } else {
+        // Không chia hết, thử Math.ceil và Math.floor
+        const seatsPerRowCeil = Math.ceil(capacity / rows);
+        const seatsPerRowFloor = Math.floor(capacity / rows);
+
+        // Chỉ xét nếu chưa có cách chia chính xác
+        if (exactMatches.length === 0) {
+          // Kiểm tra với Math.ceil
+          if (seatsPerRowCeil <= 50) {
+            const totalSeats = rows * seatsPerRowCeil;
+            const diff = Math.abs(totalSeats - capacity);
+
+            if (bestApprox === null || diff < bestApprox.diff) {
+              bestApprox = {
+                rows: rows,
+                seatsPerRow: seatsPerRowCeil,
+                diff: diff
+              };
+            } else if (diff === bestApprox.diff && rows < bestApprox.rows) {
+              bestApprox = {
+                rows: rows,
+                seatsPerRow: seatsPerRowCeil,
+                diff: diff
+              };
+            }
+          }
+
+          // Kiểm tra với Math.floor (nếu khác với ceil)
+          if (seatsPerRowFloor > 0 && seatsPerRowFloor !== seatsPerRowCeil && seatsPerRowFloor <= 50) {
+            const totalSeats = rows * seatsPerRowFloor;
+            const diff = Math.abs(totalSeats - capacity);
+
+            if (bestApprox === null || diff < bestApprox.diff) {
+              bestApprox = {
+                rows: rows,
+                seatsPerRow: seatsPerRowFloor,
+                diff: diff
+              };
+            } else if (diff === bestApprox.diff && rows < bestApprox.rows) {
+              bestApprox = {
+                rows: rows,
+                seatsPerRow: seatsPerRowFloor,
+                diff: diff
+              };
+            }
           }
         }
       }
     }
-  }
-  
-  // Nếu có cách chia chính xác, ưu tiên số hàng từ 8-15
-  if (exactMatches.length > 0) {
-    // Tìm cách chia trong khoảng 8-15 hàng
-    const preferred = exactMatches.find(m => m.rows >= 8 && m.rows <= 15);
-    if (preferred) {
-      bestRows = preferred.rows;
-      bestSeatsPerRow = preferred.seatsPerRow;
-      bestDiff = 0;
-    } else {
-      // Không có trong khoảng 8-15, chọn số hàng gần 10 nhất
-      exactMatches.sort((a, b) => Math.abs(a.rows - 10) - Math.abs(b.rows - 10));
-      bestRows = exactMatches[0].rows;
-      bestSeatsPerRow = exactMatches[0].seatsPerRow;
-      bestDiff = 0;
+
+    // Nếu có cách chia chính xác, ưu tiên số hàng từ 8-15
+    if (exactMatches.length > 0) {
+      // Tìm cách chia trong khoảng 8-15 hàng
+      const preferred = exactMatches.find(m => m.rows >= 8 && m.rows <= 15);
+      if (preferred) {
+        bestRows = preferred.rows;
+        bestSeatsPerRow = preferred.seatsPerRow;
+        bestDiff = 0;
+      } else {
+        // Không có trong khoảng 8-15, chọn số hàng gần 10 nhất
+        exactMatches.sort((a, b) => Math.abs(a.rows - 10) - Math.abs(b.rows - 10));
+        bestRows = exactMatches[0].rows;
+        bestSeatsPerRow = exactMatches[0].seatsPerRow;
+        bestDiff = 0;
+      }
+    } else if (bestApprox !== null) {
+      // Không có cách chia chính xác, dùng cách gần nhất
+      bestRows = bestApprox.rows;
+      bestSeatsPerRow = bestApprox.seatsPerRow;
+      bestDiff = bestApprox.diff;
     }
-  } else if (bestApprox !== null) {
-    // Không có cách chia chính xác, dùng cách gần nhất
-    bestRows = bestApprox.rows;
-    bestSeatsPerRow = bestApprox.seatsPerRow;
-    bestDiff = bestApprox.diff;
-  }
-  
-  // Nếu không tìm thấy cách chia tốt, dùng cách chia mặc định
-  if (bestRows === null) {
-    bestRows = 10;
-    bestSeatsPerRow = Math.ceil(capacity / 10);
+
+    // Nếu không tìm thấy cách chia tốt, dùng cách chia mặc định (12 cột)
+    if (bestRows === null) {
+      bestRows = Math.ceil(capacity / 12);
+      bestSeatsPerRow = 12;
+      if (bestRows > 26) {
+        bestRows = 26;
+        bestSeatsPerRow = Math.ceil(capacity / 26);
+      }
+    }
+
+    // Đảm bảo không vượt quá giới hạn
     if (bestSeatsPerRow > 50) {
       bestSeatsPerRow = 50;
       bestRows = Math.ceil(capacity / 50);
     }
-  }
-  
-  // Đảm bảo không vượt quá giới hạn
-  if (bestSeatsPerRow > 50) {
-    bestSeatsPerRow = 50;
-    bestRows = Math.ceil(capacity / 50);
-  }
-  if (bestRows > 26) {
-    bestRows = 26;
-    bestSeatsPerRow = Math.ceil(capacity / 26);
-  }
-  
-  return { rows: bestRows, seatsPerRow: bestSeatsPerRow };
-}
+    if (bestRows > 26) {
+      bestRows = 26;
+      bestSeatsPerRow = Math.ceil(capacity / 26);
+    }
 
-// Cập nhật số hàng và số ghế mỗi hàng khi chọn phòng
-function updateSeatConfig() {
-  const roomSelect = document.getElementById('room_id');
-  const selectedRoomId = roomSelect.value;
-  
-  if (!selectedRoomId || !roomsData[selectedRoomId]) {
-    return;
-  }
-  
-  const capacity = roomsData[selectedRoomId].capacity;
-  const config = calculateSeatConfig(capacity);
-  
-  document.getElementById('rows').value = config.rows;
-  document.getElementById('seats_per_row').value = config.seatsPerRow;
-}
-
-// Tự động cập nhật khi trang load nếu đã chọn phòng
-document.addEventListener('DOMContentLoaded', function() {
-  const roomSelect = document.getElementById('room_id');
-  if (roomSelect.value) {
-    updateSeatConfig();
-  }
-});
-
-function validateForm() {
-  const roomId = document.getElementById('room_id').value;
-  const rows = parseInt(document.getElementById('rows').value);
-  const seatsPerRow = parseInt(document.getElementById('seats_per_row').value);
-  const clearExisting = document.getElementById('clear_existing').checked;
-
-  if (!roomId) {
-    alert('Vui lòng chọn phòng');
-    return false;
+    return {
+      rows: bestRows,
+      seatsPerRow: bestSeatsPerRow
+    };
   }
 
-  if (rows <= 0 || rows > 26) {
-    alert('Số hàng phải từ 1 đến 26');
-    return false;
+  // Cập nhật số hàng và số ghế mỗi hàng khi chọn phòng
+  function updateSeatConfig() {
+    const roomSelect = document.getElementById('room_id');
+    const selectedRoomId = parseInt(roomSelect.value);
+
+    if (!selectedRoomId || !roomsData[selectedRoomId]) {
+      return;
+    }
+
+    const capacity = roomsData[selectedRoomId].capacity;
+    const config = calculateSeatConfig(capacity, selectedRoomId);
+
+    document.getElementById('rows').value = config.rows;
+    document.getElementById('seats_per_row').value = config.seatsPerRow;
   }
 
-  if (seatsPerRow <= 0 || seatsPerRow > 50) {
-    alert('Số ghế mỗi hàng phải từ 1 đến 50');
-    return false;
-  }
+  // Tự động cập nhật khi trang load nếu đã chọn phòng
+  document.addEventListener('DOMContentLoaded', function() {
+    const roomSelect = document.getElementById('room_id');
+    if (roomSelect.value) {
+      updateSeatConfig();
+    }
+  });
 
-  if (clearExisting) {
-    if (!confirm('Bạn có chắc chắn muốn xóa tất cả ghế hiện có? Hành động này không thể hoàn tác!')) {
+  function validateForm() {
+    const roomId = document.getElementById('room_id').value;
+    const rows = parseInt(document.getElementById('rows').value);
+    const seatsPerRow = parseInt(document.getElementById('seats_per_row').value);
+    const clearExisting = document.getElementById('clear_existing').checked;
+
+    if (!roomId) {
+      alert('Vui lòng chọn phòng');
       return false;
     }
-  }
 
-  const totalSeats = rows * seatsPerRow;
-  const capacity = roomsData[roomId] ? roomsData[roomId].capacity : 0;
-  
-  if (capacity > 0 && totalSeats !== capacity) {
-    if (!confirm(`Phòng này có ${capacity} ghế, nhưng bạn sẽ tạo ${totalSeats} ghế (${rows} hàng x ${seatsPerRow} ghế). Tiếp tục?`)) {
+    if (rows <= 0 || rows > 26) {
+      alert('Số hàng phải từ 1 đến 26');
       return false;
     }
-  } else {
-    if (!confirm(`Bạn sẽ tạo ${totalSeats} ghế (${rows} hàng x ${seatsPerRow} ghế). Tiếp tục?`)) {
+
+    if (seatsPerRow <= 0 || seatsPerRow > 50) {
+      alert('Số ghế mỗi hàng phải từ 1 đến 50');
       return false;
     }
-  }
 
-  return true;
-}
+    if (clearExisting) {
+      if (!confirm('Bạn có chắc chắn muốn xóa tất cả ghế hiện có? Hành động này không thể hoàn tác!')) {
+        return false;
+      }
+    }
+
+    const totalSeats = rows * seatsPerRow;
+    const capacity = roomsData[roomId] ? roomsData[roomId].capacity : 0;
+
+    if (capacity > 0 && totalSeats !== capacity) {
+      if (!confirm(`Phòng này có ${capacity} ghế, nhưng bạn sẽ tạo ${totalSeats} ghế (${rows} hàng x ${seatsPerRow} ghế). Tiếp tục?`)) {
+        return false;
+      }
+    } else {
+      if (!confirm(`Bạn sẽ tạo ${totalSeats} ghế (${rows} hàng x ${seatsPerRow} ghế). Tiếp tục?`)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 </script>
-

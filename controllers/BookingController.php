@@ -382,6 +382,10 @@ class BookingController
             // Đảm bảo showtime có format đúng trước khi tính giá
             $showtime['format'] = $showtimeFormat;
 
+            // Lấy thông tin phòng để xác định số cột
+            $roomModel = new Room();
+            $room = $roomModel->find($showtime['room_id'] ?? null);
+
             // Tính tổng tiền sử dụng giá vé từ database
             require_once __DIR__ . '/../models/TicketPrice.php';
             $ticketPriceModel = new TicketPrice();
@@ -393,6 +397,25 @@ class BookingController
             // Lấy số lượng người lớn và sinh viên
             $adultCount = isset($_POST['adult_count']) ? (int)$_POST['adult_count'] : 0;
             $studentCount = isset($_POST['student_count']) ? (int)$_POST['student_count'] : 0;
+            $totalPeople = $adultCount + $studentCount;
+
+            // Validation: Nếu chọn 1 vé, chỉ cho phép các cột: 1, 3, 4, 6, 7, 9, 10, 12
+            if ($totalPeople === 1) {
+                $allowedColumns = [1, 3, 4, 6, 7, 9, 10, 12];
+                foreach ($seatIdArray as $seatId) {
+                    $seat = $seatModel->find(trim($seatId));
+                    if ($seat) {
+                        $seatColumn = (int)($seat['seat_number'] ?? 0);
+                        if (!in_array($seatColumn, $allowedColumns)) {
+                            echo json_encode([
+                                'success' => false, 
+                                'message' => 'Khi chọn 1 vé, bạn chỉ có thể chọn các cột: 1, 3, 4, 6, 7, 9, 10, 12'
+                            ]);
+                            exit;
+                        }
+                    }
+                }
+            }
 
             foreach ($seatIdArray as $index => $seatId) {
                 $seat = $seatModel->find(trim($seatId));
