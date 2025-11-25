@@ -1,33 +1,7 @@
 <?php
-// Xử lý form liên hệ nếu có POST
-$success = false;
-$error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($_POST['name'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
-    $subject = trim($_POST['subject'] ?? '');
-    $message = trim($_POST['message'] ?? '');
-    
-    // Validation
-    if (empty($name)) {
-        $error = 'Vui lòng nhập họ tên';
-    } elseif (empty($email)) {
-        $error = 'Vui lòng nhập email';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Email không hợp lệ';
-    } elseif (empty($phone)) {
-        $error = 'Vui lòng nhập số điện thoại';
-    } elseif (empty($subject)) {
-        $error = 'Vui lòng nhập chủ đề';
-    } elseif (empty($message)) {
-        $error = 'Vui lòng nhập nội dung tin nhắn';
-    } else {
-        // Ở đây có thể lưu vào database hoặc gửi email
-        // Tạm thời hiển thị thông báo thành công
-        $success = true;
-    }
-}
+// Lấy dữ liệu từ controller
+$success = $success ?? false;
+$error = $error ?? '';
 ?>
 <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lienhe.css">
 

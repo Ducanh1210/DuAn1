@@ -37,7 +37,23 @@
                 <td><strong><?= htmlspecialchars($item['cinema_name'] ?? 'N/A') ?></strong></td>
                 <td><span class="badge bg-secondary"><?= htmlspecialchars($item['room_code'] ?? 'N/A') ?></span></td>
                 <td><?= htmlspecialchars($item['name'] ?? 'N/A') ?></td>
-                <td><?= number_format($item['seat_count'] ?? 0, 0, ',', '.') ?> ghế</td>
+                <td>
+                  <?php 
+                  // Hiển thị số ghế thực tế từ bảng seats
+                  $actualSeatCount = $item['actual_seat_count'] ?? 0;
+                  $seatCount = $item['seat_count'] ?? 0;
+                  
+                  // Nếu số ghế thực tế khác với số ghế trong phòng, hiển thị cả 2
+                  if ($actualSeatCount != $seatCount) {
+                      echo '<span class="text-primary fw-bold">' . number_format($actualSeatCount, 0, ',', '.') . '</span>';
+                      if ($seatCount > 0) {
+                          echo ' <small class="text-muted">(phòng: ' . number_format($seatCount, 0, ',', '.') . ')</small>';
+                      }
+                  } else {
+                      echo number_format($actualSeatCount, 0, ',', '.');
+                  }
+                  ?> ghế
+                </td>
                 <td>
                   <div class="btn-group" role="group">
                     <a href="<?= BASE_URL ?>?act=rooms-show&id=<?= $item['id'] ?>" class="btn btn-sm btn-info" title="Xem chi tiết">

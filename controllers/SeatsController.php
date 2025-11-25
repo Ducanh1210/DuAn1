@@ -13,29 +13,31 @@ class SeatsController
     }
 
     /**
-     * Hiển thị danh sách ghế (Admin)
+     * Hiển thị danh sách ghế (Admin) - Hiển thị sơ đồ ghế
      */
     public function list()
     {
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $page = max(1, $page);
         $roomId = $_GET['room_id'] ?? null;
-        
-        $result = $this->seat->paginate($page, 20, $roomId);
         
         // Lấy danh sách phòng để filter
         $rooms = $this->room->all();
         
+        $room = null;
+        $seatMap = [];
+        
+        // Nếu có chọn phòng, lấy sơ đồ ghế của phòng đó
+        if ($roomId) {
+            $room = $this->room->find($roomId);
+            if ($room) {
+                $seatMap = $this->seat->getSeatMapByRoom($roomId);
+            }
+        }
+        
         render('admin/seats/list.php', [
-            'data' => $result['data'],
             'rooms' => $rooms,
             'selectedRoomId' => $roomId,
-            'pagination' => [
-                'currentPage' => $result['page'],
-                'totalPages' => $result['totalPages'],
-                'total' => $result['total'],
-                'perPage' => $result['perPage']
-            ]
+            'room' => $room,
+            'seatMap' => $seatMap
         ]);
     }
 
@@ -77,6 +79,11 @@ class SeatsController
     {
         $errors = [];
         $rooms = $this->room->all();
+        
+        // Lấy số ghế thực tế cho mỗi phòng
+        foreach ($rooms as &$room) {
+            $room['actual_seat_count'] = $this->seat->getCountByRoom($room['id']);
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $roomId = $_POST['room_id'] ?? null;
@@ -100,14 +107,13 @@ class SeatsController
             }
 
             if (empty($errors)) {
-                // Lấy thông tin phòng để kiểm tra capacity
-                $room = $this->room->find($roomId);
-                $roomCapacity = $room['capacity'] ?? 0;
+                // Lấy số ghế thực tế hiện tại của phòng
+                $currentSeatCount = $this->seat->getCountByRoom($roomId);
                 $totalSeatsToCreate = $rows * $seatsPerRow;
                 
-                // Kiểm tra nếu phòng có capacity và tổng số ghế tạo ra khác capacity
-                if ($roomCapacity > 0 && $totalSeatsToCreate != $roomCapacity) {
-                    $errors['general'] = "Phòng này có {$roomCapacity} ghế, nhưng bạn đang tạo {$totalSeatsToCreate} ghế ({$rows} hàng x {$seatsPerRow} ghế). Vui lòng điều chỉnh để khớp với số ghế của phòng.";
+                // Nếu phòng đã có ghế và không chọn xóa ghế cũ, cảnh báo
+                if ($currentSeatCount > 0 && !$clearExisting) {
+                    $errors['general'] = "Phòng này đã có {$currentSeatCount} ghế. Vui lòng chọn 'Xóa tất cả ghế hiện có trong phòng trước khi tạo mới' nếu bạn muốn tạo lại sơ đồ ghế.";
                 }
                 
                 if (empty($errors)) {
@@ -116,11 +122,14 @@ class SeatsController
                         $this->seat->deleteByRoom($roomId);
                     }
 
-                    // Tạo ghế mới với giới hạn capacity
-                    $result = $this->seat->insertBulk($roomId, $rows, $seatsPerRow, $seatType, $extraPrice, $roomCapacity);
+                    // Tạo ghế mới: sẽ tự động chia đều 2 bên (mỗi bên 6 ghế/hàng = 12 ghế/hàng)
+                    // Logic trong insertBulk sẽ tự động tính lại số hàng và tạo đúng số lượng ghế
+                    $result = $this->seat->insertBulk($roomId, $rows, $seatsPerRow, $seatType, $extraPrice, null);
                     
                     if ($result !== false) {
-                        header('Location: ' . BASE_URL . '?act=seats-seatmap&room_id=' . $roomId);
+                        // Hiển thị thông báo số ghế đã tạo
+                        $_SESSION['success'] = "Đã tạo thành công {$result} ghế. Sơ đồ ghế được chia đều 2 bên (mỗi bên 6 ghế/hàng).";
+                        header('Location: ' . BASE_URL . '?act=seats&room_id=' . $roomId);
                         exit;
                     } else {
                         $errors['general'] = 'Có lỗi xảy ra khi tạo ghế. Vui lòng thử lại.';

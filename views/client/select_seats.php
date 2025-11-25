@@ -111,6 +111,23 @@ $countdownSeconds = $countdownSeconds ?? 900;
     width: 100%;
 }
 
+.seat-row-content {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* gap-2 trong Bootstrap = 0.5rem = 8px */
+}
+
+.seat-side {
+    display: flex;
+    gap: 4px; /* gap-1 trong Bootstrap = 0.25rem = 4px */
+    align-items: center;
+}
+
+.seat-aisle {
+    width: 40px;
+    flex-shrink: 0;
+}
+
 .seat-row.hidden {
     display: none;
 }
@@ -462,69 +479,138 @@ $countdownSeconds = $countdownSeconds ?? 900;
         <?php foreach ($seatsByRow as $rowLabel => $rowSeats): ?>
             <div class="seat-row" data-row-label="<?= strtoupper(htmlspecialchars($rowLabel)) ?>">
                 <div class="row-label"><?= htmlspecialchars($rowLabel) ?></div>
-                <?php
-                $prevSeatNumber = 0;
-                foreach ($rowSeats as $seat):
-                    $seatId = $seat['id'];
-                    $seatNumber = $seat['seat_number'] ?? 0;
-                    $seatLabel = ($seat['row_label'] ?? '') . $seatNumber;
-                    $seatKey = $seatLabel;
-                    $isBooked = in_array($seatKey, $bookedSeats);
-                    $seatType = $seat['seat_type'] ?? 'normal';
-                    $seatStatus = $seat['status'] ?? 'available';
-                    $isMaintenance = ($seatStatus === 'maintenance');
-                    
-                    // Chỉ hiển thị ghế normal và vip, bỏ qua disabled và couple
-                    if (in_array($seatType, ['disabled', 'couple'])) {
-                        continue;
-                    }
-                    
-                    // Thêm khoảng trống nếu cần (sau mỗi 4 ghế)
-                    if ($prevSeatNumber > 0 && ($seatNumber - $prevSeatNumber) > 1) {
-                        // Có khoảng trống giữa các ghế
-                        for ($i = $prevSeatNumber + 1; $i < $seatNumber; $i++) {
-                            // Thêm khoảng trống sau mỗi 4 ghế
-                            if (($i - 1) % 4 == 0 && $i > 1) {
-                                echo '<div class="seat-gap"></div>';
+                <div class="seat-row-content">
+                    <!-- Bên trái: ghế 1-6 -->
+                    <div class="seat-side seat-side-left">
+                        <?php
+                        $leftSeats = [];
+                        foreach ($rowSeats as $seat) {
+                            $seatNumber = $seat['seat_number'] ?? 0;
+                            $seatType = $seat['seat_type'] ?? 'normal';
+                            // Chỉ hiển thị ghế normal và vip, bỏ qua disabled và couple
+                            if (in_array($seatType, ['disabled', 'couple'])) {
+                                continue;
+                            }
+                            // Ghế bên trái: số 1-6
+                            if ($seatNumber >= 1 && $seatNumber <= 6) {
+                                $leftSeats[$seatNumber] = $seat;
                             }
                         }
-                    } elseif ($prevSeatNumber > 0 && ($prevSeatNumber % 4 == 0)) {
-                        // Thêm khoảng trống sau mỗi 4 ghế liên tiếp
-                        echo '<div class="seat-gap"></div>';
-                    }
-                    
-                    // Xác định class CSS cho ghế
-                    $seatClass = 'available';
-                    if ($isBooked) {
-                        $seatClass = 'booked';
-                    } elseif ($isMaintenance) {
-                        $seatClass = 'maintenance';
-                    } elseif ($seatType === 'vip') {
-                        $seatClass = 'vip';
-                    }
-                    
-                    $onClick = '';
-                    $title = '';
-                    if ($isBooked) {
-                        $title = 'title="Ghế đã được đặt"';
-                    } elseif ($isMaintenance) {
-                        $title = 'title="Ghế đang bảo trì"';
-                    } else {
-                        $onClick = 'onclick="toggleSeat(this)"';
-                    }
-                ?>
-                    <div class="seat <?= $seatClass ?>" 
-                         data-seat-id="<?= $seatId ?>"
-                         data-seat-label="<?= htmlspecialchars($seatLabel) ?>"
-                         data-seat-type="<?= htmlspecialchars($seatType) ?>"
-                         data-seat-status="<?= htmlspecialchars($seatStatus) ?>"
-                         <?= $title ?> <?= $onClick ?>>
-                        <?= htmlspecialchars($seatNumber) ?>
+                        
+                        // Hiển thị ghế bên trái (1-6)
+                        for ($i = 1; $i <= 6; $i++):
+                            if (isset($leftSeats[$i])):
+                                $seat = $leftSeats[$i];
+                                $seatId = $seat['id'];
+                                $seatNumber = $seat['seat_number'] ?? 0;
+                                $seatLabel = ($seat['row_label'] ?? '') . $seatNumber;
+                                $seatKey = $seatLabel;
+                                $isBooked = in_array($seatKey, $bookedSeats);
+                                $seatType = $seat['seat_type'] ?? 'normal';
+                                $seatStatus = $seat['status'] ?? 'available';
+                                $isMaintenance = ($seatStatus === 'maintenance');
+                                
+                                // Xác định class CSS cho ghế
+                                $seatClass = 'available';
+                                if ($isBooked) {
+                                    $seatClass = 'booked';
+                                } elseif ($isMaintenance) {
+                                    $seatClass = 'maintenance';
+                                } elseif ($seatType === 'vip') {
+                                    $seatClass = 'vip';
+                                }
+                                
+                                $onClick = '';
+                                $title = '';
+                                if ($isBooked) {
+                                    $title = 'title="Ghế đã được đặt"';
+                                } elseif ($isMaintenance) {
+                                    $title = 'title="Ghế đang bảo trì"';
+                                } else {
+                                    $onClick = 'onclick="toggleSeat(this)"';
+                                }
+                        ?>
+                            <div class="seat <?= $seatClass ?>" 
+                                 data-seat-id="<?= $seatId ?>"
+                                 data-seat-label="<?= htmlspecialchars($seatLabel) ?>"
+                                 data-seat-type="<?= htmlspecialchars($seatType) ?>"
+                                 data-seat-status="<?= htmlspecialchars($seatStatus) ?>"
+                                 <?= $title ?> <?= $onClick ?>>
+                                <?= htmlspecialchars($seatNumber) ?>
+                            </div>
+                        <?php else: ?>
+                            <!-- Ghế không tồn tại, hiển thị ô trống -->
+                            <div class="seat seat-empty" style="opacity: 0.3; cursor: default;"></div>
+                        <?php endif; endfor; ?>
                     </div>
-                <?php
-                    $prevSeatNumber = $seatNumber;
-                endforeach;
-                ?>
+                    
+                    <!-- Khoảng trống giữa (aisle) -->
+                    <div class="seat-aisle"></div>
+                    
+                    <!-- Bên phải: ghế 7-12 -->
+                    <div class="seat-side seat-side-right">
+                        <?php
+                        $rightSeats = [];
+                        foreach ($rowSeats as $seat) {
+                            $seatNumber = $seat['seat_number'] ?? 0;
+                            $seatType = $seat['seat_type'] ?? 'normal';
+                            // Chỉ hiển thị ghế normal và vip, bỏ qua disabled và couple
+                            if (in_array($seatType, ['disabled', 'couple'])) {
+                                continue;
+                            }
+                            // Ghế bên phải: số 7-12
+                            if ($seatNumber >= 7 && $seatNumber <= 12) {
+                                $rightSeats[$seatNumber] = $seat;
+                            }
+                        }
+                        
+                        // Hiển thị ghế bên phải (7-12)
+                        for ($i = 7; $i <= 12; $i++):
+                            if (isset($rightSeats[$i])):
+                                $seat = $rightSeats[$i];
+                                $seatId = $seat['id'];
+                                $seatNumber = $seat['seat_number'] ?? 0;
+                                $seatLabel = ($seat['row_label'] ?? '') . $seatNumber;
+                                $seatKey = $seatLabel;
+                                $isBooked = in_array($seatKey, $bookedSeats);
+                                $seatType = $seat['seat_type'] ?? 'normal';
+                                $seatStatus = $seat['status'] ?? 'available';
+                                $isMaintenance = ($seatStatus === 'maintenance');
+                                
+                                // Xác định class CSS cho ghế
+                                $seatClass = 'available';
+                                if ($isBooked) {
+                                    $seatClass = 'booked';
+                                } elseif ($isMaintenance) {
+                                    $seatClass = 'maintenance';
+                                } elseif ($seatType === 'vip') {
+                                    $seatClass = 'vip';
+                                }
+                                
+                                $onClick = '';
+                                $title = '';
+                                if ($isBooked) {
+                                    $title = 'title="Ghế đã được đặt"';
+                                } elseif ($isMaintenance) {
+                                    $title = 'title="Ghế đang bảo trì"';
+                                } else {
+                                    $onClick = 'onclick="toggleSeat(this)"';
+                                }
+                        ?>
+                            <div class="seat <?= $seatClass ?>" 
+                                 data-seat-id="<?= $seatId ?>"
+                                 data-seat-label="<?= htmlspecialchars($seatLabel) ?>"
+                                 data-seat-type="<?= htmlspecialchars($seatType) ?>"
+                                 data-seat-status="<?= htmlspecialchars($seatStatus) ?>"
+                                 <?= $title ?> <?= $onClick ?>>
+                                <?= htmlspecialchars($seatNumber) ?>
+                            </div>
+                        <?php else: ?>
+                            <!-- Ghế không tồn tại, hiển thị ô trống -->
+                            <div class="seat seat-empty" style="opacity: 0.3; cursor: default;"></div>
+                        <?php endif; endfor; ?>
+                    </div>
+                </div>
             </div>
         <?php endforeach; ?>
     </div>

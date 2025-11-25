@@ -19,10 +19,14 @@
               <select name="room_id" id="room_id" class="form-select" required onchange="updateSeatConfig()">
                 <option value="">-- Chọn phòng --</option>
                 <?php foreach ($rooms as $room): ?>
+                  <?php 
+                  // Lấy số ghế thực tế từ bảng seats
+                  $actualSeatCount = $room['actual_seat_count'] ?? 0;
+                  ?>
                   <option value="<?= $room['id'] ?>" 
-                          data-capacity="<?= $room['capacity'] ?? 0 ?>"
+                          data-capacity="<?= $actualSeatCount ?>"
                           <?= (isset($_GET['room_id']) && $_GET['room_id'] == $room['id']) ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($room['name'] ?? '') ?> (<?= htmlspecialchars($room['room_code'] ?? '') ?>) - <?= $room['capacity'] ?? 0 ?> ghế
+                    <?= htmlspecialchars($room['name'] ?? '') ?> (<?= htmlspecialchars($room['room_code'] ?? '') ?>) - <?= number_format($actualSeatCount, 0, ',', '.') ?> ghế
                   </option>
                 <?php endforeach; ?>
               </select>
@@ -105,10 +109,10 @@
 </div>
 
 <script>
-// Dữ liệu phòng với capacity
+// Dữ liệu phòng với số ghế thực tế
 const roomsData = {
   <?php foreach ($rooms as $room): ?>
-    <?= $room['id'] ?>: { capacity: <?= $room['capacity'] ?? 0 ?> },
+    <?= $room['id'] ?>: { capacity: <?= $room['actual_seat_count'] ?? 0 ?> },
   <?php endforeach; ?>
 };
 
@@ -267,10 +271,11 @@ function validateForm() {
   }
 
   const totalSeats = rows * seatsPerRow;
-  const capacity = roomsData[roomId] ? roomsData[roomId].capacity : 0;
+  const currentSeatCount = roomsData[roomId] ? roomsData[roomId].capacity : 0;
+  const clearExisting = document.getElementById('clear_existing').checked;
   
-  if (capacity > 0 && totalSeats !== capacity) {
-    if (!confirm(`Phòng này có ${capacity} ghế, nhưng bạn sẽ tạo ${totalSeats} ghế (${rows} hàng x ${seatsPerRow} ghế). Tiếp tục?`)) {
+  if (currentSeatCount > 0 && !clearExisting) {
+    if (!confirm(`Phòng này đã có ${currentSeatCount} ghế. Bạn sẽ tạo thêm ${totalSeats} ghế (${rows} hàng x ${seatsPerRow} ghế). Tiếp tục?`)) {
       return false;
     }
   } else {
