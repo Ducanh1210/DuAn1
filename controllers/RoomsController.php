@@ -11,14 +11,27 @@ class RoomsController
     }
 
     /**
-     * Hiển thị danh sách phòng (Admin)
+     * Hiển thị danh sách phòng (Admin/Manager/Staff)
      */
     public function list()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrStaff();
+        
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $page = max(1, $page);
         
-        $result = $this->room->paginate($page, 10);
+        // Nếu là manager hoặc staff, chỉ lấy phòng của rạp mình quản lý
+        if (isManager() || isStaff()) {
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $result = $this->room->paginateByCinema($cinemaId, $page, 10);
+            } else {
+                $result = ['data' => [], 'page' => 1, 'totalPages' => 0, 'total' => 0, 'perPage' => 10];
+            }
+        } else {
+            $result = $this->room->paginate($page, 10);
+        }
         
         // Lấy số ghế thực tế từ bảng seats cho mỗi phòng
         require_once __DIR__ . '/../models/Seat.php';
@@ -40,12 +53,27 @@ class RoomsController
     }
 
     /**
-     * Hiển thị form tạo phòng mới (Admin)
+     * Hiển thị form tạo phòng mới (Admin/Manager)
      */
     public function create()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrManager();
+        
         $errors = [];
-        $cinemas = $this->cinema->all();
+        
+        // Nếu là manager, chỉ hiển thị rạp của mình
+        if (isManager()) {
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $cinema = $this->cinema->find($cinemaId);
+                $cinemas = $cinema ? [$cinema] : [];
+            } else {
+                $cinemas = [];
+            }
+        } else {
+            $cinemas = $this->cinema->all();
+        }
 
         // Validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -68,6 +96,15 @@ class RoomsController
                 $errors['seat_count'] = "Số ghế không được âm";
             }
 
+            // Manager chỉ được tạo phòng cho rạp của mình
+            if (isManager()) {
+                $cinemaId = getCurrentCinemaId();
+                $postCinemaId = trim($_POST['cinema_id'] ?? '');
+                if ($cinemaId != $postCinemaId) {
+                    $errors['cinema_id'] = "Bạn chỉ được tạo phòng cho rạp của mình";
+                }
+            }
+            
             // Nếu không có lỗi, lưu vào database
             if (empty($errors)) {
                 $data = [
@@ -92,10 +129,13 @@ class RoomsController
     }
 
     /**
-     * Hiển thị form sửa phòng (Admin)
+     * Hiển thị form sửa phòng (Admin/Manager)
      */
     public function edit()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrManager();
+        
         $id = $_GET['id'] ?? null;
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=rooms');
@@ -107,9 +147,27 @@ class RoomsController
             header('Location: ' . BASE_URL . '?act=rooms');
             exit;
         }
+        
+        // Manager chỉ được sửa phòng của rạp mình quản lý
+        if (isManager() && !canAccessCinema($room['cinema_id'])) {
+            header('Location: ' . BASE_URL . '?act=rooms');
+            exit;
+        }
 
         $errors = [];
-        $cinemas = $this->cinema->all();
+        
+        // Nếu là manager, chỉ hiển thị rạp của mình
+        if (isManager()) {
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $cinema = $this->cinema->find($cinemaId);
+                $cinemas = $cinema ? [$cinema] : [];
+            } else {
+                $cinemas = [];
+            }
+        } else {
+            $cinemas = $this->cinema->all();
+        }
 
         // Validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -124,6 +182,15 @@ class RoomsController
 
             if (empty(trim($_POST['name'] ?? ''))) {
                 $errors['name'] = "Bạn vui lòng nhập tên phòng";
+            }
+            
+            // Manager chỉ được sửa phòng cho rạp của mình
+            if (isManager()) {
+                $cinemaId = getCurrentCinemaId();
+                $postCinemaId = trim($_POST['cinema_id'] ?? '');
+                if ($cinemaId != $postCinemaId) {
+                    $errors['cinema_id'] = "Bạn chỉ được sửa phòng cho rạp của mình";
+                }
             }
 
             // Số ghế mặc định là 0 hoặc lấy từ số ghế thực tế

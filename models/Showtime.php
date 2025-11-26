@@ -233,6 +233,120 @@ class Showtime
     }
 
     /**
+     * Lấy lịch chiếu với phân trang theo cinema_id
+     */
+    public function paginateByCinema($cinemaId, $page = 1, $perPage = 5, $date = null, $status = null)
+    {
+        try {
+            $offset = ($page - 1) * $perPage;
+            
+            // Xây dựng WHERE clause
+            $whereClause = "WHERE cinemas.id = :cinema_id";
+            $params = [':cinema_id' => $cinemaId];
+            
+            if ($date) {
+                $whereClause .= " AND showtimes.show_date = :date";
+                $params[':date'] = $date;
+            }
+            
+            // Filter theo trạng thái
+            if ($status) {
+                $today = date('Y-m-d');
+                $now = date('H:i:s');
+                
+                switch ($status) {
+                    case 'upcoming':
+                        $whereClause .= " AND (showtimes.show_date > :status_today OR (showtimes.show_date = :status_today2 AND showtimes.start_time > :status_now))";
+                        $params[':status_today'] = $today;
+                        $params[':status_today2'] = $today;
+                        $params[':status_now'] = $now;
+                        break;
+                    case 'showing':
+                        $whereClause .= " AND showtimes.show_date = :status_today AND showtimes.start_time <= :status_now AND showtimes.end_time >= :status_now2";
+                        $params[':status_today'] = $today;
+                        $params[':status_now'] = $now;
+                        $params[':status_now2'] = $now;
+                        break;
+                    case 'ended':
+                        $whereClause .= " AND (showtimes.show_date < :status_today OR (showtimes.show_date = :status_today2 AND showtimes.end_time < :status_now))";
+                        $params[':status_today'] = $today;
+                        $params[':status_today2'] = $today;
+                        $params[':status_now'] = $now;
+                        break;
+                }
+            }
+            
+            // Thêm filter theo trạng thái phim (chỉ lấy phim đang chiếu)
+            $movieFilter = "movies.status = 'active' 
+                           AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
+                           AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)";
+            $whereClause .= " AND " . $movieFilter;
+            
+            // Lấy tổng số bản ghi
+            $countSql = "SELECT COUNT(*) as total 
+                        FROM showtimes
+                        LEFT JOIN movies ON showtimes.movie_id = movies.id
+                        LEFT JOIN rooms ON showtimes.room_id = rooms.id
+                        LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                        $whereClause";
+            $countStmt = $this->conn->prepare($countSql);
+            $countStmt->execute($params);
+            $total = $countStmt->fetch()['total'];
+            
+            // Lấy dữ liệu phân trang
+            $sql = "SELECT showtimes.*, 
+                    movies.title AS movie_title,
+                    movies.duration AS movie_duration,
+                    movies.image AS movie_image,
+                    movies.status AS movie_status,
+                    movies.release_date AS movie_release_date,
+                    movies.end_date AS movie_end_date,
+                    rooms.name AS room_name,
+                    rooms.room_code AS room_code,
+                    cinemas.name AS cinema_name
+                    FROM showtimes
+                    LEFT JOIN movies ON showtimes.movie_id = movies.id
+                    LEFT JOIN rooms ON showtimes.room_id = rooms.id
+                    LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                    $whereClause
+                    ORDER BY showtimes.show_date ASC, showtimes.start_time ASC, showtimes.id ASC
+                    LIMIT :limit OFFSET :offset";
+            $stmt = $this->conn->prepare($sql);
+            
+            // Bind params
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $data = $stmt->fetchAll();
+            
+            // Thêm trạng thái vào mỗi item
+            foreach ($data as &$item) {
+                $item['status'] = $this->getStatus($item);
+            }
+            
+            return [
+                'data' => $data,
+                'total' => $total,
+                'page' => $page,
+                'perPage' => $perPage,
+                'totalPages' => ceil($total / $perPage)
+            ];
+        } catch (Exception $e) {
+            debug($e);
+            return [
+                'data' => [],
+                'total' => 0,
+                'page' => 1,
+                'perPage' => $perPage,
+                'totalPages' => 0
+            ];
+        }
+    }
+
+    /**
      * Lấy lịch chiếu theo ID
      */
     public function find($id)

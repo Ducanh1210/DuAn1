@@ -13,10 +13,13 @@ class ShowtimesController
     }
 
     /**
-     * Hiển thị danh sách lịch chiếu (Admin)
+     * Hiển thị danh sách lịch chiếu (Admin/Staff)
      */
     public function list()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrStaff();
+        
         // Lọc theo ngày nếu có
         $date = $_GET['date'] ?? null;
         // Lọc theo trạng thái nếu có
@@ -24,8 +27,17 @@ class ShowtimesController
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $page = max(1, $page); // Đảm bảo page >= 1
         
-        // Lấy dữ liệu phân trang
-        $result = $this->showtime->paginate($page, 5, $date, $status);
+        // Nếu là manager hoặc staff, chỉ lấy lịch chiếu của rạp mình quản lý
+        if (isManager() || isStaff()) {
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $result = $this->showtime->paginateByCinema($cinemaId, $page, 5, $date, $status);
+            } else {
+                $result = ['data' => [], 'page' => 1, 'totalPages' => 0, 'total' => 0, 'perPage' => 5];
+            }
+        } else {
+            $result = $this->showtime->paginate($page, 5, $date, $status);
+        }
         
         // Lấy danh sách phim và phòng cho filter
         $movies = $this->movie->all();
@@ -47,14 +59,30 @@ class ShowtimesController
     }
 
     /**
-     * Hiển thị form tạo lịch chiếu mới (Admin)
+     * Hiển thị form tạo lịch chiếu mới (Admin/Manager)
      */
     public function create()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrManager();
+        
         $errors = [];
         $movies = $this->movie->all();
         $cinemas = $this->getCinemas();
         $rooms = $this->getRooms();
+        
+        // Lấy cinema_id của manager nếu là manager
+        $managerCinemaId = null;
+        $managerCinemaName = null;
+        if (isManager()) {
+            $managerCinemaId = getCurrentCinemaId();
+            if ($managerCinemaId) {
+                require_once __DIR__ . '/../models/Cinema.php';
+                $cinemaModel = new Cinema();
+                $cinema = $cinemaModel->find($managerCinemaId);
+                $managerCinemaName = $cinema['name'] ?? null;
+            }
+        }
 
         if (!empty($_POST)) {
             $data = [
@@ -70,6 +98,21 @@ class ShowtimesController
             $validationErrors = $this->showtime->validate($data);
             $errors = array_merge($errors, $validationErrors);
 
+            // Manager chỉ được tạo lịch chiếu cho phòng thuộc rạp mình quản lý
+            if (isManager()) {
+                $cinemaId = getCurrentCinemaId();
+                if ($cinemaId) {
+                    require_once __DIR__ . '/../models/Room.php';
+                    $roomModel = new Room();
+                    $room = $roomModel->find($data['room_id']);
+                    if (!$room || $room['cinema_id'] != $cinemaId) {
+                        $errors['room_id'] = "Bạn chỉ được tạo lịch chiếu cho phòng thuộc rạp của mình";
+                    }
+                } else {
+                    $errors['general'] = "Bạn chưa được gán cho rạp nào. Vui lòng liên hệ quản trị viên.";
+                }
+            }
+            
             if (empty($errors)) {
                 $this->showtime->insert($data);
                 header('Location: ' . BASE_URL . '?act=showtimes');
@@ -81,15 +124,20 @@ class ShowtimesController
             'errors' => $errors,
             'movies' => $movies,
             'cinemas' => $cinemas,
-            'rooms' => $rooms
+            'rooms' => $rooms,
+            'managerCinemaId' => $managerCinemaId,
+            'managerCinemaName' => $managerCinemaName
         ]);
     }
 
     /**
-     * Hiển thị form sửa lịch chiếu (Admin)
+     * Hiển thị form sửa lịch chiếu (Admin/Manager)
      */
     public function edit()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrManager();
+        
         $id = $_GET['id'] ?? null;
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=showtimes');
@@ -100,6 +148,17 @@ class ShowtimesController
         if (!$showtime) {
             header('Location: ' . BASE_URL . '?act=showtimes');
             exit;
+        }
+        
+        // Manager chỉ được sửa lịch chiếu của rạp mình quản lý
+        if (isManager()) {
+            require_once __DIR__ . '/../models/Room.php';
+            $roomModel = new Room();
+            $room = $roomModel->find($showtime['room_id']);
+            if (!$room || !canAccessCinema($room['cinema_id'])) {
+                header('Location: ' . BASE_URL . '?act=showtimes');
+                exit;
+            }
         }
 
         $errors = [];
@@ -132,6 +191,19 @@ class ShowtimesController
             // Validate
             $validationErrors = $this->showtime->validate($data, true);
             $errors = array_merge($errors, $validationErrors);
+            
+            // Manager chỉ được sửa lịch chiếu cho phòng thuộc rạp mình quản lý
+            if (isManager()) {
+                $cinemaId = getCurrentCinemaId();
+                if ($cinemaId) {
+                    require_once __DIR__ . '/../models/Room.php';
+                    $roomModel = new Room();
+                    $room = $roomModel->find($data['room_id']);
+                    if (!$room || $room['cinema_id'] != $cinemaId) {
+                        $errors['room_id'] = "Bạn chỉ được sửa lịch chiếu cho phòng thuộc rạp của mình";
+                    }
+                }
+            }
 
             if (empty($errors)) {
                 $this->showtime->update($id, $data);
@@ -146,7 +218,9 @@ class ShowtimesController
             'movies' => $movies,
             'cinemas' => $cinemas,
             'rooms' => $rooms,
-            'currentCinemaId' => $currentCinemaId
+            'currentCinemaId' => $currentCinemaId,
+            'managerCinemaId' => $managerCinemaId,
+            'managerCinemaName' => $managerCinemaName
         ]);
     }
 
@@ -191,12 +265,27 @@ class ShowtimesController
      */
     private function getCinemas()
     {
+        require_once __DIR__ . '/../commons/auth.php';
         try {
             $conn = connectDB();
-            $sql = "SELECT * FROM cinemas ORDER BY name ASC";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll();
+            
+            // Nếu là staff, chỉ lấy rạp của mình
+            if (isStaff()) {
+                $cinemaId = getCurrentCinemaId();
+                if ($cinemaId) {
+                    $sql = "SELECT * FROM cinemas WHERE id = :cinema_id ORDER BY name ASC";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->execute([':cinema_id' => $cinemaId]);
+                    return $stmt->fetchAll();
+                } else {
+                    return [];
+                }
+            } else {
+                $sql = "SELECT * FROM cinemas ORDER BY name ASC";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute();
+                return $stmt->fetchAll();
+            }
         } catch (Exception $e) {
             return [];
         }
@@ -207,17 +296,38 @@ class ShowtimesController
      */
     private function getRooms()
     {
+        require_once __DIR__ . '/../commons/auth.php';
         try {
             $conn = connectDB();
-            $sql = "SELECT rooms.*, 
-                    rooms.cinema_id,
-                    cinemas.name AS cinema_name
-                    FROM rooms
-                    LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
-                    ORDER BY cinemas.name ASC, rooms.name ASC";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll();
+            
+            // Nếu là manager hoặc staff, chỉ lấy phòng của rạp mình quản lý
+            if (isManager() || isStaff()) {
+                $cinemaId = getCurrentCinemaId();
+                if ($cinemaId) {
+                    $sql = "SELECT rooms.*, 
+                            rooms.cinema_id,
+                            cinemas.name AS cinema_name
+                            FROM rooms
+                            LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                            WHERE rooms.cinema_id = :cinema_id
+                            ORDER BY rooms.name ASC";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->execute([':cinema_id' => $cinemaId]);
+                    return $stmt->fetchAll();
+                } else {
+                    return [];
+                }
+            } else {
+                $sql = "SELECT rooms.*, 
+                        rooms.cinema_id,
+                        cinemas.name AS cinema_name
+                        FROM rooms
+                        LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                        ORDER BY cinemas.name ASC, rooms.name ASC";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute();
+                return $stmt->fetchAll();
+            }
         } catch (Exception $e) {
             return [];
         }

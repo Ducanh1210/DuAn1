@@ -13,14 +13,26 @@ class SeatsController
     }
 
     /**
-     * Hiển thị danh sách ghế (Admin) - Hiển thị sơ đồ ghế
+     * Hiển thị danh sách ghế (Admin/Manager/Staff) - Hiển thị sơ đồ ghế
      */
     public function list()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrStaff();
+        
         $roomId = $_GET['room_id'] ?? null;
         
-        // Lấy danh sách phòng để filter
-        $rooms = $this->room->all();
+        // Nếu là manager hoặc staff, chỉ lấy phòng của rạp mình quản lý
+        if (isManager() || isStaff()) {
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $rooms = $this->room->getByCinema($cinemaId);
+            } else {
+                $rooms = [];
+            }
+        } else {
+            $rooms = $this->room->all();
+        }
         
         $room = null;
         $seatMap = [];
@@ -29,7 +41,13 @@ class SeatsController
         if ($roomId) {
             $room = $this->room->find($roomId);
             if ($room) {
-                $seatMap = $this->seat->getSeatMapByRoom($roomId);
+                // Manager và Staff chỉ được xem ghế của phòng thuộc rạp mình quản lý
+                if ((isManager() || isStaff()) && !canAccessCinema($room['cinema_id'])) {
+                    $room = null;
+                    $seatMap = [];
+                } else {
+                    $seatMap = $this->seat->getSeatMapByRoom($roomId);
+                }
             }
         }
         
@@ -42,10 +60,13 @@ class SeatsController
     }
 
     /**
-     * Hiển thị sơ đồ ghế (Admin)
+     * Hiển thị sơ đồ ghế (Admin/Manager/Staff)
      */
     public function seatMap()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrStaff();
+        
         $roomId = $_GET['room_id'] ?? null;
         
         if (!$roomId) {
@@ -58,12 +79,27 @@ class SeatsController
             header('Location: ' . BASE_URL . '?act=seats');
             exit;
         }
+        
+        // Manager và Staff chỉ được xem ghế của phòng thuộc rạp mình quản lý
+        if ((isManager() || isStaff()) && !canAccessCinema($room['cinema_id'])) {
+            header('Location: ' . BASE_URL . '?act=seats');
+            exit;
+        }
 
         // Lấy sơ đồ ghế
         $seatMap = $this->seat->getSeatMapByRoom($roomId);
         
         // Lấy danh sách phòng để chọn
-        $rooms = $this->room->all();
+        if (isManager() || isStaff()) {
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $rooms = $this->room->getByCinema($cinemaId);
+            } else {
+                $rooms = [];
+            }
+        } else {
+            $rooms = $this->room->all();
+        }
         
         render('admin/seats/seatmap.php', [
             'room' => $room,
@@ -73,12 +109,25 @@ class SeatsController
     }
 
     /**
-     * Tạo sơ đồ ghế tự động (Admin)
+     * Tạo sơ đồ ghế tự động (Admin/Manager)
      */
     public function generateSeats()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrManager();
         $errors = [];
-        $rooms = $this->room->all();
+        
+        // Nếu là manager, chỉ lấy phòng của rạp mình quản lý
+        if (isManager()) {
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $rooms = $this->room->getByCinema($cinemaId);
+            } else {
+                $rooms = [];
+            }
+        } else {
+            $rooms = $this->room->all();
+        }
         
         // Lấy số ghế thực tế cho mỗi phòng
         foreach ($rooms as &$room) {

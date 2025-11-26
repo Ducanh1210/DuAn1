@@ -224,6 +224,85 @@ class Booking
     }
 
     /**
+     * Lấy đặt vé với phân trang theo cinema_id
+     */
+    public function paginateByCinema($cinemaId, $page = 1, $perPage = 10, $status = null, $date = null)
+    {
+        try {
+            $offset = ($page - 1) * $perPage;
+            
+            // Xây dựng WHERE clause
+            $whereClause = "WHERE bookings.cinema_id = :cinema_id";
+            $params = [':cinema_id' => $cinemaId];
+            
+            if ($status) {
+                $whereClause .= " AND bookings.status = :status";
+                $params[':status'] = $status;
+            }
+            
+            if ($date) {
+                $whereClause .= " AND DATE(bookings.booking_date) = :date";
+                $params[':date'] = $date;
+            }
+            
+            // Lấy tổng số bản ghi
+            $countSql = "SELECT COUNT(*) as total FROM bookings $whereClause";
+            $countStmt = $this->conn->prepare($countSql);
+            $countStmt->execute($params);
+            $total = $countStmt->fetch()['total'];
+            
+            // Lấy dữ liệu phân trang
+            $sql = "SELECT bookings.*,
+                    users.full_name AS user_name,
+                    users.email AS user_email,
+                    users.phone AS user_phone,
+                    movies.title AS movie_title,
+                    movies.image AS movie_image,
+                    showtimes.show_date,
+                    showtimes.start_time,
+                    showtimes.end_time,
+                    rooms.name AS room_name,
+                    cinemas.name AS cinema_name
+                    FROM bookings
+                    LEFT JOIN users ON bookings.user_id = users.id
+                    LEFT JOIN showtimes ON bookings.showtime_id = showtimes.id
+                    LEFT JOIN movies ON showtimes.movie_id = movies.id
+                    LEFT JOIN rooms ON bookings.room_id = rooms.id
+                    LEFT JOIN cinemas ON bookings.cinema_id = cinemas.id
+                    $whereClause
+                    ORDER BY bookings.booking_date DESC, bookings.id DESC
+                    LIMIT :limit OFFSET :offset";
+            $stmt = $this->conn->prepare($sql);
+            
+            // Bind params
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $data = $stmt->fetchAll();
+            
+            return [
+                'data' => $data,
+                'total' => $total,
+                'page' => $page,
+                'perPage' => $perPage,
+                'totalPages' => ceil($total / $perPage)
+            ];
+        } catch (Exception $e) {
+            debug($e);
+            return [
+                'data' => [],
+                'total' => 0,
+                'page' => 1,
+                'perPage' => $perPage,
+                'totalPages' => 0
+            ];
+        }
+    }
+
+    /**
      * Tạo mã đặt vé
      */
     private function generateBookingCode()

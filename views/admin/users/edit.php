@@ -80,19 +80,47 @@
                   <em class="text-warning">Không thể thay đổi quyền của Admin</em>
                 </small>
               <?php else: ?>
-                <!-- Staff và Customer có thể chuyển đổi -->
-                <select name="role" id="role" class="form-select <?= !empty($errors['role']) ? 'is-invalid' : '' ?>" required>
-                  <option value="staff" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'staff' ? 'selected' : '' ?>>Staff</option>
-                  <option value="customer" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'customer' ? 'selected' : '' ?>>Customer</option>
+                <!-- Manager, Staff và Customer có thể chuyển đổi -->
+                <select name="role" id="role" class="form-select <?= !empty($errors['role']) ? 'is-invalid' : '' ?>" required onchange="toggleCinemaField()">
+                  <option value="manager" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'manager' ? 'selected' : '' ?>>Quản lý</option>
+                  <option value="staff" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'staff' ? 'selected' : '' ?>>Nhân viên</option>
+                  <option value="customer" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'customer' ? 'selected' : '' ?>>Khách hàng</option>
                 </select>
                 <?php if (!empty($errors['role'])): ?>
                   <div class="text-danger small mt-1"><?= $errors['role'] ?></div>
                 <?php endif; ?>
                 <small class="text-muted">
-                  <strong>Staff:</strong> Quyền nhân viên<br>
-                  <strong>Customer:</strong> Khách hàng<br>
-                  <em class="text-info">Admin có thể chuyển Customer sang Staff</em>
+                  <strong>Quản lý:</strong> Quản lý rạp, phòng, ghế, lịch chiếu<br>
+                  <strong>Nhân viên:</strong> Bán vé, xem thống kê<br>
+                  <strong>Khách hàng:</strong> Khách hàng<br>
+                  <em class="text-info">Admin có thể chuyển đổi giữa các quyền</em>
                 </small>
+              <?php endif; ?>
+            </div>
+
+            <div class="mb-3" id="cinema_field" style="display: <?= in_array(isset($_POST['role']) ? $_POST['role'] : $user['role'], ['manager', 'staff']) ? 'block' : 'none' ?>;">
+              <label for="cinema_id" class="form-label">Rạp quản lý <span class="text-danger">*</span></label>
+              <select name="cinema_id" id="cinema_id" class="form-select <?= !empty($errors['cinema_id']) ? 'is-invalid' : '' ?>">
+                <option value="">-- Chọn rạp --</option>
+                <?php if (!empty($cinemas)): ?>
+                  <?php foreach ($cinemas as $cinema): ?>
+                    <option value="<?= $cinema['id'] ?>" <?= (isset($_POST['cinema_id']) ? $_POST['cinema_id'] : $user['cinema_id']) == $cinema['id'] ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($cinema['name']) ?> - <?= htmlspecialchars($cinema['address'] ?? '') ?>
+                    </option>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <option value="" disabled>Chưa có rạp nào. Vui lòng tạo rạp trước!</option>
+                <?php endif; ?>
+              </select>
+              <?php if (!empty($errors['cinema_id'])): ?>
+                <div class="text-danger small mt-1"><?= $errors['cinema_id'] ?></div>
+              <?php endif; ?>
+              <?php if (empty($cinemas)): ?>
+                <div class="text-warning small mt-1">
+                  <i class="bi bi-exclamation-triangle"></i> Chưa có rạp nào. Vui lòng <a href="<?= BASE_URL ?>?act=cinemas-create">tạo rạp</a> trước khi gán cho nhân viên.
+                </div>
+              <?php else: ?>
+                <small class="text-muted">Chọn rạp mà nhân viên này sẽ quản lý</small>
               <?php endif; ?>
             </div>
 
@@ -219,7 +247,39 @@
       }
     }
 
+    // Kiểm tra cinema_id nếu role là manager hoặc staff
+    const role = document.getElementById('role').value;
+    if (role === 'manager' || role === 'staff') {
+      const cinemaId = document.getElementById('cinema_id').value;
+      if (!cinemaId || cinemaId === '') {
+        alert('Vui lòng chọn rạp quản lý!');
+        document.getElementById('cinema_id').focus();
+        return false;
+      }
+    }
+
     return true;
   }
+  
+  // Toggle cinema field based on role
+  function toggleCinemaField() {
+    const role = document.getElementById('role').value;
+    const cinemaField = document.getElementById('cinema_field');
+    const cinemaSelect = document.getElementById('cinema_id');
+    
+    if (role === 'manager' || role === 'staff') {
+      cinemaField.style.display = 'block';
+      cinemaSelect.setAttribute('required', 'required');
+    } else {
+      cinemaField.style.display = 'none';
+      cinemaSelect.removeAttribute('required');
+      cinemaSelect.value = '';
+    }
+  }
+  
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    toggleCinemaField();
+  });
 </script>
 

@@ -1,7 +1,12 @@
 <div class="container-fluid">
   <div class="card">
     <div class="card-header">
-      <h4 class="mb-0"><i class="bi bi-bar-chart"></i> Thống Kê</h4>
+      <h4 class="mb-0">
+        <i class="bi bi-bar-chart"></i> Thống Kê
+        <?php if (!empty($cinemaName)): ?>
+          <span class="badge bg-primary ms-2"><?= htmlspecialchars($cinemaName) ?></span>
+        <?php endif; ?>
+      </h4>
     </div>
     <div class="card-body">
       <!-- Tổng quan -->
@@ -113,18 +118,24 @@
         </div>
       </div>
 
-      <!-- Top phim bán chạy -->
+      <!-- Top phim bán chạy và phim hot -->
       <div class="row">
         <div class="col-md-6 mb-4">
           <div class="card">
             <div class="card-header">
-              <h5 class="mb-0">Top 10 Phim Bán Chạy</h5>
+              <h5 class="mb-0">
+                <i class="bi bi-trophy"></i> Top 10 Phim Bán Chạy Nhất
+                <?php if (!empty($cinemaName)): ?>
+                  <small class="text-muted">(<?= htmlspecialchars($cinemaName) ?>)</small>
+                <?php endif; ?>
+              </h5>
             </div>
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table table-sm">
                   <thead>
                     <tr>
+                      <th>#</th>
                       <th>Phim</th>
                       <th>Số vé</th>
                       <th>Doanh thu</th>
@@ -132,8 +143,12 @@
                   </thead>
                   <tbody>
                     <?php if (!empty($topMovies)): ?>
+                      <?php $rank = 1; ?>
                       <?php foreach ($topMovies as $movie): ?>
                       <tr>
+                        <td>
+                          <span class="badge bg-<?= $rank <= 3 ? 'warning' : 'secondary' ?>"><?= $rank ?></span>
+                        </td>
                         <td>
                           <div class="d-flex align-items-center">
                             <?php if (!empty($movie['image'])): ?>
@@ -147,10 +162,11 @@
                         <td><?= number_format($movie['booking_count'], 0, ',', '.') ?></td>
                         <td><strong><?= number_format($movie['revenue'] ?? 0, 0, ',', '.') ?> đ</strong></td>
                       </tr>
+                      <?php $rank++; ?>
                       <?php endforeach; ?>
                     <?php else: ?>
                       <tr>
-                        <td colspan="3" class="text-center text-muted">Chưa có dữ liệu</td>
+                        <td colspan="4" class="text-center text-muted">Chưa có dữ liệu</td>
                       </tr>
                     <?php endif; ?>
                   </tbody>
@@ -161,6 +177,66 @@
         </div>
 
         <div class="col-md-6 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="bi bi-fire"></i> Top 10 Phim Hot Nhất (30 ngày gần đây)
+                <?php if (!empty($cinemaName)): ?>
+                  <small class="text-muted">(<?= htmlspecialchars($cinemaName) ?>)</small>
+                <?php endif; ?>
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Phim</th>
+                      <th>Số vé</th>
+                      <th>Doanh thu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php if (!empty($hotMovies)): ?>
+                      <?php $rank = 1; ?>
+                      <?php foreach ($hotMovies as $movie): ?>
+                      <tr>
+                        <td>
+                          <span class="badge bg-<?= $rank <= 3 ? 'danger' : 'secondary' ?>"><?= $rank ?></span>
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <?php if (!empty($movie['image'])): ?>
+                              <img src="<?= BASE_URL . '/' . $movie['image'] ?>" 
+                                   alt="<?= htmlspecialchars($movie['title']) ?>" 
+                                   style="width: 30px; height: 45px; object-fit: cover; border-radius: 4px; margin-right: 8px;">
+                            <?php endif; ?>
+                            <span><?= htmlspecialchars($movie['title']) ?></span>
+                          </div>
+                        </td>
+                        <td><?= number_format($movie['booking_count'], 0, ',', '.') ?></td>
+                        <td><strong><?= number_format($movie['revenue'] ?? 0, 0, ',', '.') ?> đ</strong></td>
+                      </tr>
+                      <?php $rank++; ?>
+                      <?php endforeach; ?>
+                    <?php else: ?>
+                      <tr>
+                        <td colspan="4" class="text-center text-muted">Chưa có dữ liệu</td>
+                      </tr>
+                    <?php endif; ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top rạp doanh thu cao (chỉ admin) -->
+      <?php if (!empty($topCinemas)): ?>
+      <div class="row">
+        <div class="col-md-12 mb-4">
           <div class="card">
             <div class="card-header">
               <h5 class="mb-0">Top 10 Rạp Doanh Thu Cao</h5>
@@ -176,19 +252,13 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <?php if (!empty($topCinemas)): ?>
-                      <?php foreach ($topCinemas as $cinema): ?>
-                      <tr>
-                        <td><?= htmlspecialchars($cinema['name']) ?></td>
-                        <td><?= number_format($cinema['booking_count'], 0, ',', '.') ?></td>
-                        <td><strong><?= number_format($cinema['revenue'] ?? 0, 0, ',', '.') ?> đ</strong></td>
-                      </tr>
-                      <?php endforeach; ?>
-                    <?php else: ?>
-                      <tr>
-                        <td colspan="3" class="text-center text-muted">Chưa có dữ liệu</td>
-                      </tr>
-                    <?php endif; ?>
+                    <?php foreach ($topCinemas as $cinema): ?>
+                    <tr>
+                      <td><?= htmlspecialchars($cinema['name']) ?></td>
+                      <td><?= number_format($cinema['booking_count'], 0, ',', '.') ?></td>
+                      <td><strong><?= number_format($cinema['revenue'] ?? 0, 0, ',', '.') ?> đ</strong></td>
+                    </tr>
+                    <?php endforeach; ?>
                   </tbody>
                 </table>
               </div>
@@ -196,6 +266,7 @@
           </div>
         </div>
       </div>
+      <?php endif; ?>
 
       <!-- Thống kê theo trạng thái -->
       <div class="row">
