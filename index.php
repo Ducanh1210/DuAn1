@@ -169,16 +169,6 @@ match ($act) {
     'discounts-edit' => (new DiscountCodesController)->edit(),
     'discounts-delete' => (new DiscountCodesController)->delete(),
 
-    // Contacts routes (Admin)
-    'contacts' => (new ContactsController)->list(),
-    'contacts-show' => (new ContactsController)->show(),
-    'contacts-edit' => (new ContactsController)->edit(),
-    'contacts-update-status' => (new ContactsController)->updateStatus(),
-    'contacts-delete' => (new ContactsController)->delete(),
-
-    // Statistics routes (Admin)
-    'thongke' => (new StatisticsController)->index(),
-
     // Notifications API routes (Admin)
     'api-notifications' => (new NotificationController)->getNotifications(),
     'api-notifications-count' => (new NotificationController)->getUnreadCount(),

@@ -39,10 +39,20 @@ class BookingController
                 exit;
             }
 
+            // Kiểm tra room_id có tồn tại không
+            if (empty($showtime['room_id'])) {
+                error_log('Showtime ' . $showtimeId . ' không có room_id');
+                $_SESSION['error_message'] = 'Suất chiếu chưa được gán phòng chiếu';
+                header('Location: ' . BASE_URL . '?act=trangchu');
+                exit;
+            }
+
             $roomModel = new Room();
             $room = $roomModel->find($showtime['room_id']);
             
             if (!$room) {
+                error_log('Không tìm thấy phòng với ID: ' . $showtime['room_id'] . ' cho showtime: ' . $showtimeId);
+                $_SESSION['error_message'] = 'Không tìm thấy phòng chiếu';
                 header('Location: ' . BASE_URL . '?act=trangchu');
                 exit;
             }
@@ -61,6 +71,14 @@ class BookingController
             // Đảm bảo seatsByRow là array
             if (!is_array($seatsByRow)) {
                 $seatsByRow = [];
+            }
+            
+            // Kiểm tra nếu phòng không có ghế
+            if (empty($seatsByRow) || count($seatsByRow) === 0) {
+                error_log('Phòng ' . $room['id'] . ' (' . ($room['room_code'] ?? 'N/A') . ') không có ghế nào');
+                $_SESSION['error_message'] = 'Phòng chiếu ' . ($room['room_code'] ?? $room['name'] ?? 'N/A') . ' chưa có ghế. Vui lòng liên hệ quản trị viên.';
+                header('Location: ' . BASE_URL . '?act=trangchu');
+                exit;
             }
 
             // Lấy danh sách ghế đã đặt cho suất chiếu này
@@ -136,16 +154,35 @@ class BookingController
                 exit;
             }
 
+            // Kiểm tra room_id có tồn tại không
+            if (empty($showtime['room_id'])) {
+                error_log('Showtime ' . $showtimeId . ' không có room_id');
+                echo json_encode(['success' => false, 'message' => 'Suất chiếu chưa được gán phòng chiếu']);
+                exit;
+            }
+
             $roomModel = new Room();
             $room = $roomModel->find($showtime['room_id']);
             
             if (!$room) {
-                echo json_encode(['success' => false, 'message' => 'Không tìm thấy phòng chiếu']);
+                error_log('Không tìm thấy phòng với ID: ' . $showtime['room_id'] . ' cho showtime: ' . $showtimeId);
+                echo json_encode(['success' => false, 'message' => 'Không tìm thấy phòng chiếu (ID: ' . $showtime['room_id'] . ')']);
                 exit;
             }
 
             $seatModel = new Seat();
             $seatsByRow = $seatModel->getSeatMapByRoom($room['id']);
+            
+            // Kiểm tra nếu phòng không có ghế
+            if (empty($seatsByRow) || !is_array($seatsByRow) || count($seatsByRow) === 0) {
+                error_log('Phòng ' . $room['id'] . ' (' . ($room['room_code'] ?? 'N/A') . ') không có ghế nào');
+                echo json_encode([
+                    'success' => false, 
+                    'message' => 'Phòng chiếu ' . ($room['room_code'] ?? $room['name'] ?? 'N/A') . ' chưa có ghế. Vui lòng liên hệ quản trị viên để tạo ghế cho phòng này.'
+                ]);
+                exit;
+            }
+            
             $bookedSeats = $this->booking->getBookedSeatsByShowtime($showtimeId);
 
             // Lấy giá vé từ ticket_prices
@@ -186,6 +223,8 @@ class BookingController
                 'format' => $showtimeFormat
             ]);
         } catch (Exception $e) {
+            error_log('Error in getSeatsApi: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
             echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi tải dữ liệu ghế: ' . $e->getMessage()]);
         }
         exit;
@@ -343,6 +382,10 @@ class BookingController
             // Đảm bảo showtime có format đúng trước khi tính giá
             $showtime['format'] = $showtimeFormat;
 
+            // Lấy thông tin phòng để xác định số cột
+            $roomModel = new Room();
+            $room = $roomModel->find($showtime['room_id'] ?? null);
+
             // Tính tổng tiền sử dụng giá vé từ database
             require_once __DIR__ . '/../models/TicketPrice.php';
             $ticketPriceModel = new TicketPrice();
@@ -354,6 +397,25 @@ class BookingController
             // Lấy số lượng người lớn và sinh viên
             $adultCount = isset($_POST['adult_count']) ? (int)$_POST['adult_count'] : 0;
             $studentCount = isset($_POST['student_count']) ? (int)$_POST['student_count'] : 0;
+            $totalPeople = $adultCount + $studentCount;
+
+            // Validation: Nếu chọn 1 vé, chỉ cho phép các cột: 1, 3, 4, 6, 7, 9, 10, 12
+            if ($totalPeople === 1) {
+                $allowedColumns = [1, 3, 4, 6, 7, 9, 10, 12];
+                foreach ($seatIdArray as $seatId) {
+                    $seat = $seatModel->find(trim($seatId));
+                    if ($seat) {
+                        $seatColumn = (int)($seat['seat_number'] ?? 0);
+                        if (!in_array($seatColumn, $allowedColumns)) {
+                            echo json_encode([
+                                'success' => false, 
+                                'message' => 'Khi chọn 1 vé, bạn chỉ có thể chọn các cột: 1, 3, 4, 6, 7, 9, 10, 12'
+                            ]);
+                            exit;
+                        }
+                    }
+                }
+            }
 
             foreach ($seatIdArray as $index => $seatId) {
                 $seat = $seatModel->find(trim($seatId));

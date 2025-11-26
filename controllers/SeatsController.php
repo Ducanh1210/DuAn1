@@ -21,6 +21,12 @@ class SeatsController
         requireAdminOrStaff();
         
         $roomId = $_GET['room_id'] ?? null;
+
+        $result = $this->seat->paginate($page, 20, $roomId);
+
+        // Lấy danh sách phòng để filter
+        $rooms = $this->room->all();
+
         
         // Nếu là manager hoặc staff, chỉ lấy phòng của rạp mình quản lý
         if (isManager() || isStaff()) {
@@ -68,7 +74,7 @@ class SeatsController
         requireAdminOrStaff();
         
         $roomId = $_GET['room_id'] ?? null;
-        
+
         if (!$roomId) {
             header('Location: ' . BASE_URL . '?act=seats');
             exit;
@@ -88,8 +94,10 @@ class SeatsController
 
         // Lấy sơ đồ ghế
         $seatMap = $this->seat->getSeatMapByRoom($roomId);
-        
+
         // Lấy danh sách phòng để chọn
+        $rooms = $this->room->all();
+
         if (isManager() || isStaff()) {
             $cinemaId = getCurrentCinemaId();
             if ($cinemaId) {
@@ -156,25 +164,25 @@ class SeatsController
             }
 
             if (empty($errors)) {
-                // Lấy số ghế thực tế hiện tại của phòng
-                $currentSeatCount = $this->seat->getCountByRoom($roomId);
+                // Lấy thông tin phòng để kiểm tra capacity
+                $room = $this->room->find($roomId);
+                $roomCapacity = $room['seat_count'] ?? $room['capacity'] ?? 0;
                 $totalSeatsToCreate = $rows * $seatsPerRow;
-                
-                // Nếu phòng đã có ghế và không chọn xóa ghế cũ, cảnh báo
-                if ($currentSeatCount > 0 && !$clearExisting) {
-                    $errors['general'] = "Phòng này đã có {$currentSeatCount} ghế. Vui lòng chọn 'Xóa tất cả ghế hiện có trong phòng trước khi tạo mới' nếu bạn muốn tạo lại sơ đồ ghế.";
+
+                // Kiểm tra nếu phòng có capacity và tổng số ghế tạo ra khác capacity
+                if ($roomCapacity > 0 && $totalSeatsToCreate != $roomCapacity) {
+                    $errors['general'] = "Phòng này có {$roomCapacity} ghế, nhưng bạn đang tạo {$totalSeatsToCreate} ghế ({$rows} hàng x {$seatsPerRow} ghế). Vui lòng điều chỉnh để khớp với số ghế của phòng.";
                 }
-                
+
                 if (empty($errors)) {
                     // Xóa ghế cũ nếu được chọn
                     if ($clearExisting) {
                         $this->seat->deleteByRoom($roomId);
                     }
 
-                    // Tạo ghế mới: sẽ tự động chia đều 2 bên (mỗi bên 6 ghế/hàng = 12 ghế/hàng)
-                    // Logic trong insertBulk sẽ tự động tính lại số hàng và tạo đúng số lượng ghế
-                    $result = $this->seat->insertBulk($roomId, $rows, $seatsPerRow, $seatType, $extraPrice, null);
-                    
+                    // Tạo ghế mới với giới hạn capacity
+                    $result = $this->seat->insertBulk($roomId, $rows, $seatsPerRow, $seatType, $extraPrice, $roomCapacity);
+
                     if ($result !== false) {
                         // Hiển thị thông báo số ghế đã tạo
                         $_SESSION['success'] = "Đã tạo thành công {$result} ghế. Sơ đồ ghế được chia đều 2 bên (mỗi bên 6 ghế/hàng).";
@@ -233,9 +241,9 @@ class SeatsController
                     'extra_price' => $extraPrice,
                     'status' => $status
                 ];
-                
+
                 $result = $this->seat->insert($data);
-                
+
                 if ($result) {
                     header('Location: ' . BASE_URL . '?act=seats-seatmap&room_id=' . $roomId);
                     exit;
@@ -303,9 +311,9 @@ class SeatsController
                     'extra_price' => $extraPrice,
                     'status' => $status
                 ];
-                
+
                 $result = $this->seat->update($id, $data);
-                
+
                 if ($result) {
                     header('Location: ' . BASE_URL . '?act=seats-seatmap&room_id=' . $roomId);
                     exit;
@@ -325,7 +333,7 @@ class SeatsController
     {
         $id = $_GET['id'] ?? null;
         $roomId = $_GET['room_id'] ?? null;
-        
+
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=seats');
             exit;
@@ -364,6 +372,3 @@ class SeatsController
         render('admin/seats/show.php', ['seat' => $seat]);
     }
 }
-
-?>
-

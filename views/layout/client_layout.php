@@ -25,6 +25,9 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'khuyenmai.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/khuyenmai.css">
     <?php endif; ?>
+    <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'lienhe.php') !== false): ?>
+        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lienhe.css?v=<?= time() ?>">
+    <?php endif; ?>
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Roboto:wght@300;400;500&display=swap"
         rel="stylesheet" />
