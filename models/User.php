@@ -127,7 +127,8 @@ class User
                 tier_id,
                 role,
                 status,
-                total_spending
+                total_spending,
+                cinema_id
             ) VALUES (
                 :full_name,
                 :email,
@@ -137,7 +138,8 @@ class User
                 :tier_id,
                 :role,
                 :status,
-                :total_spending
+                :total_spending,
+                :cinema_id
             )";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
@@ -149,7 +151,8 @@ class User
                 ':tier_id' => $data['tier_id'] ?? null,
                 ':role' => $data['role'] ?? 'customer',
                 ':status' => $data['status'] ?? 'active',
-                ':total_spending' => $data['total_spending'] ?? 0.00
+                ':total_spending' => $data['total_spending'] ?? 0.00,
+                ':cinema_id' => $data['cinema_id'] ?? null
             ]);
             return $this->conn->lastInsertId();
         } catch (Exception $e) {
@@ -191,7 +194,8 @@ class User
                 birth_date = :birth_date,
                 tier_id = :tier_id,
                 role = :role,
-                total_spending = :total_spending";
+                total_spending = :total_spending,
+                cinema_id = :cinema_id";
 
             // Cập nhật address nếu có trong data và cột tồn tại
             if (isset($data['address']) && $hasAddressColumn) {
@@ -218,7 +222,8 @@ class User
                 ':birth_date' => $data['birth_date'] ?? $currentUser['birth_date'] ?? null,
                 ':tier_id' => $data['tier_id'] ?? $currentUser['tier_id'] ?? null,
                 ':role' => $data['role'] ?? $currentUser['role'] ?? 'customer',
-                ':total_spending' => $data['total_spending'] ?? $currentUser['total_spending'] ?? 0.00
+                ':total_spending' => $data['total_spending'] ?? $currentUser['total_spending'] ?? 0.00,
+                ':cinema_id' => $data['cinema_id'] ?? $currentUser['cinema_id'] ?? null
             ];
 
             // Chỉ thêm address nếu cột tồn tại

@@ -75,6 +75,54 @@ class Room
     }
 
     /**
+     * Lấy phòng với phân trang theo cinema_id
+     */
+    public function paginateByCinema($cinemaId, $page = 1, $perPage = 10)
+    {
+        try {
+            $offset = ($page - 1) * $perPage;
+            
+            // Lấy tổng số bản ghi
+            $countSql = "SELECT COUNT(*) as total FROM rooms WHERE cinema_id = :cinema_id";
+            $countStmt = $this->conn->prepare($countSql);
+            $countStmt->execute([':cinema_id' => $cinemaId]);
+            $total = $countStmt->fetch()['total'];
+            
+            // Lấy dữ liệu phân trang
+            $sql = "SELECT rooms.*, 
+                    cinemas.name AS cinema_name
+                    FROM rooms
+                    LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                    WHERE rooms.cinema_id = :cinema_id
+                    ORDER BY rooms.id ASC
+                    LIMIT :limit OFFSET :offset";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindValue(':cinema_id', (int)$cinemaId, PDO::PARAM_INT);
+            $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $data = $stmt->fetchAll();
+            
+            return [
+                'data' => $data,
+                'total' => $total,
+                'page' => $page,
+                'perPage' => $perPage,
+                'totalPages' => ceil($total / $perPage)
+            ];
+        } catch (Exception $e) {
+            debug($e);
+            return [
+                'data' => [],
+                'total' => 0,
+                'page' => 1,
+                'perPage' => $perPage,
+                'totalPages' => 0
+            ];
+        }
+    }
+
+    /**
      * Lấy phòng theo ID
      */
     public function find($id)

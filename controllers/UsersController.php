@@ -56,6 +56,11 @@ class UsersController
         
         $errors = [];
         $tiers = $this->user->getTiers();
+        
+        // Lấy danh sách rạp để gán cho staff
+        require_once __DIR__ . '/../models/Cinema.php';
+        $cinemaModel = new Cinema();
+        $cinemas = $cinemaModel->all();
 
         // Validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -86,8 +91,15 @@ class UsersController
                 $errors['role'] = "Bạn vui lòng chọn quyền";
             } elseif ($_POST['role'] === 'admin') {
                 $errors['role'] = "Không thể tạo tài khoản Admin. Chỉ có 1 Admin duy nhất trong hệ thống";
-            } elseif (!in_array($_POST['role'], ['staff', 'customer'])) {
-                $errors['role'] = "Quyền không hợp lệ. Chỉ có thể tạo Staff hoặc Customer";
+            } elseif (!in_array($_POST['role'], ['manager', 'staff', 'customer'])) {
+                $errors['role'] = "Quyền không hợp lệ. Chỉ có thể tạo Manager, Staff hoặc Customer";
+            }
+            
+            // Nếu là manager hoặc staff, bắt buộc phải chọn rạp
+            if (in_array($_POST['role'], ['manager', 'staff'])) {
+                if (empty(trim($_POST['cinema_id'] ?? ''))) {
+                    $errors['cinema_id'] = "Quản lý/Nhân viên phải được gán cho một rạp";
+                }
             }
 
             // Kiểm tra phone nếu có
@@ -117,7 +129,8 @@ class UsersController
                     'tier_id' => !empty($_POST['tier_id']) ? trim($_POST['tier_id']) : null,
                     'role' => trim($_POST['role']),
                     'status' => 'active',
-                    'total_spending' => 0.00
+                    'total_spending' => 0.00,
+                    'cinema_id' => ($_POST['role'] === 'staff' && !empty($_POST['cinema_id'])) ? trim($_POST['cinema_id']) : null
                 ];
                 $this->user->insert($data);
                 header('Location: ' . BASE_URL . '?act=users');
@@ -125,7 +138,7 @@ class UsersController
             }
         }
 
-        render('admin/users/create.php', ['errors' => $errors, 'tiers' => $tiers]);
+        render('admin/users/create.php', ['errors' => $errors, 'tiers' => $tiers, 'cinemas' => $cinemas]);
     }
 
     /**
@@ -151,6 +164,11 @@ class UsersController
 
         $errors = [];
         $tiers = $this->user->getTiers();
+        
+        // Lấy danh sách rạp để gán cho staff
+        require_once __DIR__ . '/../models/Cinema.php';
+        $cinemaModel = new Cinema();
+        $cinemas = $cinemaModel->all();
 
         // Validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -193,9 +211,9 @@ class UsersController
                 elseif ($currentRole === 'admin' && $newRole !== 'admin') {
                     $errors['role'] = "Không thể thay đổi quyền của Admin";
                 }
-                // Chỉ cho phép chuyển giữa staff và customer
-                elseif (!in_array($newRole, ['staff', 'customer'])) {
-                    $errors['role'] = "Quyền không hợp lệ. Chỉ có thể chuyển giữa Staff và Customer";
+                // Chỉ cho phép chuyển giữa manager, staff và customer
+                elseif (!in_array($newRole, ['manager', 'staff', 'customer'])) {
+                    $errors['role'] = "Quyền không hợp lệ. Chỉ có thể chuyển giữa Manager, Staff và Customer";
                 }
             }
 
@@ -224,7 +242,8 @@ class UsersController
                     'birth_date' => trim($_POST['birth_date'] ?? ''),
                     'tier_id' => !empty($_POST['tier_id']) ? trim($_POST['tier_id']) : null,
                     'role' => trim($_POST['role']),
-                    'total_spending' => floatval($_POST['total_spending'] ?? $user['total_spending'])
+                    'total_spending' => floatval($_POST['total_spending'] ?? $user['total_spending']),
+                    'cinema_id' => ($_POST['role'] === 'staff' && !empty($_POST['cinema_id'])) ? trim($_POST['cinema_id']) : null
                 ];
 
                 // Chỉ cập nhật password nếu có thay đổi
@@ -238,7 +257,7 @@ class UsersController
             }
         }
 
-        render('admin/users/edit.php', ['user' => $user, 'errors' => $errors, 'tiers' => $tiers]);
+        render('admin/users/edit.php', ['user' => $user, 'errors' => $errors, 'tiers' => $tiers, 'cinemas' => $cinemas]);
     }
 
     /**

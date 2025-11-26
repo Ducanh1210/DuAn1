@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 25, 2025 at 02:00 PM
+-- Generation Time: Nov 26, 2025 at 01:57 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -51,19 +51,21 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `user_id`, `showtime_id`, `discount_id`, `booking_date`, `booked_seats`, `seat_type`, `customer_type`, `total_amount`, `discount_amount`, `final_amount`, `status`, `qr_code`, `booking_code`, `cinema_id`, `room_id`) VALUES
-(4, 3, 9, NULL, '2025-11-19 10:21:08', 'C12,C11', 'normal', NULL, '160000.00', '0.00', '160000.00', 'paid', NULL, 'BK2025111943C218', 1, 18),
-(5, 3, 9, NULL, '2025-11-19 10:32:15', 'B7,B6,B5', 'normal', NULL, '240000.00', '0.00', '240000.00', 'paid', NULL, 'BK20251119F0FF11', 1, 18),
-(6, 3, 9, NULL, '2025-11-19 12:53:17', 'C8,C7', 'normal', NULL, '160000.00', '0.00', '160000.00', 'cancelled', NULL, 'BK20251119D29273', 1, 18),
-(7, 3, 9, NULL, '2025-11-19 13:23:29', 'A11', NULL, NULL, '80000.00', '0.00', '80000.00', 'paid', NULL, 'BK17635334097649', 1, 18),
-(8, 3, 9, NULL, '2025-11-19 13:38:21', 'D11', NULL, NULL, '80000.00', '0.00', '80000.00', 'paid', NULL, 'BK17635343016235', 1, 18),
-(10, 3, 9, NULL, '2025-11-19 23:29:59', 'A4,A5,A6,A7', NULL, NULL, '320000.00', '0.00', '320000.00', 'paid', NULL, 'BK17635697994209', 1, 18),
-(11, 3, 9, NULL, '2025-11-19 23:34:04', 'B3,B4', NULL, NULL, '160000.00', '0.00', '160000.00', 'paid', NULL, 'BK17635700449534', 1, 18),
-(12, 3, 9, NULL, '2025-11-19 23:41:37', 'B9', NULL, NULL, '80000.00', '0.00', '80000.00', 'paid', NULL, 'BK17635704977283', 1, 18),
-(13, 3, 7, NULL, '2025-11-19 23:54:26', 'B8,B9', NULL, NULL, '180000.00', '0.00', '180000.00', 'pending', NULL, 'BK17635712663434', 1, 17),
-(14, 3, 2, NULL, '2025-11-20 09:43:19', 'A5,A6,A7,A8,A9', NULL, NULL, '400000.00', '0.00', '400000.00', 'paid', NULL, 'BK17636065992196', 1, 18),
-(15, 3, 4, NULL, '2025-11-20 19:46:25', 'A3,A4', NULL, NULL, '180000.00', '0.00', '180000.00', 'paid', NULL, 'BK17636427856547', 1, 17),
-(16, 3, 2, NULL, '2025-11-20 21:31:24', 'B6', NULL, NULL, '55000.00', '0.00', '55000.00', 'pending', NULL, 'BK17636490845963', 1, 18),
-(17, 3, 2, NULL, '2025-11-20 21:32:21', 'B6', NULL, NULL, '55000.00', '0.00', '55000.00', 'paid', NULL, 'BK17636491412783', 1, 18);
+(4, 3, 9, NULL, '2025-11-19 10:21:08', 'C12,C11', 'normal', NULL, 160000.00, 0.00, 160000.00, 'paid', NULL, 'BK2025111943C218', 1, 18),
+(5, 3, 9, NULL, '2025-11-19 10:32:15', 'B7,B6,B5', 'normal', NULL, 240000.00, 0.00, 240000.00, 'paid', NULL, 'BK20251119F0FF11', 1, 18),
+(6, 3, 9, NULL, '2025-11-19 12:53:17', 'C8,C7', 'normal', NULL, 160000.00, 0.00, 160000.00, 'cancelled', NULL, 'BK20251119D29273', 1, 18),
+(7, 3, 9, NULL, '2025-11-19 13:23:29', 'A11', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635334097649', 1, 18),
+(8, 3, 9, NULL, '2025-11-19 13:38:21', 'D11', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635343016235', 1, 18),
+(10, 3, 9, NULL, '2025-11-19 23:29:59', 'A4,A5,A6,A7', NULL, NULL, 320000.00, 0.00, 320000.00, 'paid', NULL, 'BK17635697994209', 1, 18),
+(11, 3, 9, NULL, '2025-11-19 23:34:04', 'B3,B4', NULL, NULL, 160000.00, 0.00, 160000.00, 'paid', NULL, 'BK17635700449534', 1, 18),
+(12, 3, 9, NULL, '2025-11-19 23:41:37', 'B9', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635704977283', 1, 18),
+(13, 3, 7, NULL, '2025-11-19 23:54:26', 'B8,B9', NULL, NULL, 180000.00, 0.00, 180000.00, 'pending', NULL, 'BK17635712663434', 1, 17),
+(14, 3, 2, NULL, '2025-11-20 09:43:19', 'A5,A6,A7,A8,A9', NULL, NULL, 400000.00, 0.00, 400000.00, 'paid', NULL, 'BK17636065992196', 1, 18),
+(15, 3, 4, NULL, '2025-11-20 19:46:25', 'A3,A4', NULL, NULL, 180000.00, 0.00, 180000.00, 'paid', NULL, 'BK17636427856547', 1, 17),
+(17, 3, 2, NULL, '2025-11-20 21:32:21', 'B6', NULL, NULL, 55000.00, 0.00, 55000.00, 'paid', NULL, 'BK17636491412783', 1, 18),
+(18, 3, 5, 3, '2025-11-24 10:53:16', 'A4,A5,A6,A7,A8', NULL, NULL, 375000.00, 75000.00, 300000.00, 'pending', NULL, 'BK17639563965750', 1, 18),
+(19, 3, 10, 3, '2025-11-24 10:59:50', 'A4,A5,A6,A7,A8', NULL, NULL, 325000.00, 65000.00, 260000.00, 'cancelled', NULL, 'BK17639567904155', 2, 21),
+(20, 3, 3, 6, '2025-11-26 10:48:58', 'A4', NULL, NULL, 85000.00, 85000.00, 0.00, 'pending', NULL, 'BK17641289388833', 1, 17);
 
 -- --------------------------------------------------------
 
@@ -138,6 +140,7 @@ CREATE TABLE `contacts` (
   `subject` varchar(255) NOT NULL COMMENT 'Chủ đề liên hệ',
   `message` text NOT NULL COMMENT 'Nội dung tin nhắn',
   `status` varchar(20) DEFAULT 'pending' COMMENT 'Trạng thái: pending, processing, resolved, closed',
+  `user_id` int DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời gian tạo',
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Thời gian cập nhật'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng lưu trữ thông tin liên hệ của khách hàng';
@@ -146,8 +149,9 @@ CREATE TABLE `contacts` (
 -- Dumping data for table `contacts`
 --
 
-INSERT INTO `contacts` (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Duc anh', 'anp93005@gmail.com', '0386036692', 'Đặt vé', 'tôi muốn đặt vé mà ko đc', 'resolved', '2025-11-25 23:05:53', '2025-11-25 23:14:00');
+INSERT INTO `contacts` (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `user_id`, `created_at`, `updated_at`) VALUES
+(1, 'Duc anh', 'anp93005@gmail.com', '0386036692', 'Đặt vé', 'tôi muốn đặt vé mà ko đc', 'resolved', NULL, '2025-11-25 23:05:53', '2025-11-25 23:14:00'),
+(2, 'Duc anh', 'anp93005@gmail.com', '0386036692', 'Đặt vé', 'tôi ko đặt vé đc admin ơi', 'processing', NULL, '2025-11-26 10:42:57', '2025-11-26 10:44:00');
 
 -- --------------------------------------------------------
 
@@ -196,7 +200,8 @@ INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_
 (2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
 (3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
 (4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', '2025-11-20 15:00:00', '2025-11-20 15:00:00');
+(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(6, 'FASHION209', '100%', 100, '2025-11-26', '2025-11-27', '', NULL, 'active', '', '2025-11-26 10:47:51', '2025-11-26 10:47:51');
 
 -- --------------------------------------------------------
 
@@ -2077,9 +2082,10 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_date`, `tier_id`, `total_spending`, `created_at`, `role`, `status`) VALUES
 (2, 'Nguyễn Đức Anh', 'anp93005@gmail.com', '$2y$10$CWyRPSmpryxfnvWJk.WU6ee587peAVpJ2WM.gPnWxn1EURYPTorwe', '0386036692', '2025-10-28', NULL, '0.00', '2025-11-15 20:56:13', 'admin', 'active'),
 (3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$VaYpeaUFxGUKFgO3yq7xVe.qnTi4VRvnnxK4ZiLkysvEq2jvCVr8.', '0386036636', '2000-10-12', NULL, '1755000.00', '2025-11-15 21:17:27', 'customer', 'active'),
-(4, 'Bảo Châu', 'baochau06@gmail.com', '$2y$10$4msjaSiici7YXHciPSW0Cu/bYvTZuQRdlhm3ifOL4LTesvPmpzGxq', '0386036693', '2006-12-11', NULL, '0.00', '2025-11-18 22:28:02', 'staff', 'active'),
-(5, 'anima', 'animaxer.sss@gmail.com', '$2y$10$s/LVCiKr91wviPGv9DpSRe.kZ4H1uoCR02PUnebGokW4hab3ry4T.', '0814983862', '2006-01-13', NULL, '0.00', '2025-11-25 20:17:34', 'customer', 'active');
-
+(4, 'Bảo Châu', 'baochau06@gmail.com', '$2y$10$4msjaSiici7YXHciPSW0Cu/bYvTZuQRdlhm3ifOL4LTesvPmpzGxq', '0386036693', '2006-12-11', NULL, 0.00, '2025-11-18 22:28:02', 'staff', 'active'),
+(5, 'quoc tuan', 'quoctuan26@gmail.com', '$2y$10$hMMowF.wiR0LVaRVr4kf3.Q1r/DAU3gdS6fe/qZbf8neBZAokstIK', '0386036695', '2006-10-02', NULL, 0.00, '2025-11-26 20:54:11', 'staff', 'active'),
+(6, 'nhat minh', 'minh264@gmail.com', '$2y$10$21uLStRyUeurivHo1JqbSOlnx5F76nXvjZETBR../KX.0NqETaONO', '0386036653', '2006-11-02', NULL, 0.00, '2025-11-26 20:55:32', 'staff', 'active');
+(7, 'anima', 'animaxer.sss@gmail.com', '$2y$10$s/LVCiKr91wviPGv9DpSRe.kZ4H1uoCR02PUnebGokW4hab3ry4T.', '0814983862', '2006-01-13', NULL, '0.00', '2025-11-25 20:17:34', 'customer', 'active');
 --
 -- Indexes for dumped tables
 --
@@ -2124,7 +2130,8 @@ ALTER TABLE `contacts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_status` (`status`),
   ADD KEY `idx_created_at` (`created_at`),
-  ADD KEY `idx_email` (`email`);
+  ADD KEY `idx_email` (`email`),
+  ADD KEY `fk_contacts_user` (`user_id`);
 
 --
 -- Indexes for table `customer_tiers`
@@ -2234,7 +2241,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `booking_items`
@@ -2258,7 +2265,7 @@ ALTER TABLE `comments`
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `customer_tiers`
@@ -2270,7 +2277,7 @@ ALTER TABLE `customer_tiers`
 -- AUTO_INCREMENT for table `discount_codes`
 --
 ALTER TABLE `discount_codes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `food_drinks`
@@ -2342,7 +2349,7 @@ ALTER TABLE `ticket_prices`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -2371,6 +2378,12 @@ ALTER TABLE `booking_items`
 ALTER TABLE `comments`
   ADD CONSTRAINT `fk_comments_movie` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_comments_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `contacts`
+--
+ALTER TABLE `contacts`
+  ADD CONSTRAINT `fk_contacts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `invoices`

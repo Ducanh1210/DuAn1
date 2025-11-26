@@ -37,7 +37,7 @@
     overflow: hidden;
     display: flex;
     align-items: center;
-    background-image: url("../../image/banner1.jpg");
+    background-image: url("/DuAn1/image/banner1.jpg");
     background-size: cover;
     background-position: center right;
   }

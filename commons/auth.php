@@ -51,7 +51,15 @@ function isAdmin()
 }
 
 /**
- * Hàm kiểm tra là staff
+ * Hàm kiểm tra là manager (quản lý)
+ */
+function isManager()
+{
+    return hasRole('manager');
+}
+
+/**
+ * Hàm kiểm tra là staff (nhân viên)
  */
 function isStaff()
 {
@@ -126,15 +134,81 @@ function requireAdmin()
 }
 
 /**
- * Hàm yêu cầu quyền admin hoặc staff
+ * Hàm yêu cầu quyền admin hoặc manager hoặc staff
  */
 function requireAdminOrStaff()
 {
     requireLogin();
-    if (!isAdmin() && !isStaff()) {
+    if (!isAdmin() && !isManager() && !isStaff()) {
         header('Location: ' . BASE_URL . '?act=trangchu');
         exit;
     }
+}
+
+/**
+ * Hàm yêu cầu quyền admin hoặc manager
+ */
+function requireAdminOrManager()
+{
+    requireLogin();
+    if (!isAdmin() && !isManager()) {
+        header('Location: ' . BASE_URL . '?act=trangchu');
+        exit;
+    }
+}
+
+/**
+ * Hàm yêu cầu quyền staff
+ */
+function requireStaff()
+{
+    requireLogin();
+    if (!isStaff()) {
+        header('Location: ' . BASE_URL . '?act=trangchu');
+        exit;
+    }
+}
+
+/**
+ * Lấy cinema_id của user hiện tại (áp dụng cho manager và staff)
+ */
+function getCurrentCinemaId()
+{
+    startSessionIfNotStarted();
+    if (isManager() || isStaff()) {
+        return $_SESSION['cinema_id'] ?? null;
+    }
+    return null; // Admin không bị giới hạn bởi cinema_id
+}
+
+/**
+ * Kiểm tra xem user có quyền truy cập cinema này không
+ */
+function canAccessCinema($cinemaId)
+{
+    if (isAdmin()) {
+        return true; // Admin có quyền truy cập tất cả
+    }
+    if (isManager() || isStaff()) {
+        $currentCinemaId = getCurrentCinemaId();
+        return $currentCinemaId && $currentCinemaId == $cinemaId;
+    }
+    return false;
+}
+
+/**
+ * Kiểm tra quyền theo cấp bậc
+ * Admin > Manager > Staff
+ */
+function hasPermission($permission)
+{
+    if (isAdmin()) {
+        return true; // Admin có tất cả quyền
+    }
+    
+    // Manager và Staff cần kiểm tra permission cụ thể
+    // TODO: Implement permission checking từ database
+    return false;
 }
 
 ?>

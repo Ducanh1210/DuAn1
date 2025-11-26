@@ -146,11 +146,12 @@ match ($act) {
     'comments-show' => (new CommentsController)->show(),
     'comments-delete' => (new CommentsController)->delete(),
 
-    // Bookings routes (Admin)
+    // Bookings routes (Admin/Manager/Staff)
     'bookings' => (new BookingController)->list(),
     'bookings-show' => (new BookingController)->show(),
     'bookings-delete' => (new BookingController)->deleteBooking(),
     'bookings-update-status' => (new BookingController)->updateStatus(),
+    'banve' => (new BookingController)->sellTicket(),
 
     // Discounts routes (Admin)
     'discounts' => (new DiscountsController)->list(),

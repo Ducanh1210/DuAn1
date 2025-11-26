@@ -42,43 +42,60 @@
               <?php endif; ?>
             </div>
 
-            <div class="mb-3">
-              <label for="cinema_id" class="form-label">Rạp chiếu phim <span class="text-danger">*</span></label>
-              <select name="cinema_id" id="cinema_id" class="form-select <?= !empty($errors['cinema_id']) ? 'is-invalid' : '' ?>" >
-                <option value="">-- Chọn rạp chiếu phim --</option>
-                <?php if (!empty($cinemas)): ?>
-                  <?php foreach ($cinemas as $cinema): ?>
-                    <option value="<?= $cinema['id'] ?>" <?= (isset($_POST['cinema_id']) && $_POST['cinema_id'] == $cinema['id']) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($cinema['name']) ?>
-                    </option>
-                  <?php endforeach; ?>
+            <?php if (!empty($managerCinemaId)): ?>
+              <!-- Manager: Hiển thị rạp đã được gán (read-only) -->
+              <div class="mb-3">
+                <label class="form-label">Rạp chiếu phim</label>
+                <input type="text" class="form-control" value="<?= htmlspecialchars($managerCinemaName) ?>" readonly>
+                <input type="hidden" name="cinema_id" id="cinema_id" value="<?= $managerCinemaId ?>">
+                <small class="text-muted">Rạp bạn đang quản lý</small>
+              </div>
+            <?php else: ?>
+              <!-- Admin: Có thể chọn rạp -->
+              <div class="mb-3">
+                <label for="cinema_id" class="form-label">Rạp chiếu phim <span class="text-danger">*</span></label>
+                <select name="cinema_id" id="cinema_id" class="form-select <?= !empty($errors['cinema_id']) ? 'is-invalid' : '' ?>" >
+                  <option value="">-- Chọn rạp chiếu phim --</option>
+                  <?php if (!empty($cinemas)): ?>
+                    <?php foreach ($cinemas as $cinema): ?>
+                      <option value="<?= $cinema['id'] ?>" <?= (isset($_POST['cinema_id']) && $_POST['cinema_id'] == $cinema['id']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($cinema['name']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  <?php endif; ?>
+                </select>
+                <?php if (!empty($errors['cinema_id'])): ?>
+                  <div class="text-danger small mt-1"><?= $errors['cinema_id'] ?></div>
                 <?php endif; ?>
-              </select>
-              <?php if (!empty($errors['cinema_id'])): ?>
-                <div class="text-danger small mt-1"><?= $errors['cinema_id'] ?></div>
-              <?php endif; ?>
-              <small class="text-muted">Vui lòng chọn rạp trước khi chọn phòng</small>
-            </div>
+                <small class="text-muted">Vui lòng chọn rạp trước khi chọn phòng</small>
+              </div>
+            <?php endif; ?>
 
             <div class="mb-3">
               <label for="room_id" class="form-label">Phòng chiếu <span class="text-danger">*</span></label>
-              <select name="room_id" id="room_id" class="form-select <?= !empty($errors['room_id']) ? 'is-invalid' : '' ?>"  disabled>
+              <select name="room_id" id="room_id" class="form-select <?= !empty($errors['room_id']) ? 'is-invalid' : '' ?>" <?= empty($managerCinemaId) ? 'disabled' : '' ?>>
                 <option value="">-- Chọn phòng chiếu --</option>
                 <?php if (!empty($rooms)): ?>
                   <?php foreach ($rooms as $room): ?>
-                    <option value="<?= $room['id'] ?>" data-cinema-id="<?= $room['cinema_id'] ?>" <?= (isset($_POST['room_id']) && $_POST['room_id'] == $room['id']) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($room['name'] ?? '') ?>
-                      <?php if (!empty($room['room_code'])): ?>
-                        (<?= htmlspecialchars($room['room_code']) ?>)
-                      <?php endif; ?>
-                    </option>
+                    <?php 
+                      // Manager chỉ thấy phòng của rạp mình
+                      $showRoom = empty($managerCinemaId) || $room['cinema_id'] == $managerCinemaId;
+                    ?>
+                    <?php if ($showRoom): ?>
+                      <option value="<?= $room['id'] ?>" data-cinema-id="<?= $room['cinema_id'] ?>" <?= (isset($_POST['room_id']) && $_POST['room_id'] == $room['id']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($room['name'] ?? '') ?>
+                        <?php if (!empty($room['room_code'])): ?>
+                          (<?= htmlspecialchars($room['room_code']) ?>) 
+                        <?php endif; ?>
+                      </option>
+                    <?php endif; ?>
                   <?php endforeach; ?>
                 <?php endif; ?>
               </select>
               <?php if (!empty($errors['room_id'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['room_id'] ?></div>
               <?php endif; ?>
-              <small class="text-muted">Vui lòng chọn rạp trước</small>
+              <small class="text-muted"><?= !empty($managerCinemaId) ? 'Chọn phòng chiếu' : 'Vui lòng chọn rạp trước' ?></small>
             </div>
 
             <div class="mb-3">
@@ -210,44 +227,54 @@
   const allRoomsData = [
     <?php if (!empty($rooms)): ?>
       <?php foreach ($rooms as $index => $room): ?>
+        <?php if (empty($managerCinemaId) || $room['cinema_id'] == $managerCinemaId): ?>
         {
           id: <?= $room['id'] ?>,
           cinema_id: <?= $room['cinema_id'] ?>,
           name: '<?= htmlspecialchars($room['name'] ?? '', ENT_QUOTES) ?>',
           room_code: '<?= htmlspecialchars($room['room_code'] ?? '', ENT_QUOTES) ?>'
         }<?= $index < count($rooms) - 1 ? ',' : '' ?>
+        <?php endif; ?>
       <?php endforeach; ?>
     <?php endif; ?>
   ];
 
-  function filterRoomsByCinema(cinemaId) {
-    // Clear room selection
-    roomSelect.innerHTML = '<option value="">-- Chọn phòng chiếu --</option>';
-    
-    if (cinemaId) {
-      // Enable room select
-      roomSelect.disabled = false;
+  <?php if (!empty($managerCinemaId)): ?>
+    // Manager: Tự động enable room select và load phòng của rạp
+    roomSelect.disabled = false;
+  <?php else: ?>
+    // Admin: Filter rooms by selected cinema
+    function filterRoomsByCinema(cinemaId) {
+      // Clear room selection
+      roomSelect.innerHTML = '<option value="">-- Chọn phòng chiếu --</option>';
       
-      // Filter and add rooms belonging to selected cinema
-      allRoomsData.forEach(room => {
-        if (room.cinema_id == cinemaId) {
-          const option = document.createElement('option');
-          option.value = room.id;
-          option.textContent = room.name + (room.room_code ? ' (' + room.room_code + ')' : '');
-          option.dataset.cinemaId = room.cinema_id;
-          roomSelect.appendChild(option);
-        }
-      });
-    } else {
-      // Disable room select if no cinema selected
-      roomSelect.disabled = true;
+      if (cinemaId) {
+        // Enable room select
+        roomSelect.disabled = false;
+        
+        // Filter and add rooms belonging to selected cinema
+        allRoomsData.forEach(room => {
+          if (room.cinema_id == cinemaId) {
+            const option = document.createElement('option');
+            option.value = room.id;
+            option.textContent = room.name + (room.room_code ? ' (' + room.room_code + ')' : '');
+            option.dataset.cinemaId = room.cinema_id;
+            roomSelect.appendChild(option);
+          }
+        });
+      } else {
+        // Disable room select if no cinema selected
+        roomSelect.disabled = true;
+      }
     }
-  }
 
-  // Filter when cinema changes
-  cinemaSelect.addEventListener('change', function() {
-    filterRoomsByCinema(this.value);
-  });
+    // Filter when cinema changes
+    if (cinemaSelect) {
+      cinemaSelect.addEventListener('change', function() {
+        filterRoomsByCinema(this.value);
+      });
+    }
+  <?php endif; ?>
 
   // Validation function
   function validateShowtimeForm(event) {
@@ -265,11 +292,13 @@
       return false;
     }
 
+    <?php if (empty($managerCinemaId)): ?>
     if (!cinemaId || cinemaId === '') {
       alert('Vui lòng chọn rạp chiếu phim!');
       document.getElementById('cinema_id').focus();
       return false;
     }
+    <?php endif; ?>
 
     if (!roomId || roomId === '') {
       alert('Vui lòng chọn phòng chiếu!');
