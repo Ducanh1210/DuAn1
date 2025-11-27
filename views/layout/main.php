@@ -25,51 +25,125 @@
     </div>
 
     <!-- Links (PHP logic for active) -->
+    <?php
+      require_once __DIR__ . '/../../commons/auth.php';
+      startSessionIfNotStarted();
+      $currentUser = getCurrentUser();
+      $userRole = $currentUser['role'] ?? 'customer';
+      $isAdmin = isAdmin();
+      $isManager = isManager();
+      $isStaff = isStaff();
+    ?>
+    
+    <!-- Dashboard - Tất cả đều có -->
     <a href="?act=dashboard" class="<?= ($_GET['act'] ?? '') == 'dashboard' ? 'active' : '' ?>">
       <i class="bi bi-speedometer2"></i><span class="label">Dashboard</span>
     </a>
+    
+    <!-- Quản lý Phim - Tất cả đều xem được -->
+    <?php if ($isAdmin || $isManager || $isStaff): ?>
     <a href="?act=/" class="<?= in_array($_GET['act'] ?? '', ['/', 'movies-create', 'movies-edit', 'movies-show', 'movies-delete']) ? 'active' : '' ?>">
       <i class="bi bi-film"></i><span class="label">Quản lý Phim</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Thể loại - Admin và Manager -->
+    <?php if ($isAdmin || $isManager): ?>
     <a href="?act=genres" class="<?= in_array($_GET['act'] ?? '', ['genres', 'genres-create', 'genres-edit', 'genres-delete']) ? 'active' : '' ?>">
       <i class="bi bi-tags"></i><span class="label">Quản lý Thể loại</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Lịch chiếu - Admin, Manager, Staff -->
+    <?php if ($isAdmin || $isManager || $isStaff): ?>
     <a href="?act=showtimes" class="<?= in_array($_GET['act'] ?? '', ['showtimes', 'showtimes-create', 'showtimes-edit', 'showtimes-show', 'showtimes-delete']) ? 'active' : '' ?>">
       <i class="bi bi-clock-history"></i><span class="label">Quản lý Lịch chiếu</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Khuyến mãi - Chỉ Admin -->
+    <?php if ($isAdmin): ?>
     <a href="?act=discounts" class="<?= in_array($_GET['act'] ?? '', ['discounts', 'discounts-create', 'discounts-edit', 'discounts-delete']) ? 'active' : '' ?>">
       <i class="bi bi-gift"></i><span class="label">Quản lý Khuyến mãi</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Người dùng - Chỉ Admin -->
+    <?php if ($isAdmin): ?>
     <a href="?act=users" class="<?= in_array($_GET['act'] ?? '', ['users', 'users-create', 'users-edit', 'users-show', 'users-delete']) ? 'active' : '' ?>">
       <i class="bi bi-people"></i><span class="label">Quản lý Người dùng</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Phân quyền - Chỉ Admin -->
+    <?php if ($isAdmin): ?>
     <a href="?act=permissions" class="<?= in_array($_GET['act'] ?? '', ['permissions', 'permissions-assign']) ? 'active' : '' ?>">
       <i class="bi bi-shield-check"></i><span class="label">Phân quyền</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Rạp - Admin và Manager -->
+    <?php if ($isAdmin || $isManager): ?>
     <a href="?act=cinemas" class="<?= in_array($_GET['act'] ?? '', ['cinemas', 'cinemas-create', 'cinemas-edit', 'cinemas-delete']) ? 'active' : '' ?>">
       <i class="bi bi-building"></i><span class="label">Quản lý Rạp</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Phòng Chiếu - Admin và Manager -->
+    <?php if ($isAdmin || $isManager): ?>
     <a href="?act=rooms" class="<?= in_array($_GET['act'] ?? '', ['rooms', 'rooms-create', 'rooms-edit', 'rooms-show', 'rooms-delete']) ? 'active' : '' ?>">
       <i class="bi bi-camera-reels"></i><span class="label">Quản lý Phòng Chiếu</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Ghế - Admin và Manager -->
+    <?php if ($isAdmin || $isManager): ?>
     <a href="?act=seats" class="<?= in_array($_GET['act'] ?? '', ['seats', 'seats-create', 'seats-edit', 'seats-show', 'seats-delete', 'seats-seatmap', 'seats-generate']) ? 'active' : '' ?>">
       <i class="bi bi-grid-3x3-gap"></i><span class="label">Quản lý Ghế</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Bình Luận - Chỉ Admin -->
+    <?php if ($isAdmin): ?>
     <a href="?act=comments" class="<?= in_array($_GET['act'] ?? '', ['comments', 'comments-show', 'comments-delete']) ? 'active' : '' ?>">
       <i class="bi bi-chat-left-text"></i><span class="label">Quản lý Bình Luận</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Bán Vé - Chỉ Staff -->
+    <?php if ($isStaff): ?>
+    <a href="?act=banve" class="<?= ($_GET['act'] ?? '') == 'banve' ? 'active' : '' ?>">
+      <i class="bi bi-cart-plus"></i><span class="label">Bán Vé</span>
+    </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Đặt Vé - Tất cả (Admin xem tất cả, Manager xem rạp mình, Staff xem) -->
+    <?php if ($isAdmin || $isManager || $isStaff): ?>
     <a href="?act=bookings" class="<?= in_array($_GET['act'] ?? '', ['bookings', 'bookings-show', 'bookings-delete', 'bookings-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-ticket-perforated"></i><span class="label">Quản lý Đặt Vé</span>
     </a>
+    <?php endif; ?>
+    
+    <!-- Quản lý Giá Vé - Chỉ Admin -->
+    <?php if ($isAdmin): ?>
     <a href="?act=ticket-prices" class="<?= in_array($_GET['act'] ?? '', ['ticket-prices', 'ticket-prices-update']) ? 'active' : '' ?>">
       <i class="bi bi-cash-coin"></i><span class="label">Quản lý Giá Vé</span>
     </a>
-    <a href="?act=contacts" class="<?= in_array($_GET['act'] ?? '', ['contacts', 'contacts-show', 'contacts-delete']) ? 'active' : '' ?>">
+    <?php endif; ?>
+    
+    <!-- Quản lý Liên hệ - Admin và Manager -->
+    <?php if ($isAdmin || $isManager): ?>
+    <a href="?act=contacts" class="<?= in_array($_GET['act'] ?? '', ['contacts', 'contacts-show', 'contacts-edit', 'contacts-delete', 'contacts-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-envelope"></i><span class="label">Quản lý Liên hệ</span>
     </a>
-    <a href="?act=thongke" class="<?= ($_GET['act'] ?? '') == 'thongke' ? 'active' : '' ?>">
+    <?php endif; ?>
+    
+    <!-- Thống Kê - Tất cả -->
+    <?php if ($isAdmin || $isManager || $isStaff): ?>
+    <a href="?act=thongke" class="<?= in_array($_GET['act'] ?? '', ['thongke', 'statistics']) ? 'active' : '' ?>">
       <i class="bi bi-bar-chart"></i><span class="label">Thống Kê</span>
     </a>
+    <?php endif; ?>
 
     <hr>
     <a href="?act=dangxuat" class="text-danger">
@@ -138,7 +212,8 @@
             'contacts' => 'Quản lý Liên hệ',
             'contacts-show' => 'Chi tiết liên hệ',
             'contacts-edit' => 'Sửa liên hệ',
-            'thongke' => 'Thống kê'
+            'thongke' => 'Thống kê',
+            'banve' => 'Bán Vé'
           ];
           echo htmlspecialchars($titles[$act] ?? ucfirst($act));
         ?>
@@ -169,8 +244,40 @@
       <!-- User dropdown -->
       <div class="user-dropdown">
         <div class="user-dropdown-toggle" id="userDropdownToggle">
-          <span class="fw-semibold d-none d-sm-inline">Admin</span>
-          <img src="https://ui-avatars.com/api/?name=Admin" alt="admin" class="avatar">
+          <?php
+            require_once __DIR__ . '/../../commons/auth.php';
+            startSessionIfNotStarted();
+            $currentUser = getCurrentUser();
+            $displayName = 'User';
+            $displayInitials = 'U';
+            
+            if ($currentUser) {
+              if ($currentUser['role'] === 'admin') {
+                $displayName = 'Admin';
+                $displayInitials = 'AD';
+              } elseif ($currentUser['role'] === 'manager') {
+                $displayName = htmlspecialchars($currentUser['full_name'] ?? 'Quản lý');
+                // Lấy chữ cái đầu của tên
+                $nameParts = explode(' ', trim($currentUser['full_name'] ?? ''));
+                if (count($nameParts) >= 2) {
+                  $displayInitials = strtoupper(substr($nameParts[0], 0, 1) . substr($nameParts[count($nameParts) - 1], 0, 1));
+                } else {
+                  $displayInitials = strtoupper(substr($currentUser['full_name'] ?? 'Q', 0, 2));
+                }
+              } else {
+                $displayName = htmlspecialchars($currentUser['full_name'] ?? 'Nhân viên');
+                // Lấy chữ cái đầu của tên
+                $nameParts = explode(' ', trim($currentUser['full_name'] ?? ''));
+                if (count($nameParts) >= 2) {
+                  $displayInitials = strtoupper(substr($nameParts[0], 0, 1) . substr($nameParts[count($nameParts) - 1], 0, 1));
+                } else {
+                  $displayInitials = strtoupper(substr($currentUser['full_name'] ?? 'N', 0, 2));
+                }
+              }
+            }
+          ?>
+          <span class="fw-semibold d-none d-sm-inline"><?= $displayName ?></span>
+          <img src="https://ui-avatars.com/api/?name=<?= urlencode($displayName) ?>&background=random" alt="<?= htmlspecialchars($displayName) ?>" class="avatar">
           <i class="bi bi-chevron-down" style="font-size: 12px;"></i>
         </div>
         <div class="user-dropdown-menu" id="userDropdownMenu">

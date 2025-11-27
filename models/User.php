@@ -18,13 +18,13 @@ class User
                     customer_tiers.name AS tier_name
                     FROM users
                     LEFT JOIN customer_tiers ON users.tier_id = customer_tiers.id";
-            
+
             if ($role) {
                 $sql .= " WHERE users.role = :role";
             }
-            
+
             $sql .= " ORDER BY users.id DESC";
-            
+
             $stmt = $this->conn->prepare($sql);
             if ($role) {
                 $stmt->execute([':role' => $role]);
@@ -127,7 +127,8 @@ class User
                 tier_id,
                 role,
                 status,
-                total_spending
+                total_spending,
+                cinema_id
             ) VALUES (
                 :full_name,
                 :email,
@@ -137,7 +138,8 @@ class User
                 :tier_id,
                 :role,
                 :status,
-                :total_spending
+                :total_spending,
+                :cinema_id
             )";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
@@ -149,7 +151,8 @@ class User
                 ':tier_id' => $data['tier_id'] ?? null,
                 ':role' => $data['role'] ?? 'customer',
                 ':status' => $data['status'] ?? 'active',
-                ':total_spending' => $data['total_spending'] ?? 0.00
+                ':total_spending' => $data['total_spending'] ?? 0.00,
+                ':cinema_id' => $data['cinema_id'] ?? null
             ]);
             return $this->conn->lastInsertId();
         } catch (Exception $e) {
@@ -168,13 +171,13 @@ class User
             if (!$currentUser) {
                 return false;
             }
-            
+
             // Đảm bảo email không rỗng
             $email = $data['email'] ?? $currentUser['email'] ?? '';
             if (empty($email)) {
                 throw new Exception("Email không được để trống");
             }
-            
+
             // Kiểm tra xem cột address có tồn tại không
             $hasAddressColumn = false;
             try {
@@ -183,7 +186,7 @@ class User
             } catch (Exception $e) {
                 $hasAddressColumn = false;
             }
-            
+
             $sql = "UPDATE users SET 
                 full_name = :full_name,
                 email = :email,
@@ -191,25 +194,26 @@ class User
                 birth_date = :birth_date,
                 tier_id = :tier_id,
                 role = :role,
-                total_spending = :total_spending";
-            
+                total_spending = :total_spending,
+                cinema_id = :cinema_id";
+
             // Cập nhật address nếu có trong data và cột tồn tại
             if (isset($data['address']) && $hasAddressColumn) {
                 $sql .= ", address = :address";
             }
-            
+
             // Cập nhật status nếu có
             if (isset($data['status'])) {
                 $sql .= ", status = :status";
             }
-            
+
             // Chỉ cập nhật password nếu có
             if (!empty($data['password'])) {
                 $sql .= ", password = :password";
             }
-            
+
             $sql .= " WHERE id = :id";
-            
+
             $params = [
                 ':id' => $id,
                 ':full_name' => $data['full_name'] ?? $currentUser['full_name'],
@@ -218,22 +222,23 @@ class User
                 ':birth_date' => $data['birth_date'] ?? $currentUser['birth_date'] ?? null,
                 ':tier_id' => $data['tier_id'] ?? $currentUser['tier_id'] ?? null,
                 ':role' => $data['role'] ?? $currentUser['role'] ?? 'customer',
-                ':total_spending' => $data['total_spending'] ?? $currentUser['total_spending'] ?? 0.00
+                ':total_spending' => $data['total_spending'] ?? $currentUser['total_spending'] ?? 0.00,
+                ':cinema_id' => $data['cinema_id'] ?? $currentUser['cinema_id'] ?? null
             ];
-            
+
             // Chỉ thêm address nếu cột tồn tại
             if (isset($data['address']) && $hasAddressColumn) {
                 $params[':address'] = $data['address'];
             }
-            
+
             if (isset($data['status'])) {
                 $params[':status'] = $data['status'];
             }
-            
+
             if (!empty($data['password'])) {
                 $params[':password'] = $data['password'];
             }
-            
+
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($params);
             return true;
@@ -319,6 +324,3 @@ class User
         }
     }
 }
-
-?>
-

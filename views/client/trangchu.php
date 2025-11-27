@@ -22,7 +22,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <body>
     <!-- phần menu -->
-    <section class="hero">
+    <section class="hero" style="background-image: url('<?= BASE_URL ?>image/banner1.jpg');">
         <div class="container">
             <div class="navbar">
                 <div class="logo">
@@ -48,7 +48,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <a href="<?= BASE_URL ?>?act=khuyenmai" class="<?= $isKhuyenMai ? 'active' : '' ?>">Khuyến mãi</a>
                         <a href="<?= BASE_URL ?>?act=giave" class="<?= $isGiaVe ? 'active' : '' ?>">Giá Vé</a>
                         <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
-                   
+
                 </div>
                 <div class="nav-actions">
                     <?php
@@ -203,7 +203,7 @@ if (session_status() === PHP_SESSION_NONE) {
                             <!-- movie card (repeat) -->
                             <?php if (!empty($moviesNowShowing)): ?>
                                 <?php foreach ($moviesNowShowing as $movie): ?>
-                                    <a href="<?= BASE_URL ?>?act=movies&id=<?= $movie['id'] ?>" class="movie-card-link">
+                                    <a href="<?= BASE_URL ?>?act=lichchieu&movie=<?= $movie['id'] ?>" class="movie-card-link">
                                         <article class="movie-card">
                                             <div class="poster">
                                                 <?php if (!empty($movie['image'])): ?>
@@ -276,7 +276,7 @@ if (session_status() === PHP_SESSION_NONE) {
                             <!-- movie card (repeat) -->
                             <?php if (!empty($moviesComingSoon)): ?>
                                 <?php foreach ($moviesComingSoon as $movie): ?>
-                                    <a href="<?= BASE_URL ?>?act=movies&id=<?= $movie['id'] ?>" class="movie-card-link">
+                                    <a href="<?= BASE_URL ?>?act=lichchieu&movie=<?= $movie['id'] ?>" class="movie-card-link">
                                         <article class="movie-card">
                                             <div class="poster">
                                                 <?php if (!empty($movie['image'])): ?>

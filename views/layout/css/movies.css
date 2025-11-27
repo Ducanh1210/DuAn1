@@ -44,14 +44,12 @@ a::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgba(3, 6, 12, 0.95) 0%,
-    rgba(3, 6, 12, 0.85) 30%,
-    rgba(3, 6, 12, 0.70) 50%,
-    rgba(3, 6, 12, 0.50) 70%,
-    rgba(3, 6, 12, 0.25) 85%
-  );
+  background: linear-gradient(90deg,
+      rgba(3, 6, 12, 0.95) 0%,
+      rgba(3, 6, 12, 0.85) 30%,
+      rgba(3, 6, 12, 0.70) 50%,
+      rgba(3, 6, 12, 0.50) 70%,
+      rgba(3, 6, 12, 0.25) 85%);
   z-index: 0;
 }
 
@@ -800,8 +798,25 @@ h1.title {
 }
 
 .seat-gap {
-  width: 20px;
-  flex-shrink: 0;
+  width: 60px !important;
+  min-width: 60px !important;
+  flex-shrink: 0 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-left: 3px dashed rgba(255, 255, 255, 0.3) !important;
+  border-right: 3px dashed rgba(255, 255, 255, 0.3) !important;
+  margin: 0 10px !important;
+  position: relative !important;
+}
+
+.seat-gap::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 2px !important;
+  height: 100% !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Selected Seats Summary */
@@ -952,12 +967,7 @@ h1.title {
   margin-top: 30px;
 }
 
-/* Seat Gap */
-.seat-gap {
-  width: 30px;
-  margin: 0;
-  flex-shrink: 0;
-}
+/* Seat Gap - đã được định nghĩa ở trên */
 
 /* Adjacent Option Styles */
 .adjacent-option {
@@ -1281,6 +1291,15 @@ h1.title {
   gap: 4px;
   align-items: center;
   flex-wrap: nowrap;
+}
+
+/* Disabled Column - Ẩn ghế không được phép chọn khi chọn 1 người */
+.seat.disabled-column {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  display: none !important; /* Ẩn hoàn toàn thay vì chỉ làm mờ */
+  visibility: hidden !important;
 }
 
 /* Ensure seats are visible */

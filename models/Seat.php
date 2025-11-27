@@ -37,7 +37,15 @@ class Seat
     public function paginate($page = 1, $perPage = 20, $roomId = null)
     {
         try {
+            // Đảm bảo $page là số nguyên dương
+            $page = max(1, intval($page));
+            $perPage = max(1, intval($perPage));
             $offset = ($page - 1) * $perPage;
+            
+            // Đảm bảo offset không âm
+            if ($offset < 0) {
+                $offset = 0;
+            }
             
             // Xây dựng WHERE clause
             $whereClause = "";
@@ -157,6 +165,13 @@ class Seat
             
             // Sắp xếp các hàng
             ksort($seatMap);
+            
+            // Sắp xếp ghế trong mỗi hàng theo seat_number để đảm bảo thứ tự đúng
+            foreach ($seatMap as $row => $rowSeats) {
+                usort($seatMap[$row], function($a, $b) {
+                    return ($a['seat_number'] ?? 0) - ($b['seat_number'] ?? 0);
+                });
+            }
             
             return $seatMap;
         } catch (Exception $e) {

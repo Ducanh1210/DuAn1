@@ -9,11 +9,26 @@ class CinemasController
     }
 
     /**
-     * Hiển thị danh sách rạp (Admin)
+     * Hiển thị danh sách rạp (Admin/Manager/Staff)
      */
     public function list()
     {
-        $data = $this->cinema->all();
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrStaff();
+        
+        // Nếu là manager hoặc staff, chỉ hiển thị rạp của mình
+        if (isManager() || isStaff()) {
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $cinema = $this->cinema->find($cinemaId);
+                $data = $cinema ? [$cinema] : [];
+            } else {
+                $data = [];
+            }
+        } else {
+            // Admin xem tất cả
+            $data = $this->cinema->all();
+        }
         
         render('admin/cinemas/list.php', [
             'data' => $data
@@ -21,10 +36,12 @@ class CinemasController
     }
 
     /**
-     * Hiển thị form tạo rạp mới (Admin)
+     * Hiển thị form tạo rạp mới (Admin only)
      */
     public function create()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdmin(); // Chỉ admin mới được tạo rạp
         $errors = [];
 
         // Validate form
@@ -56,10 +73,13 @@ class CinemasController
     }
 
     /**
-     * Hiển thị form sửa rạp (Admin)
+     * Hiển thị form sửa rạp (Admin/Manager)
      */
     public function edit()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdminOrManager();
+        
         $id = $_GET['id'] ?? null;
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=cinemas');
@@ -68,6 +88,12 @@ class CinemasController
 
         $cinema = $this->cinema->find($id);
         if (!$cinema) {
+            header('Location: ' . BASE_URL . '?act=cinemas');
+            exit;
+        }
+        
+        // Manager chỉ được sửa rạp của mình
+        if (isManager() && !canAccessCinema($id)) {
             header('Location: ' . BASE_URL . '?act=cinemas');
             exit;
         }
@@ -103,10 +129,12 @@ class CinemasController
     }
 
     /**
-     * Xóa rạp (Admin)
+     * Xóa rạp (Admin only)
      */
     public function delete()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdmin(); // Chỉ admin mới được xóa rạp
         $id = $_GET['id'] ?? null;
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=cinemas');

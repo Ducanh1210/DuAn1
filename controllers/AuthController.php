@@ -74,7 +74,7 @@ class AuthController
                     'total_spending' => 0.00
                 ];
                 $userId = $this->user->insert($data);
-                
+
                 // Sau khi đăng ký thành công, chuyển về trang đăng nhập
                 header('Location: ' . BASE_URL . '?act=dangnhap&registered=1&email=' . urlencode($data['email']));
                 exit;
@@ -107,7 +107,7 @@ class AuthController
 
             if (empty($errors)) {
                 $user = $this->user->findByEmail($email);
-                
+
                 if ($user && password_verify($password, $user['password'])) {
                     // Kiểm tra trạng thái tài khoản
                     $status = $user['status'] ?? 'active';
@@ -122,6 +122,7 @@ class AuthController
                         $_SESSION['user_email'] = $user['email'];
                         $_SESSION['user_name'] = $user['full_name'];
                         $_SESSION['user_role'] = $user['role'] ?? 'customer';
+                        $_SESSION['cinema_id'] = $user['cinema_id'] ?? null; // Lưu cinema_id của staff
                         
                         // Kiểm tra return_url nếu có (từ trang chọn ghế, thanh toán, v.v.)
                         if (isset($_SESSION['return_url']) && !empty($_SESSION['return_url'])) {
@@ -134,7 +135,7 @@ class AuthController
                         }
                         
                         // Nếu không có return_url, redirect theo role
-                        if (in_array($_SESSION['user_role'], ['admin', 'staff'])) {
+                        if (in_array($_SESSION['user_role'], ['admin', 'manager', 'staff'])) {
                             header('Location: ' . BASE_URL . '?act=dashboard');
                         } else {
                             header('Location: ' . BASE_URL . '?act=trangchu');
@@ -165,6 +166,3 @@ class AuthController
         exit;
     }
 }
-
-?>
-

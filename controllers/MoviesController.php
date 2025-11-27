@@ -371,7 +371,7 @@ class MoviesController
         $faqs = [
             [
                 'question' => 'Làm sao để nhận mã khuyến mãi?',
-                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm "Sao chép mã". Mã sẽ lưu trong ví voucher và tự áp dụng ở bước thanh toán.'
+                'answer' => 'Bạn chỉ cần đăng nhập tài khoản TicketHub, vào trang Khuyến mãi và bấm “Sao chép mã”. Mã sẽ lưu trong ví voucher và tự áp dụng ở bước thanh toán.'
             ],
             [
                 'question' => 'Tôi có thể dùng nhiều mã trong cùng một đơn?',
@@ -388,94 +388,34 @@ class MoviesController
         $discountCodes = $discountCodeModel->all();
         
         // Chuyển đổi discount codes thành format promotions
-        $promotions = [];
-        $now = date('Y-m-d');
-        
+        $dbPromotions = [];
         foreach ($discountCodes as $dc) {
-            // Chỉ hiển thị các discount code đang active
-            if ($dc['status'] !== 'active') {
-                continue;
-            }
-            
-            // Xác định status dựa trên ngày hiện tại
-            $status = 'ongoing';
-            if ($dc['start_date'] && $now < $dc['start_date']) {
-                $status = 'upcoming';
-            } elseif ($dc['end_date'] && $now > $dc['end_date']) {
-                $status = 'ended';
-                continue; // Bỏ qua các mã đã hết hạn
-            }
-            
-            // Parse benefits từ JSON nếu có
-            $benefits = [];
-            if (!empty($dc['benefits'])) {
-                if (is_string($dc['benefits'])) {
-                    $benefits = json_decode($dc['benefits'], true) ?: [];
-                } elseif (is_array($dc['benefits'])) {
-                    $benefits = $dc['benefits'];
-                }
-            }
-            
-            // Nếu không có benefits, tạo mặc định
-            if (empty($benefits)) {
-                $benefits = [
-                    'Giảm ' . $dc['discount_percent'] . '% cho tổng đơn hàng',
-                    'Áp dụng cho tất cả suất chiếu'
+            if ($dc['status'] === 'active') {
+                $dbPromotions[] = [
+                    'title' => 'Mã giảm giá: ' . $dc['code'],
+                    'tag' => 'general',
+                    'status' => 'ongoing',
+                    'period' => ($dc['start_date'] ?? '') . ' - ' . ($dc['end_date'] ?? ''),
+                    'description' => 'Giảm ' . $dc['discount_percent'] . '% cho đơn hàng của bạn.',
+                    'benefits' => [
+                        'Giảm ' . $dc['discount_percent'] . '% cho tổng đơn hàng',
+                        'Áp dụng cho tất cả suất chiếu',
+                        'Có hiệu lực từ ' . ($dc['start_date'] ?? '') . ' đến ' . ($dc['end_date'] ?? '')
+                    ],
+                    'code' => $dc['code'],
+                    'cta' => 'Sử dụng mã'
                 ];
-                if ($dc['start_date'] && $dc['end_date']) {
-                    $benefits[] = 'Có hiệu lực từ ' . date('d/m/Y', strtotime($dc['start_date'])) . ' đến ' . date('d/m/Y', strtotime($dc['end_date']));
-                }
             }
-            
-            // Format period
-            $period = '';
-            if ($dc['start_date'] && $dc['end_date']) {
-                $period = date('d/m/Y', strtotime($dc['start_date'])) . ' - ' . date('d/m/Y', strtotime($dc['end_date']));
-            } elseif ($dc['start_date']) {
-                $period = 'Từ ' . date('d/m/Y', strtotime($dc['start_date']));
-            } elseif ($dc['end_date']) {
-                $period = 'Đến ' . date('d/m/Y', strtotime($dc['end_date']));
-            } else {
-                $period = 'Áp dụng thường xuyên';
-            }
-            
-            // Xác định tag dựa trên code hoặc title
-            $tag = 'general';
-            $codeUpper = strtoupper($dc['code'] ?? '');
-            if (strpos($codeUpper, 'WEEKEND') !== false || strpos($codeUpper, 'CUỐI TUẦN') !== false) {
-                $tag = 'combo';
-            } elseif (strpos($codeUpper, 'FAMILY') !== false || strpos($codeUpper, 'GIA ĐÌNH') !== false) {
-                $tag = 'family';
-            } elseif (strpos($codeUpper, 'STUDENT') !== false || strpos($codeUpper, 'SINH VIÊN') !== false) {
-                $tag = 'student';
-            } elseif (strpos($codeUpper, 'HOLIDAY') !== false || strpos($codeUpper, 'LỄ') !== false || strpos($codeUpper, 'TẾT') !== false) {
-                $tag = 'holiday';
-            } elseif (strpos($codeUpper, 'COUPLE') !== false || strpos($codeUpper, 'CẶP ĐÔI') !== false) {
-                $tag = 'couple';
-            }
-            
-            $promotions[] = [
-                'title' => $dc['title'] ?? 'Mã giảm giá: ' . $dc['code'],
-                'tag' => $tag,
-                'status' => $status,
-                'display_status' => $status,
-                'period' => $period,
-                'description' => $dc['description'] ?? ('Giảm ' . $dc['discount_percent'] . '% cho đơn hàng của bạn.'),
-                'benefits' => $benefits,
-                'code' => $dc['code'] ?? '',
-                'cta' => $dc['cta'] ?? 'Sử dụng mã',
-                'cta_link' => BASE_URL . '?act=datve'
-            ];
         }
 
         $heroStats = [
-            ['label' => 'Ưu đãi đang diễn ra', 'value' => count(array_filter($promotions, function($p) { return $p['status'] === 'ongoing'; }))],
+            ['label' => 'Ưu đãi đang diễn ra', 'value' => count($dbPromotions)],
             ['label' => 'Khách nhận mã trong tuần', 'value' => '12.457'],
             ['label' => 'Điểm thưởng đã tặng', 'value' => '3.2M']
         ];
 
         renderClient('client/khuyenmai.php', [
-            'promotions' => $promotions,
+            'promotions' => $dbPromotions,
             'membershipBenefits' => $membershipBenefits,
             'faqs' => $faqs,
             'heroStats' => $heroStats
@@ -612,11 +552,14 @@ class MoviesController
     public function lichchieu()
     {
         require_once './models/Showtime.php';
+        require_once './models/Cinema.php';
         $showtimeModel = new Showtime();
+        $cinemaModel = new Cinema();
 
         // Lấy tham số tìm kiếm/lọc
         $searchKeyword = $_GET['search'] ?? '';
         $cinemaId = $_GET['cinema'] ?? '';
+        $movieId = $_GET['movie'] ?? ''; // Tham số phim từ trang chủ
 
         // Lấy ngày được chọn từ URL hoặc mặc định là hôm nay
         $selectedDate = $_GET['date'] ?? date('Y-m-d');
@@ -631,21 +574,26 @@ class MoviesController
             ];
         }
 
-        // Lấy danh sách lịch chiếu theo ngày (đã lọc theo rạp nếu có)
-        $showtimes = $showtimeModel->getByDate($selectedDate, $cinemaId);
+        // Lấy danh sách lịch chiếu theo ngày (đã lọc theo rạp nếu có, và theo phim nếu có)
+        $showtimes = $showtimeModel->getByDate($selectedDate, $cinemaId, $movieId);
 
         // Nhóm lịch chiếu theo phim và lọc theo tên phim
         $movies = [];
         foreach ($showtimes as $st) {
-            $movieId = $st['movie_id'];
+            $movieIdItem = $st['movie_id'];
 
             // Lọc theo tên phim
             if (!empty($searchKeyword) && stripos($st['movie_title'], $searchKeyword) === false) {
                 continue;
             }
 
-            if (!isset($movies[$movieId])) {
-                $movies[$movieId] = [
+            // Nếu có tham số movie_id, chỉ hiển thị phim đó
+            if (!empty($movieId) && $movieIdItem != $movieId) {
+                continue;
+            }
+
+            if (!isset($movies[$movieIdItem])) {
+                $movies[$movieIdItem] = [
                     'id' => $st['movie_id'],
                     'title' => $st['movie_title'],
                     'image' => $st['movie_image'],
@@ -661,8 +609,8 @@ class MoviesController
             }
 
             // Thêm showtime vào phim
-            $movies[$movieId]['showtimes'][] = $st['start_time'];
-            $movies[$movieId]['showtime_ids'][] = $st['id'];
+            $movies[$movieIdItem]['showtimes'][] = $st['start_time'];
+            $movies[$movieIdItem]['showtime_ids'][] = $st['id'];
         }
 
         // Chuyển sang array và sắp xếp
@@ -673,6 +621,25 @@ class MoviesController
 
         // Lấy danh sách rạp để hiển thị trong filter
         $cinemas = $this->getCinemas();
+        
+        // Nếu có tham số movie_id, lấy danh sách rạp có phim đó
+        $cinemasWithMovie = [];
+        if (!empty($movieId)) {
+            try {
+                $sql = "SELECT DISTINCT cinemas.* 
+                        FROM cinemas
+                        INNER JOIN rooms ON cinemas.id = rooms.cinema_id
+                        INNER JOIN showtimes ON rooms.id = showtimes.room_id
+                        WHERE showtimes.movie_id = :movie_id
+                        AND showtimes.show_date >= CURDATE()
+                        ORDER BY cinemas.name ASC";
+                $stmt = $cinemaModel->conn->prepare($sql);
+                $stmt->execute([':movie_id' => $movieId]);
+                $cinemasWithMovie = $stmt->fetchAll();
+            } catch (Exception $e) {
+                $cinemasWithMovie = [];
+            }
+        }
 
         // Sử dụng layout client chung
         renderClient('client/lichchieu.php', [
@@ -681,7 +648,9 @@ class MoviesController
             'selectedDate' => $selectedDate,
             'searchKeyword' => $searchKeyword,
             'cinemaId' => $cinemaId,
-            'cinemas' => $cinemas
+            'cinemas' => $cinemas,
+            'movieId' => $movieId,
+            'cinemasWithMovie' => $cinemasWithMovie
         ], 'Lịch Chiếu');
         exit;
     }
@@ -771,57 +740,7 @@ class MoviesController
      */
     public function lienhe()
     {
-        $success = false;
-        $error = '';
-        
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $name = trim($_POST['name'] ?? '');
-            $email = trim($_POST['email'] ?? '');
-            $phone = trim($_POST['phone'] ?? '');
-            $subject = trim($_POST['subject'] ?? '');
-            $message = trim($_POST['message'] ?? '');
-            
-            // Validation
-            if (empty($name)) {
-                $error = 'Vui lòng nhập họ tên';
-            } elseif (empty($email)) {
-                $error = 'Vui lòng nhập email';
-            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $error = 'Email không hợp lệ';
-            } elseif (empty($phone)) {
-                $error = 'Vui lòng nhập số điện thoại';
-            } elseif (empty($subject)) {
-                $error = 'Vui lòng nhập chủ đề';
-            } elseif (empty($message)) {
-                $error = 'Vui lòng nhập nội dung tin nhắn';
-            } else {
-                // Lưu vào database
-                require_once __DIR__ . '/../models/Contact.php';
-                $contact = new Contact();
-                
-                $data = [
-                    'name' => $name,
-                    'email' => $email,
-                    'phone' => $phone,
-                    'subject' => $subject,
-                    'message' => $message,
-                    'status' => 'pending'
-                ];
-                
-                $result = $contact->insert($data);
-                
-                if ($result) {
-                    $success = true;
-                } else {
-                    $error = 'Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.';
-                }
-            }
-        }
-        
-        renderClient('client/lienhe.php', [
-            'success' => $success,
-            'error' => $error
-        ], 'Liên Hệ');
+        renderClient('client/lienhe.php', [], 'Liên Hệ');
     }
 
 

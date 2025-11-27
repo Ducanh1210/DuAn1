@@ -36,6 +36,8 @@ require_once('./controllers/BookingController.php');
 require_once('./models/Booking.php');
 require_once('./models/Payment.php');
 require_once('./controllers/ProfileController.php');
+require_once('./models/DiscountCode.php');
+require_once('./controllers/DiscountsController.php');
 require_once('./controllers/TicketPriceController.php');
 require_once('./models/TicketPrice.php');
 require_once('./models/DiscountCode.php');
@@ -55,8 +57,8 @@ match ($act) {
     'trangchu' => (new MoviesController)->trangchu(),
     'gioithieu' => (new MoviesController)->gioithieu(),
     'lichchieu' => (new MoviesController)->lichchieu(),
-    'giave' => (new TicketPriceController)->index(),
     'khuyenmai' => (new MoviesController)->khuyenmai(),
+    'giave' => (new TicketPriceController)->index(),
     'lienhe' => (new MoviesController)->lienhe(),
     'check-voucher' => (new MoviesController)->checkVoucher(),
     'movies' => (new MoviesController)->movieDetail(),
@@ -143,22 +145,29 @@ match ($act) {
     'comments-show' => (new CommentsController)->show(),
     'comments-delete' => (new CommentsController)->delete(),
 
-    // Bookings routes (Admin)
+    // Bookings routes (Admin/Manager/Staff)
     'bookings' => (new BookingController)->list(),
     'bookings-show' => (new BookingController)->show(),
     'bookings-delete' => (new BookingController)->deleteBooking(),
     'bookings-update-status' => (new BookingController)->updateStatus(),
+    'banve' => (new BookingController)->sellTicket(),
 
+    // Discounts routes (Admin)
+    'discounts' => (new DiscountsController)->list(),
+    'discounts-create' => (new DiscountsController)->create(),
+    'discounts-edit' => (new DiscountsController)->edit(),
+    'discounts-delete' => (new DiscountsController)->delete(),
+    
     // Ticket Prices routes (Admin)
     'ticket-prices' => (new TicketPriceController)->list(),
     'ticket-prices-edit' => (new TicketPriceController)->edit(),
     'ticket-prices-update' => (new TicketPriceController)->update(),
 
     // Discount Codes routes (Admin)
-    'discounts' => (new DiscountCodesController)->list(),
-    'discounts-create' => (new DiscountCodesController)->create(),
-    'discounts-edit' => (new DiscountCodesController)->edit(),
-    'discounts-delete' => (new DiscountCodesController)->delete(),
+    'discount-codes' => (new DiscountCodesController)->list(),
+    'discount-codes-create' => (new DiscountCodesController)->create(),
+    'discount-codes-edit' => (new DiscountCodesController)->edit(),
+    'discount-codes-delete' => (new DiscountCodesController)->delete(),
 
     // Contacts routes (Admin)
     'contacts' => (new ContactsController)->list(),
@@ -167,8 +176,9 @@ match ($act) {
     'contacts-update-status' => (new ContactsController)->updateStatus(),
     'contacts-delete' => (new ContactsController)->delete(),
 
-    // Statistics routes (Admin)
+    // Statistics routes (Admin/Manager/Staff)
     'thongke' => (new StatisticsController)->index(),
+    'statistics' => (new StatisticsController)->index(),
 
     // Notifications API routes (Admin)
     'api-notifications' => (new NotificationController)->getNotifications(),

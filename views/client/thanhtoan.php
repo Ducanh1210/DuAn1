@@ -77,12 +77,31 @@ function formatPrice($price)
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Ghế đã chọn:</span>
-                            <span class="detail-value seats-highlight"><?= htmlspecialchars($seatLabels) ?></span>
+                            <span class="detail-value seats-highlight">
+                                <?php
+                                $seatDisplay = [];
+                                foreach ($selectedSeats as $seat) {
+                                    $seatTypeName = ($seat['type'] === 'vip') ? 'VIP' : 'Thường';
+                                    $seatDisplay[] = htmlspecialchars($seat['label']) . ' ' . $seatTypeName;
+                                }
+                                echo implode(', ', $seatDisplay);
+                                ?>
+                            </span>
                         </div>
                         <div class="detail-row">
-                            <span class="detail-label">Định dạng:</span>
-                            <span
-                                class="detail-value format-badge"><?= htmlspecialchars($showtime['format'] ?? '2D') ?></span>
+                            <span class="detail-label">Loại ghế:</span>
+                            <span class="detail-value format-badge">
+                                <?php
+                                $seatTypes = [];
+                                foreach ($selectedSeats as $seat) {
+                                    $seatTypeName = ($seat['type'] === 'vip') ? 'VIP' : 'Thường';
+                                    if (!in_array($seatTypeName, $seatTypes)) {
+                                        $seatTypes[] = $seatTypeName;
+                                    }
+                                }
+                                echo htmlspecialchars(implode(', ', $seatTypes));
+                                ?>
+                            </span>
                         </div>
                         <?php if (isset($adultCount) && isset($studentCount)): ?>
                             <div class="detail-row">
