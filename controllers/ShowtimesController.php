@@ -1,55 +1,94 @@
 <?php
-
+/**
+ * SHOWTIMES CONTROLLER - XỬ LÝ LOGIC QUẢN LÝ LỊCH CHIẾU
+ * 
+ * CHỨC NĂNG:
+ * - CRUD lịch chiếu: danh sách, tạo, sửa, xóa, xem chi tiết
+ * - Lọc lịch chiếu: theo ngày, trạng thái, rạp
+ * - Phân quyền: Admin xem tất cả, Manager/Staff chỉ xem rạp được gán
+ * 
+ * LUỒNG CHẠY TỔNG QUÁT:
+ * 1. Kiểm tra quyền truy cập (requireAdminOrManager, requireAdminOrStaff)
+ * 2. Lọc dữ liệu theo role (Admin: tất cả, Manager/Staff: chỉ rạp được gán)
+ * 3. Lấy dữ liệu từ Model (Showtime, Movie, Room, Cinema)
+ * 4. Render View với dữ liệu đã lọc
+ */
 class ShowtimesController
 {
-    public $showtime;
-    public $movie;
-    public $room;
+    public $showtime; // Model Showtime để tương tác với database
+    public $movie; // Model Movie để lấy danh sách phim
+    public $room; // Model Room để lấy danh sách phòng
 
     public function __construct()
     {
-        $this->showtime = new Showtime();
-        $this->movie = new Movie();
+        // Khởi tạo các Models cần thiết
+        $this->showtime = new Showtime(); // Model để query bảng showtimes
+        $this->movie = new Movie(); // Model để query bảng movies
     }
 
     /**
-     * Hiển thị danh sách lịch chiếu (Admin/Staff)
+     * DANH SÁCH LỊCH CHIẾU (ADMIN/MANAGER/STAFF)
+     * 
+     * LUỒNG CHẠY:
+     * 1. Kiểm tra quyền (requireAdminOrStaff)
+     * 2. Lấy tham số lọc từ URL (date, status, cinema, page)
+     * 3. Phân quyền lọc dữ liệu:
+     *    - Admin: có thể lọc theo rạp, xem tất cả
+     *    - Manager/Staff: chỉ xem lịch chiếu của rạp được gán
+     * 4. Gọi Model để lấy dữ liệu phân trang
+     * 5. Lấy danh sách phim, phòng, rạp để hiển thị filter
+     * 6. Render view với dữ liệu
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ $_GET: date, status, cinema, page
+     * - Từ Model Showtime: paginate() hoặc paginateByCinema() -> danh sách lịch chiếu
+     * - Từ Model Movie: all() -> danh sách phim (cho filter)
+     * - Từ Model Room: getRooms() -> danh sách phòng (cho filter)
+     * - Từ Model Cinema: all() -> danh sách rạp (cho filter, chỉ admin)
      */
     public function list()
     {
         require_once __DIR__ . '/../commons/auth.php';
-        requireAdminOrStaff();
+        requireAdminOrStaff(); // Yêu cầu quyền admin, manager hoặc staff
         
-        // Lọc theo ngày nếu có
-        $date = $_GET['date'] ?? null;
-        // Lọc theo trạng thái nếu có
-        $status = $_GET['status'] ?? null;
-        // Lọc theo rạp nếu có (chỉ admin mới có)
-        $filterCinemaId = null;
+        // ============================================
+        // LẤY THAM SỐ LỌC TỪ URL
+        // ============================================
+        $date = $_GET['date'] ?? null; // Lọc theo ngày chiếu
+        $status = $_GET['status'] ?? null; // Lọc theo trạng thái (upcoming, showing, ended)
+        $filterCinemaId = null; // Lọc theo rạp (chỉ admin mới có)
         if (isAdmin()) {
             $filterCinemaId = !empty($_GET['cinema']) ? (int)$_GET['cinema'] : null;
         }
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Số trang
         $page = max(1, $page); // Đảm bảo page >= 1
         
+        // ============================================
+        // PHÂN QUYỀN LỌC DỮ LIỆU
+        // ============================================
         // Nếu là manager hoặc staff, chỉ lấy lịch chiếu của rạp mình quản lý
         if (isManager() || isStaff()) {
-            $cinemaId = getCurrentCinemaId();
+            $cinemaId = getCurrentCinemaId(); // Lấy cinema_id từ session
             if ($cinemaId) {
+                // Lấy lịch chiếu của rạp được gán, có phân trang
                 $result = $this->showtime->paginateByCinema($cinemaId, $page, 5, $date, $status);
             } else {
+                // Không có rạp được gán -> trả về rỗng
                 $result = ['data' => [], 'page' => 1, 'totalPages' => 0, 'total' => 0, 'perPage' => 5];
             }
         } else {
-            // Admin có thể lọc theo rạp
+            // Admin có thể lọc theo rạp và xem tất cả
             $result = $this->showtime->paginate($page, 5, $date, $status, $filterCinemaId);
         }
         
-        // Lấy danh sách phim và phòng cho filter
+        // ============================================
+        // LẤY DỮ LIỆU CHO FILTER
+        // ============================================
+        // Lấy danh sách phim và phòng để hiển thị trong dropdown filter
         $movies = $this->movie->all();
         $rooms = $this->getRooms();
         
-        // Lấy danh sách rạp cho filter (chỉ admin)
+        // Lấy danh sách rạp cho filter (chỉ admin mới có dropdown chọn rạp)
         $cinemas = [];
         if (isAdmin()) {
             require_once __DIR__ . '/../models/Cinema.php';
@@ -57,46 +96,69 @@ class ShowtimesController
             $cinemas = $cinemaModel->all();
         }
         
+        // ============================================
+        // RENDER VIEW
+        // ============================================
         render('admin/showtimes/list.php', [
-            'data' => $result['data'],
-            'movies' => $movies,
-            'rooms' => $rooms,
-            'cinemas' => $cinemas,
-            'selectedDate' => $date,
-            'selectedStatus' => $status,
-            'selectedCinema' => $filterCinemaId,
+            'data' => $result['data'], // Danh sách lịch chiếu
+            'movies' => $movies, // Danh sách phim (cho filter)
+            'rooms' => $rooms, // Danh sách phòng (cho filter)
+            'cinemas' => $cinemas, // Danh sách rạp (cho filter, chỉ admin)
+            'selectedDate' => $date, // Ngày đã chọn (để giữ giá trị trong form)
+            'selectedStatus' => $status, // Trạng thái đã chọn
+            'selectedCinema' => $filterCinemaId, // Rạp đã chọn
             'pagination' => [
-                'currentPage' => $result['page'],
-                'totalPages' => $result['totalPages'],
-                'total' => $result['total'],
-                'perPage' => $result['perPage']
+                'currentPage' => $result['page'], // Trang hiện tại
+                'totalPages' => $result['totalPages'], // Tổng số trang
+                'total' => $result['total'], // Tổng số lịch chiếu
+                'perPage' => $result['perPage'] // Số lịch chiếu mỗi trang
             ]
         ]);
     }
 
     /**
-     * Hiển thị form tạo lịch chiếu mới (Admin/Manager)
+     * TẠO LỊCH CHIẾU MỚI (ADMIN/MANAGER)
+     * 
+     * LUỒNG CHẠY:
+     * 1. Kiểm tra quyền (requireAdminOrManager - staff không có quyền)
+     * 2. Hiển thị form tạo lịch chiếu (GET request)
+     * 3. Nhận dữ liệu từ form (POST request)
+     * 4. Validate dữ liệu (phim, phòng, ngày, giờ, format)
+     * 5. Kiểm tra conflict (phòng đã có suất chiếu khác trong khoảng thời gian này)
+     * 6. Manager chỉ được tạo lịch chiếu cho phòng thuộc rạp mình quản lý
+     * 7. Insert vào database
+     * 8. Redirect về danh sách lịch chiếu
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ $_POST: movie_id, room_id, show_date, start_time, end_time, format
+     * - Từ Model Movie: all() -> danh sách phim
+     * - Từ Model Cinema: all() hoặc find() -> danh sách rạp hoặc rạp của manager
+     * - Từ Model Room: getRooms() -> danh sách phòng
+     * - Lưu vào database: bảng showtimes
      */
     public function create()
     {
         require_once __DIR__ . '/../commons/auth.php';
-        requireAdminOrManager();
+        requireAdminOrManager(); // Chỉ admin và manager mới có quyền tạo lịch chiếu
         
-        $errors = [];
-        $movies = $this->movie->all();
-        $cinemas = $this->getCinemas();
-        $rooms = $this->getRooms();
+        $errors = []; // Mảng lưu lỗi validation
+        $movies = $this->movie->all(); // Lấy danh sách phim để hiển thị trong dropdown
+        $cinemas = $this->getCinemas(); // Lấy danh sách rạp (admin: tất cả, manager: chỉ rạp mình)
+        $rooms = $this->getRooms(); // Lấy danh sách phòng (admin: tất cả, manager: chỉ phòng của rạp mình)
         
-        // Lấy cinema_id của manager nếu là manager
+        // ============================================
+        // XỬ LÝ CHO MANAGER
+        // ============================================
+        // Lấy cinema_id của manager nếu là manager (để giới hạn phòng chỉ thuộc rạp này)
         $managerCinemaId = null;
         $managerCinemaName = null;
         if (isManager()) {
-            $managerCinemaId = getCurrentCinemaId();
+            $managerCinemaId = getCurrentCinemaId(); // Lấy cinema_id từ session
             if ($managerCinemaId) {
                 require_once __DIR__ . '/../models/Cinema.php';
                 $cinemaModel = new Cinema();
                 $cinema = $cinemaModel->find($managerCinemaId);
-                $managerCinemaName = $cinema['name'] ?? null;
+                $managerCinemaName = $cinema['name'] ?? null; // Tên rạp để hiển thị
             }
         }
 

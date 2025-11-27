@@ -1,22 +1,43 @@
 <?php
+/**
+ * GENRES CONTROLLER - XỬ LÝ LOGIC QUẢN LÝ THỂ LOẠI PHIM
+ * 
+ * CHỨC NĂNG:
+ * - CRUD thể loại: danh sách, tạo, sửa, xóa
+ * - Chỉ admin mới có quyền quản lý thể loại
+ * 
+ * LUỒNG CHẠY:
+ * 1. Kiểm tra quyền admin (requireAdmin)
+ * 2. Lấy dữ liệu từ Model Genre
+ * 3. Render View với dữ liệu
+ */
 class GenresController
 {
-    public $genre;
+    public $genre; // Model Genre để tương tác với database
 
     public function __construct()
     {
+        // Khởi tạo Model Genre
         $this->genre = new Genre();
     }
 
     /**
-     * Hiển thị danh sách thể loại (Admin)
+     * DANH SÁCH THỂ LOẠI (ADMIN)
+     * 
+     * LUỒNG CHẠY:
+     * 1. Kiểm tra quyền admin (requireAdmin)
+     * 2. Lấy danh sách thể loại từ Model
+     * 3. Render view với dữ liệu
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ Model Genre: all() -> danh sách thể loại
      */
     public function list()
     {
         require_once __DIR__ . '/../commons/auth.php';
-        requireAdmin();
+        requireAdmin(); // Chỉ admin mới có quyền quản lý thể loại
         
-        $data = $this->genre->all();
+        $data = $this->genre->all(); // Lấy danh sách thể loại
         
         render('admin/genres/list.php', [
             'data' => $data

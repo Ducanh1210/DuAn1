@@ -1,42 +1,86 @@
 <?php
+/**
+ * PROFILE CONTROLLER - XỬ LÝ TRANG THÔNG TIN CÁ NHÂN
+ * 
+ * CHỨC NĂNG:
+ * - Hiển thị thông tin cá nhân: index()
+ * - Cập nhật thông tin: update()
+ * - Đổi mật khẩu: changePassword()
+ * - Quản lý hạng thành viên: tính total_spending, cập nhật tier
+ * - Lịch sử mua vé: hiển thị danh sách vé đã mua
+ * - Lịch sử điểm thưởng: hiển thị điểm đã tích lũy
+ * 
+ * LUỒNG CHẠY:
+ * 1. Kiểm tra đăng nhập
+ * 2. Lấy thông tin user từ database
+ * 3. Tính lại total_spending và cập nhật tier nếu cần
+ * 4. Lấy lịch sử mua vé, điểm thưởng
+ * 5. Render view với tất cả dữ liệu
+ */
 class ProfileController
 {
-    public $user;
-    public $booking;
-    public $conn;
+    public $user; // Model User để tương tác với database
+    public $booking; // Model Booking để lấy lịch sử mua vé
+    public $conn; // Kết nối database để query trực tiếp
 
     public function __construct()
     {
+        // Khởi tạo các Models và kết nối database
         $this->user = new User();
         $this->booking = new Booking();
         $this->conn = connectDB();
     }
 
     /**
-     * Hiển thị trang thông tin cá nhân với tabs
+     * TRANG THÔNG TIN CÁ NHÂN
+     * 
+     * LUỒNG CHẠY:
+     * 1. Kiểm tra đăng nhập (nếu chưa -> redirect về đăng nhập)
+     * 2. Lấy thông tin user từ database
+     * 3. Tính lại total_spending từ các booking đã thanh toán
+     * 4. Cập nhật tier_id dựa trên total_spending (nếu thay đổi)
+     * 5. Lấy thông tin tier, lịch sử điểm thưởng, lịch sử mua vé
+     * 6. Kiểm tra đã bình luận cho từng phim
+     * 7. Render view với tất cả dữ liệu
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ $_SESSION: user_id
+     * - Từ Model User: find() -> thông tin user
+     * - Từ database: SUM(total_price) từ bookings (status = paid/completed) -> total_spending
+     * - Từ database: customer_tiers -> thông tin hạng thành viên
+     * - Từ Model Booking: getByUser() -> lịch sử mua vé
+     * - Từ Model Comment: getByUser() -> danh sách phim đã đánh giá
      */
     public function index()
     {
+        // ============================================
+        // KIỂM TRA ĐĂNG NHẬP
+        // ============================================
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
         if (!isset($_SESSION['user_id'])) {
+            // Chưa đăng nhập -> redirect về trang đăng nhập
             header('Location: ' . BASE_URL . '?act=dangnhap');
             exit;
         }
 
         $userId = $_SESSION['user_id'];
-        $user = $this->user->find($userId);
+        $user = $this->user->find($userId); // Lấy thông tin user từ database
         
         if (!$user) {
+            // Không tìm thấy user -> redirect về trang chủ
             header('Location: ' . BASE_URL . '?act=trangchu');
             exit;
         }
 
+        // ============================================
+        // TÍNH LẠI TOTAL_SPENDING VÀ CẬP NHẬT TIER
+        // ============================================
         // Tính lại total_spending từ các booking đã thanh toán (để đảm bảo dữ liệu chính xác)
         $actualSpending = $this->calculateTotalSpending($userId);
         if ($actualSpending !== floatval($user['total_spending'] ?? 0)) {
-            // Cập nhật total_spending và tier_id nếu khác
+            // Nếu total_spending thay đổi -> cập nhật tier_id
             $tierId = $this->getTierBySpending($actualSpending);
             $this->user->update($userId, [
                 'total_spending' => $actualSpending,
@@ -46,15 +90,20 @@ class ProfileController
             $user = $this->user->find($userId);
         }
 
-        // Lấy thông tin tier
+        // ============================================
+        // LẤY THÔNG TIN TIER
+        // ============================================
         $tier = null;
         if ($user['tier_id']) {
-            $tier = $this->getTier($user['tier_id']);
+            $tier = $this->getTier($user['tier_id']); // Thông tin hạng hiện tại
         }
 
-        // Lấy tất cả tiers để hiển thị thông tin
+        // Lấy tất cả tiers để hiển thị thông tin (để user biết các hạng khác)
         $allTiers = $this->getAllTiers();
 
+        // ============================================
+        // LỊCH SỬ ĐIỂM THƯỞNG
+        // ============================================
         // Lấy lịch sử điểm thưởng (từ bookings)
         $rewardHistory = $this->getRewardHistory($userId);
         
@@ -69,6 +118,9 @@ class ProfileController
         $nextTier = $this->getNextTier($user['total_spending']);
         $pointsToNextTier = $nextTier ? ($nextTier['spending_min'] - $user['total_spending']) / 1000 : 0;
 
+        // ============================================
+        // LỊCH SỬ MUA VÉ
+        // ============================================
         // Lấy lịch sử mua vé
         $bookingResult = $this->booking->getByUser($userId);
         $bookingHistory = $bookingResult['data'] ?? [];
@@ -79,7 +131,7 @@ class ProfileController
         $userComments = $commentModel->getByUser($userId);
         $commentedMovies = [];
         foreach ($userComments as $comment) {
-            $commentedMovies[$comment['movie_id']] = true;
+            $commentedMovies[$comment['movie_id']] = true; // Đánh dấu phim đã đánh giá
         }
 
         // Thêm thông tin đã bình luận vào booking history
@@ -88,7 +140,10 @@ class ProfileController
         }
         unset($booking);
 
-        // Tab hiện tại
+        // ============================================
+        // RENDER VIEW
+        // ============================================
+        // Tab hiện tại (account, bookings, rewards)
         $tab = $_GET['tab'] ?? 'account';
 
         renderClient('client/profile.php', [

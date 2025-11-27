@@ -1,19 +1,56 @@
 <?php
+/**
+ * BOOKING MODEL - TƯƠNG TÁC VỚI BẢNG BOOKINGS
+ * 
+ * CHỨC NĂNG:
+ * - CRUD đặt vé: all(), find(), insert(), update(), delete()
+ * - Phân trang: paginate()
+ * - Lấy ghế đã đặt: getBookedSeatsByShowtime()
+ * - Kiểm tra user đã mua vé phim: hasPurchasedMovie()
+ * - Lấy đặt vé của user: getByUser()
+ * 
+ * LUỒNG CHẠY:
+ * 1. Controller gọi method của Model
+ * 2. Model thực hiện SQL query với nhiều JOIN để lấy thông tin liên quan
+ * 3. Trả về dữ liệu cho Controller
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: bookings
+ * - JOIN với: users, showtimes, movies, rooms, cinemas
+ */
 class Booking
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO)
 
     public function __construct()
     {
+        // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
 
     /**
-     * Lấy tất cả đặt vé với thông tin liên quan
+     * LẤY TẤT CẢ ĐẶT VÉ VỚI THÔNG TIN LIÊN QUAN
+     * 
+     * LUỒNG CHẠY:
+     * 1. Query SQL với nhiều LEFT JOIN để lấy thông tin đầy đủ
+     * 2. JOIN với users để lấy thông tin người đặt
+     * 3. JOIN với showtimes để lấy ngày giờ chiếu
+     * 4. JOIN với movies để lấy thông tin phim
+     * 5. JOIN với rooms và cinemas để lấy thông tin phòng và rạp
+     * 6. Sắp xếp theo ngày đặt (mới nhất trước)
+     * 
+     * DỮ LIỆU TRẢ VỀ:
+     * - Tất cả cột từ bảng bookings
+     * - user_name, user_email, user_phone từ bảng users
+     * - movie_title, movie_image từ bảng movies
+     * - show_date, start_time, end_time từ bảng showtimes
+     * - room_name, room_code từ bảng rooms
+     * - cinema_name từ bảng cinemas
      */
     public function all()
     {
         try {
+            // SQL query với nhiều LEFT JOIN để lấy thông tin đầy đủ
             $sql = "SELECT bookings.*, 
                     users.full_name AS user_name,
                     users.email AS user_email,
@@ -35,10 +72,10 @@ class Booking
                     ORDER BY bookings.booking_date DESC, bookings.id DESC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng tất cả đặt vé
         } catch (Exception $e) {
-            debug($e);
-            return [];
+            debug($e); // Hiển thị lỗi nếu có
+            return []; // Trả về mảng rỗng nếu có lỗi
         }
     }
 

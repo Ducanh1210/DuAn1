@@ -1,29 +1,60 @@
 <?php
+/**
+ * USER MODEL - TƯƠNG TÁC VỚI BẢNG USERS
+ * 
+ * CHỨC NĂNG:
+ * - CRUD user: all(), find(), insert(), update(), delete()
+ * - Tìm kiếm: search() (theo tên/email), findByEmail()
+ * - Lọc: getByRole() (theo role)
+ * - Thống kê: countByRole()
+ * - Quản lý hạng thành viên: getTiers()
+ * 
+ * LUỒNG CHẠY:
+ * 1. Controller gọi method của Model
+ * 2. Model thực hiện SQL query
+ * 3. Trả về dữ liệu dạng array cho Controller
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: users
+ * - JOIN với: customer_tiers (để lấy tên hạng thành viên)
+ */
 class User
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO)
 
     public function __construct()
     {
+        // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
 
     /**
-     * Lấy tất cả users với thông tin tier
+     * LẤY TẤT CẢ USERS VỚI THÔNG TIN TIER
+     * 
+     * Mục đích: Lấy danh sách tất cả users hoặc lọc theo role
+     * Cách hoạt động:
+     * 1. Query SQL với LEFT JOIN để lấy tên hạng thành viên
+     * 2. Nếu có role -> thêm WHERE để lọc theo role
+     * 3. Sắp xếp theo ID giảm dần (mới nhất trước)
+     * 
+     * @param string|null $role Role cần lọc (admin, manager, staff, customer) hoặc null để lấy tất cả
+     * @return array Danh sách users
      */
     public function all($role = null)
     {
         try {
+            // SQL query với LEFT JOIN để lấy tên hạng thành viên
             $sql = "SELECT users.*, 
                     customer_tiers.name AS tier_name
                     FROM users
                     LEFT JOIN customer_tiers ON users.tier_id = customer_tiers.id";
 
+            // Thêm điều kiện lọc theo role nếu có
             if ($role) {
                 $sql .= " WHERE users.role = :role";
             }
 
-            $sql .= " ORDER BY users.id DESC";
+            $sql .= " ORDER BY users.id DESC"; // Sắp xếp mới nhất trước
 
             $stmt = $this->conn->prepare($sql);
             if ($role) {
@@ -31,18 +62,25 @@ class User
             } else {
                 $stmt->execute();
             }
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng tất cả users
         } catch (Exception $e) {
-            debug($e);
+            debug($e); // Hiển thị lỗi nếu có
         }
     }
 
     /**
-     * Lấy user theo ID
+     * LẤY USER THEO ID
+     * 
+     * Mục đích: Lấy thông tin chi tiết của 1 user
+     * Cách hoạt động: Query với WHERE id = :id
+     * 
+     * @param int $id ID của user
+     * @return array|null Thông tin user hoặc null nếu không tìm thấy
      */
     public function find($id)
     {
         try {
+            // SQL query với LEFT JOIN để lấy tên hạng thành viên
             $sql = "SELECT users.*, 
                     customer_tiers.name AS tier_name
                     FROM users
@@ -50,14 +88,20 @@ class User
                     WHERE users.id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
-            return $stmt->fetch();
+            return $stmt->fetch(); // Trả về 1 user hoặc null
         } catch (Exception $e) {
             debug($e);
         }
     }
 
     /**
-     * Tìm user theo email
+     * TÌM USER THEO EMAIL
+     * 
+     * Mục đích: Tìm user bằng email (dùng cho đăng nhập)
+     * Cách hoạt động: Query với WHERE email = :email
+     * 
+     * @param string $email Email của user
+     * @return array|null Thông tin user hoặc null nếu không tìm thấy
      */
     public function findByEmail($email)
     {
@@ -65,18 +109,25 @@ class User
             $sql = "SELECT * FROM users WHERE email = :email";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':email' => $email]);
-            return $stmt->fetch();
+            return $stmt->fetch(); // Trả về 1 user hoặc null
         } catch (Exception $e) {
             debug($e);
         }
     }
 
     /**
-     * Tìm kiếm users theo tên hoặc email
+     * TÌM KIẾM USERS THEO TÊN HOẶC EMAIL
+     * 
+     * Mục đích: Tìm kiếm user theo từ khóa (tên hoặc email)
+     * Cách hoạt động: Query với LIKE để tìm kiếm gần đúng
+     * 
+     * @param string $keyword Từ khóa tìm kiếm
+     * @return array Danh sách users khớp với từ khóa
      */
     public function search($keyword)
     {
         try {
+            // SQL query với LIKE để tìm kiếm trong tên hoặc email
             $sql = "SELECT users.*, 
                     customer_tiers.name AS tier_name
                     FROM users
@@ -85,15 +136,21 @@ class User
                     OR users.email LIKE :keyword
                     ORDER BY users.id DESC";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([':keyword' => '%' . $keyword . '%']);
-            return $stmt->fetchAll();
+            $stmt->execute([':keyword' => '%' . $keyword . '%']); // %keyword% để tìm kiếm gần đúng
+            return $stmt->fetchAll(); // Trả về mảng users khớp
         } catch (Exception $e) {
             debug($e);
         }
     }
 
     /**
-     * Lọc users theo role
+     * LỌC USERS THEO ROLE
+     * 
+     * Mục đích: Lấy danh sách users có role cụ thể
+     * Cách hoạt động: Query với WHERE role = :role
+     * 
+     * @param string $role Role cần lọc (admin, manager, staff, customer)
+     * @return array Danh sách users có role đó
      */
     public function getByRole($role)
     {

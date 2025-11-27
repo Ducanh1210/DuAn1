@@ -1,28 +1,64 @@
 <?php
-
+/**
+ * BOOKING CONTROLLER - XỬ LÝ LOGIC ĐẶT VÉ
+ * 
+ * CHỨC NĂNG:
+ * - Chọn ghế: hiển thị sơ đồ ghế, chọn ghế để đặt
+ * - Thanh toán: nhập thông tin, áp dụng mã giảm giá, tính tiền
+ * - Xử lý thanh toán: tạo booking, gửi đến VNPay
+ * - Callback từ VNPay: cập nhật trạng thái thanh toán
+ * - Lịch sử đặt vé: xem danh sách vé đã đặt
+ * - Quản lý đặt vé (admin): xem, cập nhật trạng thái, xóa
+ * - Bán vé (staff): chọn suất chiếu để bán vé
+ * 
+ * LUỒNG CHẠY ĐẶT VÉ:
+ * 1. User chọn suất chiếu -> selectSeats() -> hiển thị sơ đồ ghế
+ * 2. User chọn ghế -> payment() -> hiển thị form thanh toán
+ * 3. User nhập thông tin, mã giảm giá -> processPayment() -> tạo booking, gửi VNPay
+ * 4. VNPay xử lý -> vnpayReturn() -> cập nhật trạng thái booking
+ */
 class BookingController
 {
-    public $booking;
+    public $booking; // Model Booking để tương tác với database
 
     public function __construct()
     {
-        require_once __DIR__ . '/../models/Booking.php';
-        require_once __DIR__ . '/../models/Seat.php';
-        require_once __DIR__ . '/../models/Showtime.php';
-        require_once __DIR__ . '/../models/Room.php';
-        require_once __DIR__ . '/../models/Movie.php';
-        require_once __DIR__ . '/../models/Cinema.php';
-        require_once __DIR__ . '/../models/DiscountCode.php';
-        $this->booking = new Booking();
+        // Load các Models cần thiết
+        require_once __DIR__ . '/../models/Booking.php'; // Model đặt vé
+        require_once __DIR__ . '/../models/Seat.php'; // Model ghế
+        require_once __DIR__ . '/../models/Showtime.php'; // Model lịch chiếu
+        require_once __DIR__ . '/../models/Room.php'; // Model phòng chiếu
+        require_once __DIR__ . '/../models/Movie.php'; // Model phim
+        require_once __DIR__ . '/../models/Cinema.php'; // Model rạp
+        require_once __DIR__ . '/../models/DiscountCode.php'; // Model mã giảm giá
+        $this->booking = new Booking(); // Khởi tạo Model Booking
     }
 
     /**
-     * Hiển thị trang chọn ghế
+     * TRANG CHỌN GHẾ
+     * 
+     * LUỒNG CHẠY:
+     * 1. Kiểm tra user đã đăng nhập chưa (requireLogin)
+     * 2. Lấy showtime_id từ URL
+     * 3. Lấy thông tin showtime, room, movie từ database
+     * 4. Lấy sơ đồ ghế của phòng (theo hàng)
+     * 5. Lấy danh sách ghế đã được đặt cho suất chiếu này
+     * 6. Tính giá vé dựa trên format (2D/3D), loại khách hàng, loại ghế
+     * 7. Hiển thị sơ đồ ghế với trạng thái (available, booked, selected)
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ $_GET: showtime_id
+     * - Từ Model Showtime: find() -> thông tin suất chiếu
+     * - Từ Model Room: find() -> thông tin phòng chiếu
+     * - Từ Model Movie: find() -> thông tin phim
+     * - Từ Model Seat: getSeatMapByRoom() -> sơ đồ ghế theo hàng
+     * - Từ Model Booking: getBookedSeatsByShowtime() -> danh sách ghế đã đặt
+     * - Từ Model TicketPrice: getPriceForShowtime() -> giá vé
      */
     public function selectSeats()
     {
         require_once __DIR__ . '/../commons/auth.php';
-        requireLogin();
+        requireLogin(); // Yêu cầu đăng nhập - nếu chưa đăng nhập sẽ redirect về trang đăng nhập
 
         try {
             $showtimeId = $_GET['showtime_id'] ?? null;

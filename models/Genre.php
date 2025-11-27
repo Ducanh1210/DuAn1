@@ -1,15 +1,35 @@
 <?php
+/**
+ * GENRE MODEL - TƯƠNG TÁC VỚI BẢNG MOVIE_GENRES
+ * 
+ * CHỨC NĂNG:
+ * - CRUD thể loại: all(), find(), insert(), update(), delete()
+ * 
+ * LUỒNG CHẠY:
+ * 1. Controller gọi method của Model
+ * 2. Model thực hiện SQL query
+ * 3. Trả về dữ liệu dạng array cho Controller
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: movie_genres
+ */
 class Genre
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO)
 
     public function __construct()
     {
+        // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
 
     /**
-     * Lấy tất cả thể loại phim
+     * LẤY TẤT CẢ THỂ LOẠI PHIM
+     * 
+     * Mục đích: Lấy danh sách tất cả thể loại
+     * Cách hoạt động: Query SQL đơn giản
+     * 
+     * @return array Danh sách tất cả thể loại
      */
     public function all()
     {
@@ -17,15 +37,20 @@ class Genre
             $sql = "SELECT * FROM movie_genres ORDER BY id ASC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng tất cả thể loại
         } catch (Exception $e) {
             debug($e);
-            return [];
+            return []; // Trả về mảng rỗng nếu có lỗi
         }
     }
 
     /**
-     * Lấy thể loại theo ID
+     * LẤY THỂ LOẠI THEO ID
+     * 
+     * Mục đích: Lấy thông tin chi tiết của 1 thể loại
+     * 
+     * @param int $id ID của thể loại
+     * @return array|null Thông tin thể loại hoặc null nếu không tìm thấy
      */
     public function find($id)
     {
@@ -33,7 +58,7 @@ class Genre
             $sql = "SELECT * FROM movie_genres WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
-            return $stmt->fetch();
+            return $stmt->fetch(); // Trả về 1 thể loại hoặc null
         } catch (Exception $e) {
             debug($e);
             return null;

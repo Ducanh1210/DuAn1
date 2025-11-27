@@ -1,15 +1,35 @@
 <?php
+/**
+ * CINEMA MODEL - TƯƠNG TÁC VỚI BẢNG CINEMAS
+ * 
+ * CHỨC NĂNG:
+ * - CRUD rạp: all(), find(), insert(), update(), delete()
+ * 
+ * LUỒNG CHẠY:
+ * 1. Controller gọi method của Model
+ * 2. Model thực hiện SQL query
+ * 3. Trả về dữ liệu dạng array cho Controller
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: cinemas
+ */
 class Cinema
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO)
 
     public function __construct()
     {
+        // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
 
     /**
-     * Lấy tất cả rạp
+     * LẤY TẤT CẢ RẠP
+     * 
+     * Mục đích: Lấy danh sách tất cả rạp
+     * Cách hoạt động: Query SQL đơn giản
+     * 
+     * @return array Danh sách tất cả rạp
      */
     public function all()
     {
@@ -17,15 +37,20 @@ class Cinema
             $sql = "SELECT * FROM cinemas ORDER BY id ASC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng tất cả rạp
         } catch (Exception $e) {
             debug($e);
-            return [];
+            return []; // Trả về mảng rỗng nếu có lỗi
         }
     }
 
     /**
-     * Lấy rạp theo ID
+     * LẤY RẠP THEO ID
+     * 
+     * Mục đích: Lấy thông tin chi tiết của 1 rạp
+     * 
+     * @param int $id ID của rạp
+     * @return array|null Thông tin rạp hoặc null nếu không tìm thấy
      */
     public function find($id)
     {
@@ -33,7 +58,7 @@ class Cinema
             $sql = "SELECT * FROM cinemas WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
-            return $stmt->fetch();
+            return $stmt->fetch(); // Trả về 1 rạp hoặc null
         } catch (Exception $e) {
             debug($e);
             return null;

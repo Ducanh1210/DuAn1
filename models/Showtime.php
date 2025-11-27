@@ -1,20 +1,56 @@
 <?php
+/**
+ * SHOWTIME MODEL - TƯƠNG TÁC VỚI BẢNG SHOWTIMES
+ * 
+ * CHỨC NĂNG:
+ * - CRUD lịch chiếu: all(), find(), insert(), update(), delete()
+ * - Phân trang: paginate(), paginateByCinema()
+ * - Lọc lịch chiếu: theo ngày, trạng thái, rạp
+ * - Tính trạng thái: getStatus() -> upcoming, showing, ended
+ * - Kiểm tra conflict: checkConflict() -> kiểm tra phòng đã có suất chiếu khác chưa
+ * - Lấy lịch chiếu theo phim và ngày: getByMovieAndDate()
+ * 
+ * LUỒNG CHẠY:
+ * 1. Controller gọi method của Model
+ * 2. Model thực hiện SQL query với JOIN để lấy thông tin liên quan
+ * 3. Trả về dữ liệu dạng array cho Controller
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: showtimes
+ * - JOIN với: movies (thông tin phim), rooms (thông tin phòng), cinemas (thông tin rạp)
+ */
 class Showtime
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO)
 
     public function __construct()
     {
+        // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
 
     /**
-     * Lấy tất cả lịch chiếu với thông tin phim và phòng
-     * Chỉ lấy lịch chiếu của phim đang chiếu (status = 'active' và còn trong thời gian chiếu)
+     * LẤY TẤT CẢ LỊCH CHIẾU VỚI THÔNG TIN PHIM VÀ PHÒNG
+     * 
+     * Mục đích: Lấy danh sách lịch chiếu đang hoạt động (phim đang chiếu)
+     * Cách hoạt động:
+     * 1. Query SQL với LEFT JOIN để lấy thông tin phim, phòng, rạp
+     * 2. Lọc chỉ lấy lịch chiếu của phim đang chiếu:
+     *    - movies.status = 'active'
+     *    - movies.release_date <= hôm nay (hoặc null)
+     *    - movies.end_date >= hôm nay (hoặc null)
+     * 3. Sắp xếp theo ngày chiếu, giờ bắt đầu
+     * 
+     * DỮ LIỆU TRẢ VỀ:
+     * - Tất cả cột từ bảng showtimes
+     * - movie_title, movie_duration, movie_image, movie_status từ bảng movies
+     * - room_name, room_code từ bảng rooms
+     * - cinema_name từ bảng cinemas
      */
     public function all()
     {
         try {
+            // SQL query với nhiều LEFT JOIN để lấy thông tin đầy đủ
             $sql = "SELECT showtimes.*, 
                     movies.title AS movie_title,
                     movies.duration AS movie_duration,
@@ -35,20 +71,30 @@ class Showtime
                     ORDER BY showtimes.show_date ASC, showtimes.start_time ASC, showtimes.id ASC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng tất cả lịch chiếu
         } catch (Exception $e) {
-            debug($e);
+            debug($e); // Hiển thị lỗi nếu có
         }
     }
 
     /**
-     * Tính trạng thái của showtime
+     * TÍNH TRẠNG THÁI CỦA SHOWTIME
+     * 
+     * Mục đích: Xác định showtime đang ở trạng thái nào (sắp chiếu, đang chiếu, đã dừng)
+     * Cách hoạt động:
+     * 1. Kiểm tra trạng thái phim (active/inactive)
+     * 2. Kiểm tra ngày phát hành và ngày kết thúc của phim
+     * 3. So sánh ngày chiếu với hôm nay
+     * 4. So sánh giờ chiếu với giờ hiện tại (nếu cùng ngày)
+     * 
      * @param array $showtime Dữ liệu showtime (có show_date, start_time, end_time, movie_status, movie_end_date)
      * @return string 'upcoming' (sắp chiếu), 'showing' (đang chiếu), 'ended' (dừng)
      */
     public function getStatus($showtime)
     {
-        // Kiểm tra trạng thái phim trước
+        // ============================================
+        // KIỂM TRA TRẠNG THÁI PHIM
+        // ============================================
         $movieStatus = $showtime['movie_status'] ?? 'inactive';
         $movieEndDate = $showtime['movie_end_date'] ?? null;
         $movieReleaseDate = $showtime['movie_release_date'] ?? null;
@@ -58,7 +104,7 @@ class Showtime
             return 'ended';
         }
         
-        // Kiểm tra end_date của phim
+        // Kiểm tra end_date của phim (phim đã hết thời gian chiếu)
         if ($movieEndDate) {
             $today = date('Y-m-d');
             if ($movieEndDate < $today) {
@@ -66,7 +112,7 @@ class Showtime
             }
         }
         
-        // Kiểm tra release_date của phim
+        // Kiểm tra release_date của phim (phim chưa phát hành)
         if ($movieReleaseDate) {
             $today = date('Y-m-d');
             if ($movieReleaseDate > $today) {
@@ -74,6 +120,9 @@ class Showtime
             }
         }
         
+        // ============================================
+        // KIỂM TRA NGÀY VÀ GIỜ CHIẾU
+        // ============================================
         if (empty($showtime['show_date'])) {
             return 'ended';
         }
@@ -84,20 +133,20 @@ class Showtime
         $startTime = $showtime['start_time'] ?? '00:00:00';
         $endTime = $showtime['end_time'] ?? '23:59:59';
         
-        // So sánh ngày
+        // So sánh ngày chiếu với hôm nay
         if ($showDate < $today) {
-            // Ngày chiếu đã qua
+            // Ngày chiếu đã qua -> ended
             return 'ended';
         } elseif ($showDate > $today) {
-            // Ngày chiếu chưa tới
+            // Ngày chiếu chưa tới -> upcoming
             return 'upcoming';
         } else {
             // Cùng ngày, so sánh giờ
             if ($now < $startTime) {
-                // Chưa đến giờ bắt đầu
+                // Chưa đến giờ bắt đầu -> upcoming
                 return 'upcoming';
             } elseif ($now >= $startTime && $now <= $endTime) {
-                // Đang trong khoảng thời gian chiếu
+                // Đang trong khoảng thời gian chiếu -> showing
                 return 'showing';
             } else {
                 // Đã qua giờ kết thúc

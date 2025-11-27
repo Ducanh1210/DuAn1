@@ -1,18 +1,48 @@
 <?php
+/**
+ * MOVIE MODEL - TƯƠNG TÁC VỚI BẢNG MOVIES
+ * 
+ * CHỨC NĂNG:
+ * - CRUD phim: all(), find(), insert(), update(), delete()
+ * - Phân trang: paginate()
+ * - Lọc phim: đang chiếu, sắp chiếu, theo thể loại
+ * 
+ * LUỒNG CHẠY:
+ * 1. Controller gọi method của Model (ví dụ: $movie->all())
+ * 2. Model thực hiện SQL query
+ * 3. Trả về dữ liệu dạng array cho Controller
+ * 4. Controller truyền dữ liệu vào View để hiển thị
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: movies
+ * - JOIN với: movie_genres (để lấy tên thể loại)
+ */
 class Movie
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO)
 
     public function __construct()
     {
+        // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
+    
     /**
-     * Lấy tất cả phim với thông tin thể loại
+     * LẤY TẤT CẢ PHIM VỚI THÔNG TIN THỂ LOẠI
+     * 
+     * LUỒNG CHẠY:
+     * 1. Query SQL với LEFT JOIN để lấy tên thể loại
+     * 2. Sắp xếp theo ID và ngày tạo
+     * 3. Trả về mảng tất cả phim
+     * 
+     * DỮ LIỆU TRẢ VỀ:
+     * - Tất cả cột từ bảng movies
+     * - genre_name từ bảng movie_genres (LEFT JOIN)
      */
     public function all()
     {
         try {
+            // SQL query: SELECT từ movies, JOIN với movie_genres để lấy tên thể loại
             $sql = "SELECT movies.*, 
                     movie_genres.name AS genre_name
                     FROM movies
@@ -20,9 +50,9 @@ class Movie
                     ORDER BY movies.id ASC, movies.created_at ASC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng tất cả phim
         } catch (Exception $e) {
-            debug($e);
+            debug($e); // Hiển thị lỗi nếu có
         }
     }
 

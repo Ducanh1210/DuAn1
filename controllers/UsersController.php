@@ -1,47 +1,91 @@
 <?php
+/**
+ * USERS CONTROLLER - XỬ LÝ LOGIC QUẢN LÝ NGƯỜI DÙNG
+ * 
+ * CHỨC NĂNG:
+ * - CRUD người dùng: danh sách, tạo, sửa, xem chi tiết
+ * - Khóa/Mở khóa tài khoản: ban(), unban()
+ * - Lọc và tìm kiếm: theo role, theo tên/email
+ * - Thống kê: số lượng user theo từng role
+ * 
+ * LUỒNG CHẠY TỔNG QUÁT:
+ * 1. Kiểm tra quyền admin (chỉ admin mới quản lý user)
+ * 2. Lọc/tìm kiếm dữ liệu
+ * 3. Lấy dữ liệu từ Model User
+ * 4. Render View với dữ liệu
+ */
 class UsersController
 {
-    public $user;
+    public $user; // Model User để tương tác với database
 
     public function __construct()
     {
+        // Khởi tạo Model User
         $this->user = new User();
     }
 
     /**
-     * Hiển thị danh sách users (Admin)
+     * DANH SÁCH NGƯỜI DÙNG (ADMIN)
+     * 
+     * LUỒNG CHẠY:
+     * 1. Kiểm tra quyền admin (requireAdmin)
+     * 2. Lấy tham số lọc từ URL (role, search)
+     * 3. Gọi Model để lấy dữ liệu:
+     *    - Nếu có search -> search() (tìm theo tên/email)
+     *    - Nếu có role -> getByRole() (lọc theo role)
+     *    - Nếu không -> all() (lấy tất cả)
+     * 4. Lấy thống kê số lượng user theo role
+     * 5. Render view với dữ liệu
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ $_GET: role (admin, manager, staff, customer), search (từ khóa tìm kiếm)
+     * - Từ Model User: all(), search(), getByRole() -> danh sách users
+     * - Từ Model User: countByRole() -> thống kê số lượng theo role
      */
     public function list()
     {
-        // Kiểm tra quyền admin
+        // Kiểm tra quyền admin (chỉ admin mới quản lý user)
         require_once __DIR__ . '/../commons/auth.php';
         requireAdmin();
         
-        // Lọc theo role nếu có
-        $roleFilter = $_GET['role'] ?? null;
-        $searchKeyword = $_GET['search'] ?? '';
+        // ============================================
+        // LẤY THAM SỐ LỌC TỪ URL
+        // ============================================
+        $roleFilter = $_GET['role'] ?? null; // Lọc theo role (admin, manager, staff, customer)
+        $searchKeyword = $_GET['search'] ?? ''; // Từ khóa tìm kiếm (tên hoặc email)
 
+        // ============================================
+        // LẤY DỮ LIỆU THEO ĐIỀU KIỆN
+        // ============================================
         if (!empty($searchKeyword)) {
+            // Tìm kiếm theo tên hoặc email
             $data = $this->user->search($searchKeyword);
         } elseif ($roleFilter) {
+            // Lọc theo role
             $data = $this->user->getByRole($roleFilter);
         } else {
+            // Lấy tất cả users
             $data = $this->user->all();
         }
 
-        // Thống kê
+        // ============================================
+        // THỐNG KÊ SỐ LƯỢNG USER THEO ROLE
+        // ============================================
         $stats = [
-            'total' => $this->user->countByRole(),
-            'admin' => $this->user->countByRole('admin'),
-            'staff' => $this->user->countByRole('staff'),
-            'customer' => $this->user->countByRole('customer')
+            'total' => $this->user->countByRole(), // Tổng số user
+            'admin' => $this->user->countByRole('admin'), // Số admin
+            'staff' => $this->user->countByRole('staff'), // Số staff
+            'customer' => $this->user->countByRole('customer') // Số customer
         ];
 
+        // ============================================
+        // RENDER VIEW
+        // ============================================
         render('admin/users/list.php', [
-            'data' => $data,
-            'stats' => $stats,
-            'roleFilter' => $roleFilter,
-            'searchKeyword' => $searchKeyword
+            'data' => $data, // Danh sách users
+            'stats' => $stats, // Thống kê
+            'roleFilter' => $roleFilter, // Role đã chọn (để giữ giá trị trong form)
+            'searchKeyword' => $searchKeyword // Từ khóa đã nhập (để giữ giá trị trong form)
         ]);
     }
 

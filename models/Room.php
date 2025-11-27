@@ -1,30 +1,56 @@
 <?php
+/**
+ * ROOM MODEL - TƯƠNG TÁC VỚI BẢNG ROOMS
+ * 
+ * CHỨC NĂNG:
+ * - CRUD phòng: all(), find(), insert(), update(), delete()
+ * - Phân trang: paginate(), paginateByCinema()
+ * - Lọc phòng: theo cinema_id
+ * 
+ * LUỒNG CHẠY:
+ * 1. Controller gọi method của Model
+ * 2. Model thực hiện SQL query với JOIN để lấy thông tin rạp
+ * 3. Trả về dữ liệu dạng array cho Controller
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: rooms
+ * - JOIN với: cinemas (để lấy tên rạp)
+ */
 class Room
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO)
 
     public function __construct()
     {
+        // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
 
     /**
-     * Lấy tất cả phòng với thông tin rạp
+     * LẤY TẤT CẢ PHÒNG VỚI THÔNG TIN RẠP
+     * 
+     * Mục đích: Lấy danh sách tất cả phòng chiếu
+     * Cách hoạt động: Query SQL với LEFT JOIN để lấy tên rạp
+     * 
+     * DỮ LIỆU TRẢ VỀ:
+     * - Tất cả cột từ bảng rooms
+     * - cinema_name từ bảng cinemas (LEFT JOIN)
      */
     public function all()
     {
         try {
+            // SQL query với LEFT JOIN để lấy tên rạp
             $sql = "SELECT rooms.*, 
                     cinemas.name AS cinema_name
                     FROM rooms
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
-                    ORDER BY rooms.cinema_id ASC, rooms.id ASC";
+                    ORDER BY rooms.cinema_id ASC, rooms.id ASC"; // Sắp xếp theo rạp, sau đó theo ID
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng tất cả phòng
         } catch (Exception $e) {
             debug($e);
-            return [];
+            return []; // Trả về mảng rỗng nếu có lỗi
         }
     }
 

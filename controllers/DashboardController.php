@@ -1,64 +1,91 @@
 <?php
+/**
+ * DASHBOARD CONTROLLER - XỬ LÝ TRANG CHỦ ADMIN
+ * 
+ * CHỨC NĂNG:
+ * - Hiển thị dashboard với các thống kê tổng quan
+ * - Thống kê: số vé, doanh thu, phim, user, rạp, phòng
+ * - Thống kê theo thời gian: hôm nay, theo tháng
+ * - Top phim bán chạy, đặt vé gần đây
+ * 
+ * LUỒNG CHẠY:
+ * 1. Kiểm tra quyền (requireAdminOrStaff)
+ * 2. Gọi các method private để lấy thống kê từ database
+ * 3. Render view dashboard với tất cả dữ liệu thống kê
+ * 
+ * DỮ LIỆU LẤY:
+ * - Từ database: COUNT, SUM, AVG từ các bảng (bookings, movies, users, etc.)
+ * - Thống kê tổng: số vé, doanh thu, phim, user, rạp, phòng
+ * - Thống kê hôm nay: số đặt vé, doanh thu
+ * - Thống kê theo tháng: 7 tháng gần nhất
+ * - Top phim: phim bán chạy nhất
+ * - Đặt vé gần đây: 10 đặt vé mới nhất
+ */
 class DashboardController
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO) để query trực tiếp
 
     public function __construct()
     {
+        // Kết nối database để query thống kê
         $this->conn = connectDB();
     }
 
     /**
-     * Hiển thị dashboard với thống kê
+     * DASHBOARD - TRANG CHỦ ADMIN
+     * 
+     * LUỒNG CHẠY:
+     * 1. Kiểm tra quyền (requireAdminOrStaff)
+     * 2. Gọi các method private để lấy thống kê:
+     *    - Thống kê tổng: staff, vé, doanh thu, phim, user, rạp, phòng
+     *    - Thống kê hôm nay: đặt vé, doanh thu
+     *    - Thống kê theo tháng: 7 tháng gần nhất
+     *    - Top phim bán chạy
+     *    - Đặt vé gần đây
+     *    - Thống kê theo trạng thái đặt vé
+     * 3. Render view với tất cả dữ liệu
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ database: query COUNT, SUM từ các bảng
+     * - Hiển thị: các card thống kê, biểu đồ, bảng top phim, danh sách đặt vé
      */
     public function index()
     {
-        // Kiểm tra quyền admin hoặc staff
+        // Kiểm tra quyền admin, manager hoặc staff
         require_once __DIR__ . '/../commons/auth.php';
         requireAdminOrStaff();
         
-        // Thống kê nhân viên
-        $totalStaff = $this->getTotalStaff();
+        // ============================================
+        // THỐNG KÊ TỔNG QUAN
+        // ============================================
+        $totalStaff = $this->getTotalStaff(); // Tổng số nhân viên
+        $totalTickets = $this->getTotalTickets(); // Tổng số vé đã bán (status = confirmed hoặc completed)
+        $totalRevenue = $this->getTotalRevenue(); // Tổng doanh thu (từ bookings đã thanh toán)
+        $totalRooms = $this->getTotalRooms(); // Tổng số phòng chiếu
+        $totalMovies = $this->getTotalMovies(); // Tổng số phim
+        $activeMovies = $this->getActiveMovies(); // Số phim đang hoạt động (status = active)
+        $totalUsers = $this->getTotalUsers(); // Tổng số người dùng
+        $activeUsers = $this->getActiveUsers(); // Số user đang hoạt động
+        $bannedUsers = $this->getBannedUsers(); // Số user bị khóa
+        $totalCinemas = $this->getTotalCinemas(); // Tổng số rạp
         
-        // Thống kê số vé đã bán
-        $totalTickets = $this->getTotalTickets();
+        // ============================================
+        // THỐNG KÊ HÔM NAY
+        // ============================================
+        $todayBookings = $this->getTodayBookings(); // Số đặt vé hôm nay
+        $todayRevenue = $this->getTodayRevenue(); // Doanh thu hôm nay
         
-        // Thống kê doanh thu (bán vé)
-        $totalRevenue = $this->getTotalRevenue();
-        
-        // Thống kê số phòng chiếu
-        $totalRooms = $this->getTotalRooms();
-        
-        // Thống kê số phim
-        $totalMovies = $this->getTotalMovies();
-        $activeMovies = $this->getActiveMovies();
-        
-        // Thống kê số người dùng
-        $totalUsers = $this->getTotalUsers();
-        $activeUsers = $this->getActiveUsers();
-        $bannedUsers = $this->getBannedUsers();
-        
-        // Thống kê số rạp
-        $totalCinemas = $this->getTotalCinemas();
-        
-        // Thống kê số đặt vé hôm nay
-        $todayBookings = $this->getTodayBookings();
-        
-        // Doanh thu hôm nay
-        $todayRevenue = $this->getTodayRevenue();
-        
-        // Thống kê theo tháng (7 tháng gần nhất)
-        $monthlyStats = $this->getMonthlyStats();
-        
-        // Top phim bán chạy
-        $topMovies = $this->getTopMovies();
-        
-        // Đặt vé gần đây
-        $recentBookings = $this->getRecentBookings();
-        
-        // Thống kê theo trạng thái đặt vé
-        $bookingStatusStats = $this->getBookingStatusStats();
+        // ============================================
+        // THỐNG KÊ CHI TIẾT
+        // ============================================
+        $monthlyStats = $this->getMonthlyStats(); // Thống kê theo tháng (7 tháng gần nhất)
+        $topMovies = $this->getTopMovies(); // Top 5 phim bán chạy nhất
+        $recentBookings = $this->getRecentBookings(); // 10 đặt vé gần đây nhất
+        $bookingStatusStats = $this->getBookingStatusStats(); // Thống kê theo trạng thái (pending, confirmed, paid, cancelled)
 
+        // ============================================
+        // RENDER VIEW
+        // ============================================
         render('admin/dashboard.php', [
             'totalStaff' => $totalStaff,
             'totalTickets' => $totalTickets,

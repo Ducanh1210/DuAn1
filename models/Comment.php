@@ -1,19 +1,46 @@
 <?php
+/**
+ * COMMENT MODEL - TƯƠNG TÁC VỚI BẢNG COMMENTS
+ * 
+ * CHỨC NĂNG:
+ * - CRUD bình luận: all(), find(), insert(), update(), delete()
+ * - Lọc bình luận: getByMovie(), getByUser(), getByUserAndMovie()
+ * - Tính điểm trung bình: getAverageRating()
+ * 
+ * LUỒNG CHẠY:
+ * 1. Controller gọi method của Model
+ * 2. Model thực hiện SQL query với JOIN để lấy thông tin user và movie
+ * 3. Trả về dữ liệu dạng array cho Controller
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: comments
+ * - JOIN với: users (thông tin người đánh giá), movies (thông tin phim)
+ */
 class Comment
 {
-    public $conn;
+    public $conn; // Kết nối database (PDO)
 
     public function __construct()
     {
+        // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
 
     /**
-     * Lấy tất cả bình luận với thông tin user và movie
+     * LẤY TẤT CẢ BÌNH LUẬN VỚI THÔNG TIN USER VÀ MOVIE
+     * 
+     * Mục đích: Lấy danh sách tất cả bình luận
+     * Cách hoạt động: Query SQL với LEFT JOIN để lấy tên user và tên phim
+     * 
+     * DỮ LIỆU TRẢ VỀ:
+     * - Tất cả cột từ bảng comments
+     * - user_name, user_email từ bảng users
+     * - movie_title từ bảng movies
      */
     public function all()
     {
         try {
+            // SQL query với LEFT JOIN để lấy thông tin user và movie
             $sql = "SELECT comments.*, 
                     users.full_name AS user_name,
                     users.email AS user_email,
@@ -21,17 +48,22 @@ class Comment
                     FROM comments
                     LEFT JOIN users ON comments.user_id = users.id
                     LEFT JOIN movies ON comments.movie_id = movies.id
-                    ORDER BY comments.created_at DESC";
+                    ORDER BY comments.created_at DESC"; // Sắp xếp mới nhất trước
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng tất cả bình luận
         } catch (Exception $e) {
             debug($e);
         }
     }
 
     /**
-     * Lấy bình luận theo ID
+     * LẤY BÌNH LUẬN THEO ID
+     * 
+     * Mục đích: Lấy thông tin chi tiết của 1 bình luận
+     * 
+     * @param int $id ID của bình luận
+     * @return array|null Thông tin bình luận hoặc null nếu không tìm thấy
      */
     public function find($id)
     {
@@ -47,14 +79,19 @@ class Comment
                     WHERE comments.id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
-            return $stmt->fetch();
+            return $stmt->fetch(); // Trả về 1 bình luận hoặc null
         } catch (Exception $e) {
             debug($e);
         }
     }
 
     /**
-     * Lấy bình luận theo movie_id
+     * LẤY BÌNH LUẬN THEO MOVIE_ID
+     * 
+     * Mục đích: Lấy tất cả bình luận của 1 phim (hiển thị trong trang chi tiết phim)
+     * 
+     * @param int $movieId ID của phim
+     * @return array Danh sách bình luận của phim đó
      */
     public function getByMovie($movieId)
     {
@@ -65,17 +102,22 @@ class Comment
                     FROM comments
                     LEFT JOIN users ON comments.user_id = users.id
                     WHERE comments.movie_id = :movie_id
-                    ORDER BY comments.created_at DESC";
+                    ORDER BY comments.created_at DESC"; // Sắp xếp mới nhất trước
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':movie_id' => $movieId]);
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng bình luận của phim
         } catch (Exception $e) {
             debug($e);
         }
     }
 
     /**
-     * Lấy bình luận theo user_id
+     * LẤY BÌNH LUẬN THEO USER_ID
+     * 
+     * Mục đích: Lấy tất cả bình luận của 1 user (hiển thị trong trang profile)
+     * 
+     * @param int $userId ID của user
+     * @return array Danh sách bình luận của user đó
      */
     public function getByUser($userId)
     {
@@ -88,14 +130,20 @@ class Comment
                     ORDER BY comments.created_at DESC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':user_id' => $userId]);
-            return $stmt->fetchAll();
+            return $stmt->fetchAll(); // Trả về mảng bình luận của user
         } catch (Exception $e) {
             debug($e);
         }
     }
 
     /**
-     * Lấy bình luận theo user_id và movie_id
+     * LẤY BÌNH LUẬN THEO USER_ID VÀ MOVIE_ID
+     * 
+     * Mục đích: Kiểm tra user đã đánh giá phim này chưa (mỗi user chỉ đánh giá 1 lần/phim)
+     * 
+     * @param int $userId ID của user
+     * @param int $movieId ID của phim
+     * @return array|null Bình luận của user cho phim đó hoặc null nếu chưa đánh giá
      */
     public function getByUserAndMovie($userId, $movieId)
     {

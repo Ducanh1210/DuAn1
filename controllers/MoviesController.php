@@ -1,33 +1,62 @@
 <?php
+/**
+ * MOVIES CONTROLLER - XỬ LÝ LOGIC QUẢN LÝ PHIM
+ * 
+ * CHỨC NĂNG:
+ * - Quản lý phim (CRUD): danh sách, tạo, sửa, xóa, xem chi tiết
+ * - Trang chủ client: hiển thị phim đang chiếu và sắp chiếu
+ * - Chi tiết phim: thông tin phim, lịch chiếu, đánh giá
+ * - Lịch chiếu: xem lịch chiếu theo ngày, rạp, phim
+ * - Đánh giá phim: submit và hiển thị đánh giá
+ * 
+ * LUỒNG CHẠY TỔNG QUÁT:
+ * 1. Nhận request từ index.php (routing)
+ * 2. Xử lý logic (validate, lấy dữ liệu từ Model)
+ * 3. Render View với dữ liệu đã xử lý
+ */
 class MoviesController
 {
-    public $movie;
-    public $genre;
+    public $movie; // Model Movie để tương tác với database
+    public $genre; // Model Genre để lấy danh sách thể loại
 
     public function __construct()
     {
-        $this->movie = new Movie();
-        $this->genre = new Genre();
-        require_once __DIR__ . '/../models/DiscountCode.php';
+        // Khởi tạo các Models cần thiết
+        $this->movie = new Movie(); // Model để query bảng movies
+        $this->genre = new Genre(); // Model để query bảng genres
+        require_once __DIR__ . '/../models/DiscountCode.php'; // Model cho mã giảm giá
     }
 
     /**
-     * Hiển thị danh sách phim (Admin)
+     * DANH SÁCH PHIM (ADMIN)
+     * 
+     * LUỒNG CHẠY:
+     * 1. Lấy số trang từ URL (?page=1)
+     * 2. Gọi Model Movie->paginate() để lấy dữ liệu phân trang
+     * 3. Render view admin/movies/list.php với dữ liệu và phân trang
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ $_GET: page (số trang)
+     * - Từ Model Movie: paginate() -> danh sách phim, tổng số trang, tổng số record
+     * - Hiển thị: danh sách phim với phân trang
      */
     public function list()
     {
+        // Lấy số trang từ URL, mặc định là trang 1
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $page = max(1, $page); // Đảm bảo page >= 1
+        $page = max(1, $page); // Đảm bảo page >= 1 (không cho số âm)
         
+        // Gọi Model để lấy dữ liệu phân trang (5 phim mỗi trang)
         $result = $this->movie->paginate($page, 5);
         
+        // Render view với dữ liệu và thông tin phân trang
         render('admin/movies/list.php', [
-            'data' => $result['data'],
+            'data' => $result['data'], // Danh sách phim
             'pagination' => [
-                'currentPage' => $result['page'],
-                'totalPages' => $result['totalPages'],
-                'total' => $result['total'],
-                'perPage' => $result['perPage']
+                'currentPage' => $result['page'], // Trang hiện tại
+                'totalPages' => $result['totalPages'], // Tổng số trang
+                'total' => $result['total'], // Tổng số phim
+                'perPage' => $result['perPage'] // Số phim mỗi trang
             ]
         ]);
     }

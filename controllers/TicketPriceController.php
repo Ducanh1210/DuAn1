@@ -1,34 +1,69 @@
 <?php
+/**
+ * TICKET PRICE CONTROLLER - XỬ LÝ QUẢN LÝ GIÁ VÉ
+ * 
+ * CHỨC NĂNG:
+ * - Hiển thị bảng giá vé (client): index()
+ * - Quản lý giá vé (admin): list(), edit(), update()
+ * - Nhóm giá theo: day_type (weekday/weekend), format (2D/3D), customer_type, seat_type
+ * 
+ * LUỒNG CHẠY:
+ * 1. Lấy tất cả giá vé từ database
+ * 2. Nhóm giá theo các tiêu chí (ngày, format, loại khách hàng, loại ghế)
+ * 3. Render view với dữ liệu đã nhóm
+ * 
+ * DỮ LIỆU:
+ * - Lấy từ bảng: ticket_prices
+ * - Nhóm theo: day_type, format, customer_type, seat_type
+ */
 class TicketPriceController
 {
-    public $ticketPrice;
+    public $ticketPrice; // Model TicketPrice để tương tác với database
 
     public function __construct()
     {
+        // Load Model TicketPrice
         require_once __DIR__ . '/../models/TicketPrice.php';
         $this->ticketPrice = new TicketPrice();
     }
 
     /**
-     * Hiển thị trang giá vé cho client
+     * TRANG BẢNG GIÁ VÉ (CLIENT)
+     * 
+     * LUỒNG CHẠY:
+     * 1. Lấy tất cả giá vé từ database
+     * 2. Nhóm giá theo day_type, format, customer_type, seat_type
+     * 3. Render view với dữ liệu đã nhóm
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ Model TicketPrice: all() -> tất cả giá vé
+     * - Nhóm theo: weekday/weekend, 2D/3D, adult/child/student, normal/vip
+     * - Hiển thị: bảng giá vé dễ đọc cho khách hàng
      */
     public function index()
     {
+        // Lấy tất cả giá vé từ database
         $prices = $this->ticketPrice->all();
         
+        // ============================================
+        // NHÓM GIÁ THEO CÁC TIÊU CHÍ
+        // ============================================
         // Nhóm giá theo day_type, format, customer_type và seat_type
         $groupedPrices = [];
         foreach ($prices as $price) {
+            // Tạo key duy nhất cho mỗi nhóm (day_type_format_customer_type)
             $key = $price['day_type'] . '_' . $price['format'] . '_' . $price['customer_type'];
             if (!isset($groupedPrices[$key])) {
+                // Tạo nhóm mới
                 $groupedPrices[$key] = [
-                    'day_type' => $price['day_type'],
-                    'format' => $price['format'],
-                    'customer_type' => $price['customer_type'],
-                    'normal' => 0,
-                    'vip' => 0
+                    'day_type' => $price['day_type'], // weekday hoặc weekend
+                    'format' => $price['format'], // 2D hoặc 3D
+                    'customer_type' => $price['customer_type'], // adult, child, student
+                    'normal' => 0, // Giá ghế thường
+                    'vip' => 0 // Giá ghế VIP
                 ];
             }
+            // Gán giá theo loại ghế
             if ($price['seat_type'] === 'normal') {
                 $groupedPrices[$key]['normal'] = $price['base_price'];
             } else {
@@ -36,9 +71,12 @@ class TicketPriceController
             }
         }
 
+        // ============================================
+        // RENDER VIEW
+        // ============================================
         renderClient('client/giave.php', [
-            'prices' => $prices,
-            'groupedPrices' => $groupedPrices
+            'prices' => $prices, // Tất cả giá vé (raw data)
+            'groupedPrices' => $groupedPrices // Giá đã nhóm (để hiển thị bảng)
         ], 'Bảng giá vé');
     }
 
