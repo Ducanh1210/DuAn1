@@ -166,6 +166,19 @@ class ShowtimesController
         $cinemas = $this->getCinemas();
         $rooms = $this->getRooms();
         
+        // Lấy cinema_id của manager nếu là manager
+        $managerCinemaId = null;
+        $managerCinemaName = null;
+        if (isManager()) {
+            $managerCinemaId = getCurrentCinemaId();
+            if ($managerCinemaId) {
+                require_once __DIR__ . '/../models/Cinema.php';
+                $cinemaModel = new Cinema();
+                $cinema = $cinemaModel->find($managerCinemaId);
+                $managerCinemaName = $cinema['name'] ?? null;
+            }
+        }
+        
         // Lấy cinema_id của room hiện tại để set selected
         $currentCinemaId = null;
         if (!empty($showtime['room_id'])) {

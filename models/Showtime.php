@@ -453,7 +453,7 @@ class Showtime
      * Lấy lịch chiếu theo ngày
      * Chỉ lấy lịch chiếu của phim đang chiếu
      */
-    public function getByDate($date, $cinemaId = '')
+    public function getByDate($date, $cinemaId = '', $movieId = '')
     {
         try {
             $sql = "SELECT showtimes.*, 
@@ -488,6 +488,12 @@ class Showtime
             if (!empty($cinemaId)) {
                 $sql .= " AND rooms.cinema_id = :cinema_id";
                 $params[':cinema_id'] = $cinemaId;
+            }
+            
+            // Lọc theo phim nếu có
+            if (!empty($movieId)) {
+                $sql .= " AND showtimes.movie_id = :movie_id";
+                $params[':movie_id'] = $movieId;
             }
             
             $sql .= " ORDER BY movies.title ASC, showtimes.start_time ASC";

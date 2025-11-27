@@ -552,11 +552,14 @@ class MoviesController
     public function lichchieu()
     {
         require_once './models/Showtime.php';
+        require_once './models/Cinema.php';
         $showtimeModel = new Showtime();
+        $cinemaModel = new Cinema();
 
         // Lấy tham số tìm kiếm/lọc
         $searchKeyword = $_GET['search'] ?? '';
         $cinemaId = $_GET['cinema'] ?? '';
+        $movieId = $_GET['movie'] ?? ''; // Tham số phim từ trang chủ
 
         // Lấy ngày được chọn từ URL hoặc mặc định là hôm nay
         $selectedDate = $_GET['date'] ?? date('Y-m-d');
@@ -571,21 +574,26 @@ class MoviesController
             ];
         }
 
-        // Lấy danh sách lịch chiếu theo ngày (đã lọc theo rạp nếu có)
-        $showtimes = $showtimeModel->getByDate($selectedDate, $cinemaId);
+        // Lấy danh sách lịch chiếu theo ngày (đã lọc theo rạp nếu có, và theo phim nếu có)
+        $showtimes = $showtimeModel->getByDate($selectedDate, $cinemaId, $movieId);
 
         // Nhóm lịch chiếu theo phim và lọc theo tên phim
         $movies = [];
         foreach ($showtimes as $st) {
-            $movieId = $st['movie_id'];
+            $movieIdItem = $st['movie_id'];
 
             // Lọc theo tên phim
             if (!empty($searchKeyword) && stripos($st['movie_title'], $searchKeyword) === false) {
                 continue;
             }
 
-            if (!isset($movies[$movieId])) {
-                $movies[$movieId] = [
+            // Nếu có tham số movie_id, chỉ hiển thị phim đó
+            if (!empty($movieId) && $movieIdItem != $movieId) {
+                continue;
+            }
+
+            if (!isset($movies[$movieIdItem])) {
+                $movies[$movieIdItem] = [
                     'id' => $st['movie_id'],
                     'title' => $st['movie_title'],
                     'image' => $st['movie_image'],
@@ -601,8 +609,8 @@ class MoviesController
             }
 
             // Thêm showtime vào phim
-            $movies[$movieId]['showtimes'][] = $st['start_time'];
-            $movies[$movieId]['showtime_ids'][] = $st['id'];
+            $movies[$movieIdItem]['showtimes'][] = $st['start_time'];
+            $movies[$movieIdItem]['showtime_ids'][] = $st['id'];
         }
 
         // Chuyển sang array và sắp xếp
@@ -613,6 +621,25 @@ class MoviesController
 
         // Lấy danh sách rạp để hiển thị trong filter
         $cinemas = $this->getCinemas();
+        
+        // Nếu có tham số movie_id, lấy danh sách rạp có phim đó
+        $cinemasWithMovie = [];
+        if (!empty($movieId)) {
+            try {
+                $sql = "SELECT DISTINCT cinemas.* 
+                        FROM cinemas
+                        INNER JOIN rooms ON cinemas.id = rooms.cinema_id
+                        INNER JOIN showtimes ON rooms.id = showtimes.room_id
+                        WHERE showtimes.movie_id = :movie_id
+                        AND showtimes.show_date >= CURDATE()
+                        ORDER BY cinemas.name ASC";
+                $stmt = $cinemaModel->conn->prepare($sql);
+                $stmt->execute([':movie_id' => $movieId]);
+                $cinemasWithMovie = $stmt->fetchAll();
+            } catch (Exception $e) {
+                $cinemasWithMovie = [];
+            }
+        }
 
         // Sử dụng layout client chung
         renderClient('client/lichchieu.php', [
@@ -621,7 +648,9 @@ class MoviesController
             'selectedDate' => $selectedDate,
             'searchKeyword' => $searchKeyword,
             'cinemaId' => $cinemaId,
-            'cinemas' => $cinemas
+            'cinemas' => $cinemas,
+            'movieId' => $movieId,
+            'cinemasWithMovie' => $cinemasWithMovie
         ], 'Lịch Chiếu');
         exit;
     }

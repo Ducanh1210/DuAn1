@@ -21,6 +21,7 @@ class SeatsController
         requireAdminOrStaff();
         
         $roomId = $_GET['room_id'] ?? null;
+        $page = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 
         $result = $this->seat->paginate($page, 20, $roomId);
 
