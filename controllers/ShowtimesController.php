@@ -24,6 +24,11 @@ class ShowtimesController
         $date = $_GET['date'] ?? null;
         // Lọc theo trạng thái nếu có
         $status = $_GET['status'] ?? null;
+        // Lọc theo rạp nếu có (chỉ admin mới có)
+        $filterCinemaId = null;
+        if (isAdmin()) {
+            $filterCinemaId = !empty($_GET['cinema']) ? (int)$_GET['cinema'] : null;
+        }
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $page = max(1, $page); // Đảm bảo page >= 1
         
@@ -36,19 +41,30 @@ class ShowtimesController
                 $result = ['data' => [], 'page' => 1, 'totalPages' => 0, 'total' => 0, 'perPage' => 5];
             }
         } else {
-            $result = $this->showtime->paginate($page, 5, $date, $status);
+            // Admin có thể lọc theo rạp
+            $result = $this->showtime->paginate($page, 5, $date, $status, $filterCinemaId);
         }
         
         // Lấy danh sách phim và phòng cho filter
         $movies = $this->movie->all();
         $rooms = $this->getRooms();
         
+        // Lấy danh sách rạp cho filter (chỉ admin)
+        $cinemas = [];
+        if (isAdmin()) {
+            require_once __DIR__ . '/../models/Cinema.php';
+            $cinemaModel = new Cinema();
+            $cinemas = $cinemaModel->all();
+        }
+        
         render('admin/showtimes/list.php', [
             'data' => $result['data'],
             'movies' => $movies,
             'rooms' => $rooms,
+            'cinemas' => $cinemas,
             'selectedDate' => $date,
             'selectedStatus' => $status,
+            'selectedCinema' => $filterCinemaId,
             'pagination' => [
                 'currentPage' => $result['page'],
                 'totalPages' => $result['totalPages'],

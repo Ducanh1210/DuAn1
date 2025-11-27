@@ -47,8 +47,8 @@
     </a>
     <?php endif; ?>
     
-    <!-- Quản lý Thể loại - Admin và Manager -->
-    <?php if ($isAdmin || $isManager): ?>
+    <!-- Quản lý Thể loại - Chỉ Admin -->
+    <?php if ($isAdmin): ?>
     <a href="?act=genres" class="<?= in_array($_GET['act'] ?? '', ['genres', 'genres-create', 'genres-edit', 'genres-delete']) ? 'active' : '' ?>">
       <i class="bi bi-tags"></i><span class="label">Quản lý Thể loại</span>
     </a>

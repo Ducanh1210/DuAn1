@@ -89,18 +89,9 @@ function formatPrice($price)
                             </span>
                         </div>
                         <div class="detail-row">
-                            <span class="detail-label">Loại ghế:</span>
+                            <span class="detail-label">Loại:</span>
                             <span class="detail-value format-badge">
-                                <?php
-                                $seatTypes = [];
-                                foreach ($selectedSeats as $seat) {
-                                    $seatTypeName = ($seat['type'] === 'vip') ? 'VIP' : 'Thường';
-                                    if (!in_array($seatTypeName, $seatTypes)) {
-                                        $seatTypes[] = $seatTypeName;
-                                    }
-                                }
-                                echo htmlspecialchars(implode(', ', $seatTypes));
-                                ?>
+                                <?= htmlspecialchars($showtime['format'] ?? '2D') ?>
                             </span>
                         </div>
                         <?php if (isset($adultCount) && isset($studentCount)): ?>

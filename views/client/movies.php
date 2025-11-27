@@ -85,7 +85,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     <div class="date-tabs" id="dateTabs">
                         <?php if (!empty($dates)): ?>
                             <?php foreach ($dates as $date): ?>
-                                <a href="<?= BASE_URL ?>?act=movies&id=<?= $movie['id'] ?? '' ?>&date=<?= $date['date'] ?>"
+                                <a href="<?= BASE_URL ?>?act=movies&id=<?= $movie['id'] ?? '' ?>&date=<?= $date['date'] ?><?= !empty($cinemaId) ? '&cinema=' . htmlspecialchars($cinemaId) : '' ?>"
                                     class="date-tab <?= $selectedDate == $date['date'] ? 'active' : '' ?>">
                                     <span class="dayname">Th. <?= $date['month'] ?? date('m', strtotime($date['date'])) ?> <?= $date['daynum'] ?? date('d', strtotime($date['date'])) ?> <?= $date['dayname'] ?? '' ?></span>
                                 </a>
@@ -1838,4 +1838,286 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             filterSeatRows(null);
         }
     });
+</script>
+
+<!-- Phần đánh giá và bình luận -->
+<section class="reviews-section" style="background: #1a1a1a; padding: 20px 0; margin-top: 30px;">
+    <div class="container">
+        <h2 style="color: #fff; font-size: 18px; font-weight: 600; margin-bottom: 15px; text-align: center;">
+            <i class="bi bi-star-fill" style="color: #ff8c00; font-size: 16px;"></i> Xếp hạng và đánh giá phim
+        </h2>
+
+        <!-- Form đánh giá - Chỉ hiển thị khi chưa đánh giá -->
+        <?php if (empty($existingComment)): ?>
+            <div class="review-form-container" style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 15px; margin-bottom: 20px; position: relative;">
+                <?php if (!$isLoggedIn): ?>
+                    <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; text-align: center; font-size: 12px;">
+                        <i class="bi bi-info-circle" style="font-size: 14px; color: #ffc107; margin-right: 5px;"></i>
+                        <span style="color: rgba(255, 255, 255, 0.8);">
+                            Các đánh giá phim có thể được viết sau khi đăng nhập và mua vé.
+                            <a href="<?= BASE_URL ?>?act=dangnhap" style="color: #ff8c00; text-decoration: none; font-weight: 600; margin-left: 3px;">Đăng nhập</a>
+                        </span>
+                    </div>
+                <?php elseif (!$hasPurchased): ?>
+                    <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; text-align: center; font-size: 12px;">
+                        <i class="bi bi-info-circle" style="font-size: 14px; color: #ffc107; margin-right: 5px;"></i>
+                        <span style="color: rgba(255, 255, 255, 0.8);">
+                            Bạn cần mua vé và thanh toán phim này trước khi có thể đánh giá.
+                        </span>
+                    </div>
+                <?php endif; ?>
+                
+                <form action="<?= BASE_URL ?>?act=submit-movie-review" method="POST" id="reviewForm">
+                <input type="hidden" name="movie_id" value="<?= $movie['id'] ?>">
+                
+                <div style="margin-bottom: 12px;">
+                    <label style="color: #fff; display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px;">Xếp hạng <span style="color: #ff8c00;">*</span></label>
+                    <div class="star-rating-input" style="display: flex; gap: 5px; align-items: center; <?= (!$isLoggedIn || !$hasPurchased) ? 'opacity: 0.5; pointer-events: none;' : '' ?>">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <input type="radio" name="rating" id="star<?= $i ?>" value="<?= $i ?>" 
+                                   <?= ($existingComment && $existingComment['rating'] == $i) ? 'checked' : '' ?> 
+                                   <?= (!$isLoggedIn || !$hasPurchased) ? 'disabled' : 'required' ?> 
+                                   style="display: none;">
+                            <label for="star<?= $i ?>" class="star-label-input" data-rating="<?= $i ?>" 
+                                   style="cursor: <?= ($isLoggedIn && $hasPurchased) ? 'pointer' : 'not-allowed' ?>; font-size: 20px; color: #666; transition: color 0.2s;">
+                                <i class="bi bi-star-fill"></i>
+                            </label>
+                        <?php endfor; ?>
+                        <span id="ratingText" style="color: rgba(255, 255, 255, 0.7); margin-left: 10px; font-size: 12px;">
+                            <?= $existingComment ? 'Đã chọn ' . $existingComment['rating'] . ' sao' : 'Chọn số sao' ?>
+                        </span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label for="reviewContent" style="color: #fff; display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px;">
+                        Bình luận <span style="color: #ff8c00;">*</span>
+                    </label>
+                    <textarea name="content" id="reviewContent" rows="4" 
+                              placeholder="<?= !$isLoggedIn ? 'Các đánh giá phim có thể được viết sau khi đăng nhập và mua vé.' : (!$hasPurchased ? 'Bạn cần mua vé phim này trước khi có thể đánh giá.' : 'Chia sẻ cảm nhận của bạn về bộ phim này...') ?>" 
+                              <?= (!$isLoggedIn || !$hasPurchased) ? 'disabled' : 'required' ?>
+                              style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.3); color: #fff; font-size: 13px; resize: vertical; <?= (!$isLoggedIn || !$hasPurchased) ? 'opacity: 0.5; cursor: not-allowed;' : '' ?>"
+                              maxlength="1000"><?= $existingComment ? htmlspecialchars($existingComment['content']) : '' ?></textarea>
+                    <div style="text-align: right; margin-top: 3px; color: rgba(255, 255, 255, 0.5); font-size: 11px;">
+                        <span id="charCount"><?= $existingComment ? strlen($existingComment['content']) : 0 ?></span>/1000 Ký tự
+                    </div>
+                </div>
+
+                <button type="submit" 
+                        <?= (!$isLoggedIn || !$hasPurchased) ? 'disabled' : '' ?>
+                        style="background: <?= ($isLoggedIn && $hasPurchased) ? '#ff8c00' : '#666' ?>; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: <?= ($isLoggedIn && $hasPurchased) ? 'pointer' : 'not-allowed' ?>; transition: background 0.2s; <?= (!$isLoggedIn || !$hasPurchased) ? 'opacity: 0.6;' : '' ?>">
+                    <i class="bi bi-check-circle" style="font-size: 12px;"></i> Gửi đánh giá
+                </button>
+            </form>
+        </div>
+        <?php else: ?>
+            <!-- Thông báo đã đánh giá -->
+            <div class="review-form-container" style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <div style="text-align: center; color: rgba(255, 255, 255, 0.9); font-size: 13px;">
+                    <i class="bi bi-check-circle-fill" style="font-size: 16px; color: #4caf50; margin-right: 5px;"></i>
+                    <span>Bạn đã đánh giá bộ phim này. Mỗi tài khoản chỉ được đánh giá 1 lần cho mỗi bộ phim.</span>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Danh sách bình luận -->
+        <div class="comments-list">
+            <h3 style="color: #fff; font-size: 15px; font-weight: 600; margin-bottom: 12px;">
+                Đánh giá từ khách hàng (<?= count($comments ?? []) ?>)
+            </h3>
+            
+            <?php if (!empty($comments)): ?>
+                <?php foreach ($comments as $comment): 
+                    $isMyComment = ($isLoggedIn && isset($_SESSION['user_id']) && $comment['user_id'] == $_SESSION['user_id']);
+                ?>
+                    <div class="comment-item" style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                            <div style="flex: 1;">
+                                <div style="color: #fff; font-weight: 500; font-size: 13px; margin-bottom: 4px;">
+                                    <?= htmlspecialchars($comment['user_name'] ?? 'Khách') ?>
+                                    <?php if ($isMyComment): ?>
+                                        <span style="color: #4caf50; font-size: 11px; margin-left: 5px;">(Đánh giá của bạn)</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div style="display: flex; gap: 3px; align-items: center;">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <i class="bi bi-star-fill" style="color: <?= $i <= ($comment['rating'] ?? 0) ? '#ff8c00' : '#666' ?>; font-size: 12px;"></i>
+                                    <?php endfor; ?>
+                                    <span style="color: rgba(255, 255, 255, 0.7); font-size: 12px; margin-left: 4px;">
+                                        <?= $comment['rating'] ?? 0 ?>/5
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="color: rgba(255, 255, 255, 0.5); font-size: 11px;">
+                                    <?= date('d/m/Y', strtotime($comment['created_at'] ?? 'now')) ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="color: rgba(255, 255, 255, 0.9); line-height: 1.5; font-size: 13px;">
+                            <?= nl2br(htmlspecialchars($comment['content'] ?? '')) ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.5); font-size: 13px;">
+                    <i class="bi bi-chat-left-text" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+                    <p>Chưa có đánh giá nào cho phim này.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<style>
+    .star-label-input {
+        color: #666;
+    }
+    
+    .star-label-input.active {
+        color: #ff8c00 !important;
+    }
+</style>
+
+<script>
+    // Star rating interaction
+    const starLabels = document.querySelectorAll('.star-label-input');
+    const ratingText = document.getElementById('ratingText');
+    const ratingInputs = document.querySelectorAll('input[name="rating"]');
+    
+    const ratingTexts = {
+        1: 'Rất tệ',
+        2: 'Tệ',
+        3: 'Bình thường',
+        4: 'Tốt',
+        5: 'Rất tốt'
+    };
+
+    <?php if ($isLoggedIn && $hasPurchased): ?>
+        starLabels.forEach(label => {
+            label.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                highlightStars(rating);
+                ratingText.textContent = ratingTexts[rating] || 'Chọn số sao';
+            });
+        });
+
+        document.querySelector('.star-rating-input')?.addEventListener('mouseleave', function() {
+            const checked = document.querySelector('input[name="rating"]:checked');
+            if (checked) {
+                const rating = parseInt(checked.value);
+                highlightStars(rating);
+                ratingText.textContent = ratingTexts[rating] || 'Chọn số sao';
+            } else {
+                resetStars();
+                ratingText.textContent = 'Chọn số sao';
+            }
+        });
+
+        ratingInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const rating = parseInt(this.value);
+                highlightStars(rating);
+                ratingText.textContent = ratingTexts[rating] || 'Chọn số sao';
+            });
+        });
+    <?php endif; ?>
+
+    function highlightStars(rating) {
+        starLabels.forEach((label) => {
+            const starRating = parseInt(label.dataset.rating);
+            if (starRating <= rating) {
+                label.classList.add('active');
+                label.style.color = '#ff8c00';
+            } else {
+                label.classList.remove('active');
+                label.style.color = '#666';
+            }
+        });
+    }
+
+    function resetStars() {
+        starLabels.forEach(label => {
+            label.classList.remove('active');
+            label.style.color = '#666';
+        });
+    }
+
+    // Initialize stars if existing comment
+    <?php if ($existingComment && $existingComment['rating']): ?>
+        highlightStars(<?= $existingComment['rating'] ?>);
+        ratingText.textContent = ratingTexts[<?= $existingComment['rating'] ?>] || 'Chọn số sao';
+    <?php endif; ?>
+
+    // Character count
+    const reviewContent = document.getElementById('reviewContent');
+    const charCount = document.getElementById('charCount');
+    
+    if (reviewContent && charCount) {
+        reviewContent.addEventListener('input', function() {
+            const length = this.value.length;
+            charCount.textContent = length;
+            
+            if (length > 1000) {
+                charCount.style.color = '#dc3545';
+                this.value = this.value.substring(0, 1000);
+                charCount.textContent = 1000;
+            } else if (length >= 10) {
+                charCount.style.color = '#28a745';
+            } else {
+                charCount.style.color = '#ffc107';
+            }
+        });
+    }
+
+    // Form validation
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            <?php if (!$isLoggedIn || !$hasPurchased): ?>
+                e.preventDefault();
+                <?php if (!$isLoggedIn): ?>
+                    alert('Vui lòng đăng nhập để đánh giá phim');
+                    window.location.href = '<?= BASE_URL ?>?act=dangnhap';
+                <?php else: ?>
+                    alert('Bạn cần mua vé phim này trước khi có thể đánh giá');
+                <?php endif; ?>
+                return false;
+            <?php else: ?>
+                const rating = document.querySelector('input[name="rating"]:checked');
+                const content = reviewContent?.value.trim() || '';
+
+                if (!rating) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn đánh giá từ 1 đến 5 sao');
+                    return false;
+                }
+
+                if (content.length < 10) {
+                    e.preventDefault();
+                    alert('Nội dung bình luận phải có ít nhất 10 ký tự');
+                    reviewContent?.focus();
+                    return false;
+                }
+
+                if (content.length > 1000) {
+                    e.preventDefault();
+                    alert('Nội dung bình luận không được vượt quá 1000 ký tự');
+                    reviewContent?.focus();
+                    return false;
+                }
+            <?php endif; ?>
+        });
+    }
+
+    // Show success message
+    <?php if (isset($_GET['review_success'])): ?>
+        alert('Đánh giá của bạn đã được gửi thành công!');
+        window.history.replaceState({}, document.title, window.location.pathname + '?act=movies&id=<?= $movie['id'] ?>');
+    <?php endif; ?>
+
+    // Show error message
+    <?php if (isset($_GET['error'])): ?>
+        alert('<?= htmlspecialchars($_GET['error']) ?>');
+    <?php endif; ?>
 </script>

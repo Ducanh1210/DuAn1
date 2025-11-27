@@ -81,6 +81,7 @@ match ($act) {
     'profile-change-password' => (new ProfileController)->changePassword(),
     'review-movie' => (new ProfileController)->reviewMovie(),
     'submit-review' => (new ProfileController)->submitReview(),
+    'submit-movie-review' => (new MoviesController)->submitMovieReview(),
 
     // Dashboard route
     'dashboard' => (new DashboardController)->index(),

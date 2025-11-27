@@ -61,6 +61,14 @@
         opacity: 0.3;
         cursor: not-allowed;
         pointer-events: none;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-color: transparent !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    .cinema-item.disabled:hover {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-color: transparent !important;
     }
     
     .movies-content {
@@ -150,9 +158,7 @@
                 <?php if (!empty($cinemas)): ?>
                     <?php foreach ($cinemas as $cinema): 
                         $isSelected = ($cinemaId == $cinema['id']);
-                        $hasMovie = !empty($movieId) && !empty($cinemasWithMovie) 
-                            ? in_array($cinema['id'], array_column($cinemasWithMovie, 'id'))
-                            : true;
+                        $hasShowtime = !empty($cinema['has_showtime']);
                         
                         // URL khi click rạp
                         $urlParams = ['act' => 'lichchieu', 'date' => $selectedDate];
@@ -160,10 +166,11 @@
                         $urlParams['cinema'] = $cinema['id'];
                         $cinemaUrl = BASE_URL . '?' . http_build_query($urlParams);
                     ?>
-                        <li class="cinema-item <?= $isSelected ? 'active' : '' ?> <?= !$hasMovie && !empty($movieId) ? 'disabled' : '' ?>"
-                            onclick="<?= $hasMovie || empty($movieId) ? "window.location.href='$cinemaUrl'" : '' ?>">
+                        <li class="cinema-item <?= $isSelected ? 'active' : '' ?> <?= !$hasShowtime ? 'disabled' : '' ?>"
+                            <?php if ($hasShowtime): ?>
+                                onclick="window.location.href='<?= $cinemaUrl ?>'"
+                            <?php endif; ?>>
                             <?= htmlspecialchars($cinema['name']) ?>
-                            <?= !$hasMovie && !empty($movieId) ? ' (Không có phim này)' : '' ?>
                         </li>
                     <?php endforeach; ?>
                 <?php else: ?>
