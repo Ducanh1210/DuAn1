@@ -26,7 +26,22 @@
               <option value="ended" <?= ($selectedStatus ?? '') === 'ended' ? 'selected' : '' ?>>Dừng</option>
             </select>
           </div>
-          <div class="col-md-3 d-flex align-items-end">
+          <?php if (isAdmin()): ?>
+          <div class="col-md-3">
+            <label for="cinema" class="form-label">Lọc theo rạp:</label>
+            <select name="cinema" id="cinema" class="form-select">
+              <option value="">-- Tất cả --</option>
+              <?php if (!empty($cinemas)): ?>
+                <?php foreach ($cinemas as $cinema): ?>
+                  <option value="<?= $cinema['id'] ?>" <?= ($selectedCinema ?? '') == $cinema['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($cinema['name']) ?>
+                  </option>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </select>
+          </div>
+          <?php endif; ?>
+          <div class="col-md-<?= isAdmin() ? '3' : '6' ?> d-flex align-items-end">
             <button type="submit" class="btn btn-secondary me-2">
               <i class="bi bi-funnel"></i> Lọc
             </button>
@@ -48,7 +63,7 @@
               <th>Ngày chiếu</th>
               <th>Giờ bắt đầu</th>
               <th>Giờ kết thúc</th>
-              <th>Định dạng</th>
+              <th>Loại</th>
               <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
@@ -162,6 +177,9 @@
                     if (!empty($selectedStatus)) {
                       $prevUrl .= '&status=' . urlencode($selectedStatus);
                     }
+                    if (isAdmin() && !empty($selectedCinema)) {
+                      $prevUrl .= '&cinema=' . urlencode($selectedCinema);
+                    }
                     ?>
                     <a class="page-link" href="<?= $prevUrl ?>">
                       <i class="bi bi-chevron-left"></i> Trước
@@ -187,6 +205,9 @@
                   if (!empty($selectedStatus)) {
                     $firstUrl .= '&status=' . urlencode($selectedStatus);
                   }
+                  if (isAdmin() && !empty($selectedCinema)) {
+                    $firstUrl .= '&cinema=' . urlencode($selectedCinema);
+                  }
                   ?>
                   <li class="page-item">
                     <a class="page-link" href="<?= $firstUrl ?>">1</a>
@@ -206,6 +227,9 @@
                   }
                   if (!empty($selectedStatus)) {
                     $pageUrl .= '&status=' . urlencode($selectedStatus);
+                  }
+                  if (isAdmin() && !empty($selectedCinema)) {
+                    $pageUrl .= '&cinema=' . urlencode($selectedCinema);
                   }
                   ?>
                   <li class="page-item <?= $i == $pagination['currentPage'] ? 'active' : '' ?>">
@@ -227,6 +251,9 @@
                   if (!empty($selectedStatus)) {
                     $lastUrl .= '&status=' . urlencode($selectedStatus);
                   }
+                  if (isAdmin() && !empty($selectedCinema)) {
+                    $lastUrl .= '&cinema=' . urlencode($selectedCinema);
+                  }
                   ?>
                   <li class="page-item">
                     <a class="page-link" href="<?= $lastUrl ?>"><?= $pagination['totalPages'] ?></a>
@@ -242,6 +269,9 @@
                   }
                   if (!empty($selectedStatus)) {
                     $nextUrl .= '&status=' . urlencode($selectedStatus);
+                  }
+                  if (isAdmin() && !empty($selectedCinema)) {
+                    $nextUrl .= '&cinema=' . urlencode($selectedCinema);
                   }
                   ?>
                   <li class="page-item">

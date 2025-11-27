@@ -41,7 +41,7 @@ class TicketPrice
     }
 
     /**
-     * Lấy giá vé dựa trên ngày, định dạng, loại khách hàng và loại ghế
+     * Lấy giá vé dựa trên ngày, loại, loại khách hàng và loại ghế
      */
     public function getPrice($dayType, $format, $customerType, $seatType)
     {

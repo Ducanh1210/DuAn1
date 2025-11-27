@@ -7,7 +7,7 @@ $groupedPrices = $groupedPrices ?? [];
 <div class="price-page">
     <div class="price-container">
         <h1 class="price-title">Bảng giá vé</h1>
-        <p class="price-subtitle">Giá vé có thể thay đổi tùy theo ngày, định dạng phim và loại khách hàng</p>
+        <p class="price-subtitle">Giá vé có thể thay đổi tùy theo ngày, loại phim và loại khách hàng</p>
 
         <div class="price-tables">
             <!-- Thứ 2-5 (Weekday) -->

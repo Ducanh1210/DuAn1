@@ -95,6 +95,22 @@ class Comment
     }
 
     /**
+     * Lấy bình luận theo user_id và movie_id
+     */
+    public function getByUserAndMovie($userId, $movieId)
+    {
+        try {
+            $sql = "SELECT * FROM comments WHERE user_id = :user_id AND movie_id = :movie_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':user_id' => $userId, ':movie_id' => $movieId]);
+            return $stmt->fetch();
+        } catch (Exception $e) {
+            debug($e);
+            return null;
+        }
+    }
+
+    /**
      * Tìm kiếm bình luận
      */
     public function search($keyword)

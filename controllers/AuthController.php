@@ -124,7 +124,28 @@ class AuthController
                         $_SESSION['user_role'] = $user['role'] ?? 'customer';
                         $_SESSION['cinema_id'] = $user['cinema_id'] ?? null; // Lưu cinema_id của staff
                         
-                        // Kiểm tra return_url nếu có (từ trang chọn ghế, thanh toán, v.v.)
+                        // Nếu là admin, manager hoặc staff, redirect về trang quản lý tương ứng
+                        if (in_array($_SESSION['user_role'], ['admin', 'manager', 'staff'])) {
+                            // Xóa return_url nếu có (vì manager/staff không cần quay lại trang client)
+                            if (isset($_SESSION['return_url'])) {
+                                unset($_SESSION['return_url']);
+                            }
+                            
+                            // Redirect theo role
+                            if ($_SESSION['user_role'] === 'admin') {
+                                // Admin vào dashboard
+                                header('Location: ' . BASE_URL . '?act=dashboard');
+                            } elseif ($_SESSION['user_role'] === 'manager') {
+                                // Manager vào dashboard
+                                header('Location: ' . BASE_URL . '?act=dashboard');
+                            } elseif ($_SESSION['user_role'] === 'staff') {
+                                // Staff vào trang bán vé
+                                header('Location: ' . BASE_URL . '?act=banve');
+                            }
+                            exit;
+                        }
+                        
+                        // Nếu là customer, kiểm tra return_url nếu có (từ trang chọn ghế, thanh toán, v.v.)
                         if (isset($_SESSION['return_url']) && !empty($_SESSION['return_url'])) {
                             $returnUrl = trim($_SESSION['return_url']);
                             // Xóa return_url khỏi session trước khi redirect
@@ -134,12 +155,8 @@ class AuthController
                             exit;
                         }
                         
-                        // Nếu không có return_url, redirect theo role
-                        if (in_array($_SESSION['user_role'], ['admin', 'manager', 'staff'])) {
-                            header('Location: ' . BASE_URL . '?act=dashboard');
-                        } else {
-                            header('Location: ' . BASE_URL . '?act=trangchu');
-                        }
+                        // Nếu không có return_url, redirect về trang chủ
+                        header('Location: ' . BASE_URL . '?act=trangchu');
                         exit;
                     }
                 } else {
