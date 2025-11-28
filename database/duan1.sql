@@ -1676,7 +1676,7 @@ INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_dat
 (5, 'quoc tuan', 'quoctuan26@gmail.com', '$2y$10$hMMowF.wiR0LVaRVr4kf3.Q1r/DAU3gdS6fe/qZbf8neBZAokstIK', '0386036695', '2006-10-02', NULL, 0.00, '2025-11-26 20:54:11', 'manager', 2, 'active'),
 (7, 'Anh Duc', 'anhnguyen121016@gmail.com', '$2y$10$aYquSofzM2G67EOJkmCFU.39C3rEOraUdheu6RV8oFRISvlvkDm8G', '0386036692', '2006-06-14', NULL, 0.00, '2025-11-26 21:46:48', 'staff', 1, 'active'),
 (8, 'nhat minh', 'minh264@gmail.com', '$2y$10$LF5hZWO7P8lwFvEACPVBdOdcIY4WpbPJlW13QikkT12QZiCd59qCy', '0386036652', '2006-06-12', NULL, 0.00, '2025-11-26 22:03:59', 'manager', 1, 'active'),
-(9, 'anima', 'animaxer.sss@gmail.com', '$2y$10$s/LVCiKr91wviPGv9DpSRe.kZ4H1uoCR02PUnebGokW4hab3ry4T.', '0814983862', '2006-01-13', NULL, 0.00, '2025-11-28 09:55:46', 'customer', NULL, 'active'),
+(9, 'anima', 'animaxer.sss@gmail.com', '$2y$10$s/LVCiKr91wviPGv9DpSRe.kZ4H1uoCR02PUnebGokW4hab3ry4T.', '0814983862', '2006-01-13', NULL, 0.00, '2025-11-28 09:55:46', 'customer', NULL, 'active');
 
 -- --------------------------------------------------------
 
