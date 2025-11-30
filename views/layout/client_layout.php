@@ -1,5 +1,30 @@
 <?php
+/**
+ * CLIENT_LAYOUT.PHP - LAYOUT CHUNG CHO TRANG CLIENT (KHÁCH HÀNG)
+ * 
+ * CHỨC NĂNG:
+ * - Layout chung cho tất cả trang client (header, footer)
+ * - Include view tương ứng dựa trên $GLOBALS['clientViewPath']
+ * - Kiểm tra và redirect admin/manager/staff về trang quản lý
+ * 
+ * LUỒNG CHẠY RENDER:
+ * 1. Controller gọi renderClient('client/trangchu.php', ['movies' => $movies], 'Trang chủ')
+ * 2. function.php extract data: $movies
+ * 3. function.php set $GLOBALS['clientViewPath'] = 'client/trangchu.php'
+ * 4. function.php include client_layout.php (file này)
+ * 5. client_layout.php kiểm tra quyền (nếu admin/manager/staff -> redirect)
+ * 6. client_layout.php include header
+ * 7. client_layout.php include view từ $GLOBALS['clientViewPath'] (dòng 208)
+ * 8. View sử dụng biến $movies để hiển thị
+ * 
+ * CẤU TRÚC:
+ * - Header: Logo, menu điều hướng, thông báo, đăng nhập/đăng ký
+ * - Content: View được include từ $GLOBALS['clientViewPath']
+ * - Footer: Thông tin footer, links
+ */
+
 // Start session ở đầu file, trước mọi output
+// Session dùng để lưu thông tin đăng nhập (user_id, user_role, etc.)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -199,17 +224,46 @@ if (isLoggedIn()) {
         </div>
     </header>
 
+    <!-- 
+      ============================================
+      PHẦN NỘI DUNG CHÍNH - INCLUDE VIEW ĐỘNG
+      ============================================
+      
+      LUỒNG CHẠY:
+      1. Controller gọi renderClient('client/trangchu.php', ['movies' => $movies], 'Trang chủ')
+      2. function.php set $GLOBALS['clientViewPath'] = 'client/trangchu.php'
+      3. function.php extract data: $movies (tạo biến $movies)
+      4. function.php include client_layout.php (file này)
+      5. client_layout.php include header (ở trên)
+      6. client_layout.php đến đây: include view từ $GLOBALS['clientViewPath']
+      7. View (trangchu.php) sử dụng biến $movies để hiển thị danh sách phim
+      
+      VÍ DỤ:
+      - Controller: renderClient('client/trangchu.php', ['movies' => $movies], 'Trang chủ')
+      - View path: 'client/trangchu.php'
+      - Biến trong view: $movies (đã được extract từ data array)
+      - View hiển thị: Danh sách phim đang chiếu và sắp chiếu
+    -->
     <!-- Main Content -->
     <?php
     // Include view động nếu có biến $clientViewPath
+    // $clientViewPath được set trong function.php khi Controller gọi renderClient()
     if (isset($GLOBALS['clientViewPath']) && !empty($GLOBALS['clientViewPath'])) {
+        // Tạo đường dẫn đầy đủ đến file view
+        // Ví dụ: views/client/trangchu.php
         $viewFile = __DIR__ . '/../' . $GLOBALS['clientViewPath'];
+        
+        // Kiểm tra file tồn tại trước khi include
         if (file_exists($viewFile)) {
+            // Include view - tất cả biến đã được extract trong function.php
+            // View có thể sử dụng các biến như $movies, $showtimes, etc.
             include $viewFile;
         } else {
+            // Hiển thị lỗi nếu không tìm thấy view
             echo '<div class="page"><div style="padding: 20px; color: #fff;">Không tìm thấy view: ' . htmlspecialchars($GLOBALS['clientViewPath']) . '</div></div>';
         }
     } else {
+        // Nếu không có view, hiển thị nội dung mặc định
         echo '<div class="page"><p>Nội dung trang</p></div>';
     }
     ?>

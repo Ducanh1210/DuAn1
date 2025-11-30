@@ -79,21 +79,34 @@ $statusLabels = [
                             <i class="bi bi-calendar-event"></i>
                             <?= htmlspecialchars($promo['period'] ?? 'Áp dụng thường xuyên') ?>
                         </span>
-                        <?php if (!empty($code)): ?>
+                        <?php if (!empty($code) && $status === 'ongoing'): ?>
                             <button class="code-btn" data-code="<?= $code ?>">
                                 <span><?= $code ?></span>
                                 <i class="bi bi-copy"></i>
                             </button>
+                        <?php elseif (!empty($code)): ?>
+                            <button class="code-btn" disabled style="opacity: 0.5; cursor: not-allowed;" title="Mã này không thể sử dụng">
+                                <span><?= $code ?></span>
+                                <i class="bi bi-lock"></i>
+                            </button>
                         <?php endif; ?>
                     </div>
                     <div class="promo-actions">
-                        <a class="btn-primary" href="<?= !empty($promo['cta_link']) ? htmlspecialchars($promo['cta_link']) : BASE_URL . '?act=datve' ?>">
-                            <?= htmlspecialchars($promo['cta'] ?? 'Đặt vé ngay') ?>
-                        </a>
-                        <?php if ($status === 'upcoming'): ?>
+                        <?php if ($status === 'ongoing'): ?>
+                            <a class="btn-primary" href="<?= !empty($promo['cta_link']) ? htmlspecialchars($promo['cta_link']) : BASE_URL . '?act=datve' ?>">
+                                <?= htmlspecialchars($promo['cta'] ?? 'Đặt vé ngay') ?>
+                            </a>
+                            <span class="hint">Áp dụng tự động khi nhập mã ở bước thanh toán</span>
+                        <?php elseif ($status === 'upcoming'): ?>
+                            <button class="btn-primary" disabled style="opacity: 0.6; cursor: not-allowed;">
+                                <?= htmlspecialchars($promo['cta'] ?? 'Sắp diễn ra') ?>
+                            </button>
                             <span class="hint">Chúng tôi sẽ gửi thông báo khi ưu đãi mở</span>
                         <?php else: ?>
-                            <span class="hint">Áp dụng tự động khi nhập mã ở bước thanh toán</span>
+                            <button class="btn-primary" disabled style="opacity: 0.6; cursor: not-allowed;">
+                                Đã kết thúc
+                            </button>
+                            <span class="hint">Mã khuyến mãi này đã hết hạn</span>
                         <?php endif; ?>
                     </div>
                 </article>

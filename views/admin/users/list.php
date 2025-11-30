@@ -31,7 +31,7 @@
 
       <!-- Thống kê -->
       <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-2">
           <div class="card bg-primary text-white">
             <div class="card-body">
               <h5 class="card-title">Tổng số</h5>
@@ -39,7 +39,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <div class="card bg-danger text-white">
             <div class="card-body">
               <h5 class="card-title">Admin</h5>
@@ -47,7 +47,15 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+          <div class="card bg-info text-white">
+            <div class="card-body">
+              <h5 class="card-title">Manager</h5>
+              <h3><?= $stats['manager'] ?? 0 ?></h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
           <div class="card bg-warning text-white">
             <div class="card-body">
               <h5 class="card-title">Staff</h5>
@@ -55,7 +63,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <div class="card bg-success text-white">
             <div class="card-body">
               <h5 class="card-title">Customer</h5>
@@ -73,6 +81,7 @@
             <select name="role" class="form-select" style="max-width: 200px;" onchange="this.form.submit()">
               <option value="">Tất cả quyền</option>
               <option value="admin" <?= $roleFilter == 'admin' ? 'selected' : '' ?>>Admin</option>
+              <option value="manager" <?= $roleFilter == 'manager' ? 'selected' : '' ?>>Manager</option>
               <option value="staff" <?= $roleFilter == 'staff' ? 'selected' : '' ?>>Staff</option>
               <option value="customer" <?= $roleFilter == 'customer' ? 'selected' : '' ?>>Customer</option>
             </select>
@@ -98,7 +107,6 @@
               <th>Email</th>
               <th>Số điện thoại</th>
               <th>Ngày sinh</th>
-              <th>Hạng thành viên</th>
               <th>Tổng chi tiêu</th>
               <th>Quyền</th>
               <th>Trạng thái</th>
@@ -115,23 +123,18 @@
                 <td><?= htmlspecialchars($item['email']) ?></td>
                 <td><?= htmlspecialchars($item['phone'] ?? 'N/A') ?></td>
                 <td><?= $item['birth_date'] ? date('d/m/Y', strtotime($item['birth_date'])) : 'N/A' ?></td>
-                <td>
-                  <?php if ($item['tier_name']): ?>
-                    <span class="badge bg-info"><?= htmlspecialchars($item['tier_name']) ?></span>
-                  <?php else: ?>
-                    <span class="text-muted">Chưa có</span>
-                  <?php endif; ?>
-                </td>
                 <td><?= number_format($item['total_spending'] ?? 0, 0, ',', '.') ?> đ</td>
                 <td>
                   <?php
                     $roleColors = [
                       'admin' => 'danger',
+                      'manager' => 'info',
                       'staff' => 'warning',
                       'customer' => 'success'
                     ];
                     $roleLabels = [
                       'admin' => 'Admin',
+                      'manager' => 'Manager',
                       'staff' => 'Staff',
                       'customer' => 'Customer'
                     ];
@@ -187,7 +190,7 @@
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="11" class="text-center text-muted py-4">Chưa có người dùng nào</td>
+                <td colspan="10" class="text-center text-muted py-4">Chưa có người dùng nào</td>
               </tr>
             <?php endif; ?>
           </tbody>

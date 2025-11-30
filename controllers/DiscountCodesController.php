@@ -42,8 +42,15 @@ class DiscountCodesController
 
             if (empty($_POST['discount_percent'] ?? '') || !is_numeric($_POST['discount_percent'])) {
                 $errors['discount_percent'] = "Bạn vui lòng nhập phần trăm giảm giá hợp lệ";
-            } elseif ((int)$_POST['discount_percent'] < 0 || (int)$_POST['discount_percent'] > 100) {
-                $errors['discount_percent'] = "Phần trăm giảm giá phải từ 0 đến 100";
+            } else {
+                $discountPercent = (float)$_POST['discount_percent'];
+                if ($discountPercent < 0) {
+                    $errors['discount_percent'] = "Phần trăm giảm giá không được nhỏ hơn 0%";
+                } elseif ($discountPercent >= 100) {
+                    $errors['discount_percent'] = "Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%";
+                } elseif ($discountPercent > 85) {
+                    $errors['discount_percent'] = "Phần trăm giảm giá không được vượt quá 85%";
+                }
             }
 
             if (empty($_POST['start_date'] ?? '')) {
@@ -141,8 +148,15 @@ class DiscountCodesController
 
             if (empty($_POST['discount_percent'] ?? '') || !is_numeric($_POST['discount_percent'])) {
                 $errors['discount_percent'] = "Bạn vui lòng nhập phần trăm giảm giá hợp lệ";
-            } elseif ((int)$_POST['discount_percent'] < 0 || (int)$_POST['discount_percent'] > 100) {
-                $errors['discount_percent'] = "Phần trăm giảm giá phải từ 0 đến 100";
+            } else {
+                $discountPercent = (float)$_POST['discount_percent'];
+                if ($discountPercent < 0) {
+                    $errors['discount_percent'] = "Phần trăm giảm giá không được nhỏ hơn 0%";
+                } elseif ($discountPercent >= 100) {
+                    $errors['discount_percent'] = "Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%";
+                } elseif ($discountPercent > 85) {
+                    $errors['discount_percent'] = "Phần trăm giảm giá không được vượt quá 85%";
+                }
             }
 
             if (empty($_POST['start_date'] ?? '')) {

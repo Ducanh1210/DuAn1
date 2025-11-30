@@ -41,28 +41,15 @@ class DiscountCode
     }
 
     /**
-     * Lấy discount code theo code
+     * Lấy discount code theo code (không filter status, để validateDiscountCode xử lý)
      */
     public function findByCode($code)
     {
         try {
-            $sql = "SELECT * FROM discount_codes WHERE code = :code AND status = 'active'";
+            $sql = "SELECT * FROM discount_codes WHERE code = :code";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([':code' => $code]);
-            $discount = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if ($discount) {
-                // Kiểm tra thời gian hiệu lực
-                $now = date('Y-m-d');
-                if ($discount['start_date'] && $now < $discount['start_date']) {
-                    return null;
-                }
-                if ($discount['end_date'] && $now > $discount['end_date']) {
-                    return null;
-                }
-            }
-            
-            return $discount;
+            $stmt->execute([':code' => strtoupper(trim($code))]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log('Error in DiscountCode->findByCode(): ' . $e->getMessage());
             return null;
@@ -71,22 +58,34 @@ class DiscountCode
 
     /**
      * Validate discount code với total amount
+     * Trả về null nếu không hợp lệ, hoặc array với thông tin discount nếu hợp lệ
+     * Có thể trả về error message trong trường hợp đặc biệt
      */
     public function validateDiscountCode($code, $totalAmount = 0)
     {
         try {
-            $discount = $this->findByCode($code);
+            // Tìm mã giảm giá (không cần status = 'active' ở đây vì sẽ check riêng)
+            $sql = "SELECT * FROM discount_codes WHERE code = :code";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':code' => strtoupper(trim($code))]);
+            $discount = $stmt->fetch(PDO::FETCH_ASSOC);
+            
             if (!$discount) {
-                return null;
+                return ['error' => 'Mã giảm giá không tồn tại'];
+            }
+            
+            // Kiểm tra status
+            if ($discount['status'] !== 'active') {
+                return ['error' => 'Mã giảm giá không hoạt động'];
             }
             
             // Kiểm tra thời gian hiệu lực
             $now = date('Y-m-d');
             if ($discount['start_date'] && $now < $discount['start_date']) {
-                return null; // Chưa đến thời gian
+                return ['error' => 'Mã giảm giá chưa đến thời gian áp dụng'];
             }
             if ($discount['end_date'] && $now > $discount['end_date']) {
-                return null; // Đã hết hạn
+                return ['error' => 'Mã giảm giá đã hết hạn'];
             }
             
             // Tính toán discount amount
@@ -105,7 +104,7 @@ class DiscountCode
             ];
         } catch (Exception $e) {
             error_log('Error in DiscountCode->validateDiscountCode(): ' . $e->getMessage());
-            return null;
+            return ['error' => 'Có lỗi xảy ra khi kiểm tra mã giảm giá'];
         }
     }
 

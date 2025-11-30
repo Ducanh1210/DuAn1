@@ -76,7 +76,6 @@
                 <option value="">-- Chọn quyền --</option>
                 <option value="manager" <?= (isset($_POST['role']) && $_POST['role'] == 'manager') ? 'selected' : '' ?>>Quản lý</option>
                 <option value="staff" <?= (isset($_POST['role']) && $_POST['role'] == 'staff') ? 'selected' : '' ?>>Nhân viên</option>
-                <option value="customer" <?= (isset($_POST['role']) && $_POST['role'] == 'customer') || !isset($_POST['role']) ? 'selected' : '' ?>>Khách hàng</option>
               </select>
               <?php if (!empty($errors['role'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['role'] ?></div>
@@ -84,8 +83,7 @@
               <small class="text-muted">
                 <strong>Quản lý:</strong> Quản lý rạp, phòng, ghế, lịch chiếu (sau Admin)<br>
                 <strong>Nhân viên:</strong> Bán vé, xem thống kê, xem phim<br>
-                <strong>Khách hàng:</strong> Khách hàng<br>
-                <em class="text-warning">Lưu ý: Chỉ có 1 Admin duy nhất trong hệ thống</em>
+                <em class="text-info">Lưu ý: Chỉ có thể tạo tài khoản cho Quản lý và Nhân viên. Khách hàng tự đăng ký tài khoản.</em>
               </small>
             </div>
 
@@ -115,19 +113,6 @@
               <?php endif; ?>
             </div>
 
-            <div class="mb-3">
-              <label for="tier_id" class="form-label">Hạng thành viên</label>
-              <select name="tier_id" id="tier_id" class="form-select">
-                <option value="">-- Chọn hạng thành viên --</option>
-                <?php if (!empty($tiers)): ?>
-                  <?php foreach ($tiers as $tier): ?>
-                    <option value="<?= $tier['id'] ?>" <?= (isset($_POST['tier_id']) && $_POST['tier_id'] == $tier['id']) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($tier['name']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </select>
-            </div>
           </div>
         </div>
 

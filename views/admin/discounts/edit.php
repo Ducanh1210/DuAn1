@@ -29,7 +29,7 @@
                      id="code" 
                      class="form-control <?= !empty($errors['code']) ? 'is-invalid' : '' ?>" 
                      value="<?= htmlspecialchars($_POST['code'] ?? $discount['code']) ?>" 
-                     required
+                     
                      placeholder="VD: WEEKEND25, HOLIDAY30..."
                      style="text-transform: uppercase;">
               <small class="form-text text-muted">Mã sẽ được tự động chuyển thành chữ in hoa</small>
@@ -45,7 +45,7 @@
                      id="title" 
                      class="form-control <?= !empty($errors['title']) ? 'is-invalid' : '' ?>" 
                      value="<?= htmlspecialchars($_POST['title'] ?? $discount['title']) ?>" 
-                     required
+                     
                      placeholder="VD: Giảm giá cuối tuần 25%">
               <?php if (!empty($errors['title'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['title'] ?></div>
@@ -61,10 +61,11 @@
                          id="discount_percent" 
                          class="form-control <?= !empty($errors['discount_percent']) ? 'is-invalid' : '' ?>" 
                          value="<?= htmlspecialchars($_POST['discount_percent'] ?? $discount['discount_percent']) ?>" 
-                         required
+                         
                          min="0"
-                         max="100"
+                         max="85"
                          placeholder="VD: 25">
+                  <small class="form-text text-muted">Tối đa 85% (không được giảm giá 100%)</small>
                   <?php if (!empty($errors['discount_percent'])): ?>
                     <div class="text-danger small mt-1"><?= $errors['discount_percent'] ?></div>
                   <?php endif; ?>
@@ -90,7 +91,7 @@
                          id="start_date" 
                          class="form-control <?= !empty($errors['start_date']) ? 'is-invalid' : '' ?>" 
                          value="<?= htmlspecialchars($_POST['start_date'] ?? $discount['start_date']) ?>" 
-                         required>
+                         >
                   <?php if (!empty($errors['start_date'])): ?>
                     <div class="text-danger small mt-1"><?= $errors['start_date'] ?></div>
                   <?php endif; ?>
@@ -104,7 +105,7 @@
                          id="end_date" 
                          class="form-control <?= !empty($errors['end_date']) ? 'is-invalid' : '' ?>" 
                          value="<?= htmlspecialchars($_POST['end_date'] ?? $discount['end_date']) ?>" 
-                         required>
+                         >
                   <?php if (!empty($errors['end_date'])): ?>
                     <div class="text-danger small mt-1"><?= $errors['end_date'] ?></div>
                   <?php endif; ?>
@@ -160,9 +161,83 @@
 </div>
 
 <script>
-  // Tự động chuyển mã thành chữ in hoa
-  document.getElementById('code').addEventListener('input', function(e) {
-    e.target.value = e.target.value.toUpperCase();
+  // Đợi DOM load xong
+  document.addEventListener('DOMContentLoaded', function() {
+    // Tự động chuyển mã thành chữ in hoa
+    const codeInput = document.getElementById('code');
+    if (codeInput) {
+      codeInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase();
+      });
+    }
+
+    // Validation phần trăm giảm giá
+    const discountPercentInput = document.getElementById('discount_percent');
+    if (discountPercentInput) {
+      // Validation khi đang nhập
+      discountPercentInput.addEventListener('input', function(e) {
+        let value = parseFloat(e.target.value);
+        if (isNaN(value) || e.target.value === '') {
+          return;
+        }
+        if (value < 0) {
+          e.target.value = 0;
+          alert('Phần trăm giảm giá không được nhỏ hơn 0%');
+        } else if (value >= 100) {
+          e.target.value = 85;
+          alert('Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%');
+        } else if (value > 85) {
+          e.target.value = 85;
+          alert('Phần trăm giảm giá không được vượt quá 85%');
+        }
+      });
+
+      // Validation khi blur (rời khỏi input)
+      discountPercentInput.addEventListener('blur', function(e) {
+        let value = parseFloat(e.target.value);
+        if (isNaN(value) || e.target.value === '') {
+          return;
+        }
+        if (value < 0) {
+          e.target.value = 0;
+          alert('Phần trăm giảm giá không được nhỏ hơn 0%');
+        } else if (value >= 100) {
+          e.target.value = 85;
+          alert('Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%');
+        } else if (value > 85) {
+          e.target.value = 85;
+          alert('Phần trăm giảm giá không được vượt quá 85%');
+        }
+      });
+    }
+
+    // Validation khi submit form
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        const discountPercent = parseFloat(document.getElementById('discount_percent').value);
+        if (isNaN(discountPercent) || document.getElementById('discount_percent').value === '') {
+          e.preventDefault();
+          alert('Vui lòng nhập phần trăm giảm giá hợp lệ');
+          return false;
+        }
+        if (discountPercent < 0) {
+          e.preventDefault();
+          alert('Phần trăm giảm giá không được nhỏ hơn 0%');
+          return false;
+        }
+        if (discountPercent >= 100) {
+          e.preventDefault();
+          alert('Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%');
+          return false;
+        }
+        if (discountPercent > 85) {
+          e.preventDefault();
+          alert('Phần trăm giảm giá không được vượt quá 85%');
+          return false;
+        }
+      });
+    }
   });
 </script>
 

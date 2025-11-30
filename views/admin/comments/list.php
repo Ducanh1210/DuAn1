@@ -19,8 +19,18 @@
       <!-- Filter và Search -->
       <div class="row mb-3">
         <div class="col-md-12">
-          <form method="GET" action="" class="d-flex gap-2">
+          <form method="GET" action="" class="d-flex gap-2 flex-wrap">
             <input type="hidden" name="act" value="comments">
+            <?php if (isset($isAdmin) && $isAdmin && !empty($cinemas)): ?>
+              <select name="cinema_id" class="form-select" style="max-width: 200px;">
+                <option value="">Tất cả rạp</option>
+                <?php foreach ($cinemas as $cinema): ?>
+                  <option value="<?= $cinema['id'] ?>" <?= ($cinemaFilter ?? null) == $cinema['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($cinema['name']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            <?php endif; ?>
             <select name="movie_id" class="form-select" style="max-width: 250px;">
               <option value="">Tất cả phim</option>
               <?php if (!empty($movies)): ?>
@@ -35,7 +45,7 @@
             <button type="submit" class="btn btn-outline-primary">
               <i class="bi bi-search"></i> Tìm
             </button>
-            <?php if ($movieFilter || $searchKeyword): ?>
+            <?php if ($movieFilter || $searchKeyword || ($cinemaFilter ?? null)): ?>
               <a href="<?= BASE_URL ?>?act=comments" class="btn btn-outline-secondary">
                 <i class="bi bi-x-circle"></i> Xóa bộ lọc
               </a>

@@ -70,35 +70,9 @@
           </div>
 
           <div class="col-md-6">
-            <div class="mb-3">
-              <label for="role" class="form-label">Quyền <span class="text-danger">*</span></label>
-              <?php if ($user['role'] === 'admin'): ?>
-                <!-- Admin không thể đổi role -->
-                <input type="text" class="form-control" value="Admin" readonly style="background-color: #f8f9fa;">
-                <input type="hidden" name="role" value="admin">
-                <small class="text-muted">
-                  <em class="text-warning">Không thể thay đổi quyền của Admin</em>
-                </small>
-              <?php else: ?>
-                <!-- Manager, Staff và Customer có thể chuyển đổi -->
-                <select name="role" id="role" class="form-select <?= !empty($errors['role']) ? 'is-invalid' : '' ?>" required onchange="toggleCinemaField()">
-                  <option value="manager" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'manager' ? 'selected' : '' ?>>Quản lý</option>
-                  <option value="staff" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'staff' ? 'selected' : '' ?>>Nhân viên</option>
-                  <option value="customer" <?= (isset($_POST['role']) ? $_POST['role'] : $user['role']) == 'customer' ? 'selected' : '' ?>>Khách hàng</option>
-                </select>
-                <?php if (!empty($errors['role'])): ?>
-                  <div class="text-danger small mt-1"><?= $errors['role'] ?></div>
-                <?php endif; ?>
-                <small class="text-muted">
-                  <strong>Quản lý:</strong> Quản lý rạp, phòng, ghế, lịch chiếu<br>
-                  <strong>Nhân viên:</strong> Bán vé, xem thống kê<br>
-                  <strong>Khách hàng:</strong> Khách hàng<br>
-                  <em class="text-info">Admin có thể chuyển đổi giữa các quyền</em>
-                </small>
-              <?php endif; ?>
-            </div>
-
-            <div class="mb-3" id="cinema_field" style="display: <?= in_array(isset($_POST['role']) ? $_POST['role'] : $user['role'], ['manager', 'staff']) ? 'block' : 'none' ?>;">
+            <input type="hidden" name="role" value="<?= htmlspecialchars($user['role']) ?>">
+            
+            <div class="mb-3" id="cinema_field" style="display: <?= in_array($user['role'], ['manager', 'staff']) ? 'block' : 'none' ?>;">
               <label for="cinema_id" class="form-label">Rạp quản lý <span class="text-danger">*</span></label>
               <select name="cinema_id" id="cinema_id" class="form-select <?= !empty($errors['cinema_id']) ? 'is-invalid' : '' ?>">
                 <option value="">-- Chọn rạp --</option>
@@ -122,20 +96,6 @@
               <?php else: ?>
                 <small class="text-muted">Chọn rạp mà nhân viên này sẽ quản lý</small>
               <?php endif; ?>
-            </div>
-
-            <div class="mb-3">
-              <label for="tier_id" class="form-label">Hạng thành viên</label>
-              <select name="tier_id" id="tier_id" class="form-select">
-                <option value="">-- Chọn hạng thành viên --</option>
-                <?php if (!empty($tiers)): ?>
-                  <?php foreach ($tiers as $tier): ?>
-                    <option value="<?= $tier['id'] ?>" <?= (isset($_POST['tier_id']) ? $_POST['tier_id'] : $user['tier_id']) == $tier['id'] ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($tier['name']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </select>
             </div>
 
             <div class="mb-3">
@@ -183,13 +143,14 @@
     }
   });
 
-  // Validation function
+    // Validation function
   function validateUserForm(event) {
     const fullName = document.getElementById('full_name').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const role = document.getElementById('role').value;
     const phone = document.getElementById('phone').value.trim();
+    const roleInput = document.querySelector('input[name="role"]');
+    const role = roleInput ? roleInput.value : '';
 
     if (!fullName || fullName === '') {
       alert('Vui lòng nhập họ tên!');
@@ -218,25 +179,6 @@
       return false;
     }
 
-    if (!role || role === '') {
-      alert('Vui lòng chọn quyền!');
-      const roleField = document.getElementById('role');
-      if (roleField) {
-        roleField.focus();
-      }
-      return false;
-    }
-
-    // Kiểm tra nếu cố gắng chọn admin
-    if (role === 'admin') {
-      alert('Không thể chuyển tài khoản sang Admin. Chỉ có 1 Admin duy nhất trong hệ thống!');
-      const roleField = document.getElementById('role');
-      if (roleField) {
-        roleField.focus();
-      }
-      return false;
-    }
-
     // Validate phone if provided
     if (phone && phone !== '') {
       const phoneRegex = /^[0-9]{10,11}$/;
@@ -248,38 +190,16 @@
     }
 
     // Kiểm tra cinema_id nếu role là manager hoặc staff
-    const role = document.getElementById('role').value;
     if (role === 'manager' || role === 'staff') {
-      const cinemaId = document.getElementById('cinema_id').value;
-      if (!cinemaId || cinemaId === '') {
+      const cinemaId = document.getElementById('cinema_id');
+      if (cinemaId && (!cinemaId.value || cinemaId.value === '')) {
         alert('Vui lòng chọn rạp quản lý!');
-        document.getElementById('cinema_id').focus();
+        cinemaId.focus();
         return false;
       }
     }
 
     return true;
   }
-  
-  // Toggle cinema field based on role
-  function toggleCinemaField() {
-    const role = document.getElementById('role').value;
-    const cinemaField = document.getElementById('cinema_field');
-    const cinemaSelect = document.getElementById('cinema_id');
-    
-    if (role === 'manager' || role === 'staff') {
-      cinemaField.style.display = 'block';
-      cinemaSelect.setAttribute('required', 'required');
-    } else {
-      cinemaField.style.display = 'none';
-      cinemaSelect.removeAttribute('required');
-      cinemaSelect.value = '';
-    }
-  }
-  
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    toggleCinemaField();
-  });
 </script>
 

@@ -1,3 +1,27 @@
+<?php
+/**
+ * MAIN.PHP - LAYOUT CHUNG CHO TRANG ADMIN
+ * 
+ * CHỨC NĂNG:
+ * - Layout chung cho tất cả trang admin (sidebar, header, footer)
+ * - Include view tương ứng dựa trên $GLOBALS['viewPath']
+ * 
+ * LUỒNG CHẠY RENDER:
+ * 1. Controller gọi render('admin/movies/list.php', ['data' => $movies])
+ * 2. function.php extract data: $data = $movies
+ * 3. function.php set $GLOBALS['viewPath'] = 'admin/movies/list.php'
+ * 4. function.php include main.php (file này)
+ * 5. main.php include header, sidebar
+ * 6. main.php include view từ $GLOBALS['viewPath'] (dòng cuối)
+ * 7. View sử dụng biến $data để hiển thị
+ * 
+ * CẤU TRÚC:
+ * - Header: Logo, thông tin user, thông báo
+ * - Sidebar: Menu điều hướng (Dashboard, Quản lý Phim, etc.)
+ * - Content: View được include từ $GLOBALS['viewPath']
+ * - Footer: Thông tin footer
+ */
+?>
 <!doctype html>
 <html lang="vi">
 <head>
@@ -103,8 +127,8 @@
     </a>
     <?php endif; ?>
     
-    <!-- Quản lý Bình Luận - Chỉ Admin -->
-    <?php if ($isAdmin): ?>
+    <!-- Quản lý Bình Luận - Admin và Manager -->
+    <?php if ($isAdmin || $isManager): ?>
     <a href="?act=comments" class="<?= in_array($_GET['act'] ?? '', ['comments', 'comments-show', 'comments-delete']) ? 'active' : '' ?>">
       <i class="bi bi-chat-left-text"></i><span class="label">Quản lý Bình Luận</span>
     </a>
@@ -296,14 +320,41 @@
 
   <!-- MAIN -->
   <main id="main" class="main">
-    <!-- Bắt đầu nội dung chính của trang -->
+    <!-- 
+      ============================================
+      PHẦN NỘI DUNG CHÍNH - INCLUDE VIEW ĐỘNG
+      ============================================
+      
+      LUỒNG CHẠY:
+      1. Controller gọi render('admin/movies/list.php', ['data' => $movies])
+      2. function.php set $GLOBALS['viewPath'] = 'admin/movies/list.php'
+      3. function.php extract data: $data = $movies (tạo biến $data)
+      4. function.php include main.php (file này)
+      5. main.php include header, sidebar (ở trên)
+      6. main.php đến đây: include view từ $GLOBALS['viewPath']
+      7. View (list.php) sử dụng biến $data để hiển thị danh sách phim
+      
+      VÍ DỤ:
+      - Controller: render('admin/movies/list.php', ['movies' => $movies])
+      - View path: 'admin/movies/list.php'
+      - Biến trong view: $movies (đã được extract từ data array)
+      - View hiển thị: Bảng danh sách phim với dữ liệu $movies
+    -->
     <?php
       // Include view động nếu có biến $viewPath
+      // $viewPath được set trong function.php khi Controller gọi render()
       if (isset($GLOBALS['viewPath']) && !empty($GLOBALS['viewPath'])) {
+        // Tạo đường dẫn đầy đủ đến file view
+        // Ví dụ: views/admin/movies/list.php
         $viewFile = __DIR__ . '/../' . $GLOBALS['viewPath'];
+        
+        // Kiểm tra file tồn tại trước khi include
         if (file_exists($viewFile)) {
+          // Include view - tất cả biến đã được extract trong function.php
+          // View có thể sử dụng các biến như $movies, $errors, etc.
           include $viewFile;
         } else {
+          // Hiển thị lỗi nếu không tìm thấy view
           echo '<div class="container-fluid"><div class="alert alert-danger">Không tìm thấy view: ' . htmlspecialchars($GLOBALS['viewPath']) . '</div></div>';
         }
       } else {

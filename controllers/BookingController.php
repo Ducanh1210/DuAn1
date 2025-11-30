@@ -465,11 +465,31 @@ class BookingController
             
             if (!empty($voucherCode)) {
                 $discountCodeModel = new DiscountCode();
-                $discountCode = $discountCodeModel->validateDiscountCode($voucherCode, $totalPrice);
+                $result = $discountCodeModel->validateDiscountCode($voucherCode, $totalPrice);
                 
-                if ($discountCode && $discountCode['discount_percent'] > 0) {
-                    $discountId = $discountCode['id'];
-                    $discountAmount = $discountCode['discount_amount'];
+                // Kiểm tra nếu có lỗi
+                if (isset($result['error'])) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $result['error']
+                    ]);
+                    exit;
+                }
+                
+                // Nếu hợp lệ và có discount_percent
+                if ($result && !isset($result['error']) && isset($result['discount_percent']) && $result['discount_percent'] > 0) {
+                    $discountId = $result['id'];
+                    $discountAmount = $result['discount_amount'];
+                } elseif ($result && !isset($result['error'])) {
+                    // Mã hợp lệ nhưng không có discount (có thể là 0%)
+                    // Không cần làm gì, chỉ bỏ qua
+                } else {
+                    // Mã không hợp lệ
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Mã giảm giá không hợp lệ'
+                    ]);
+                    exit;
                 }
             }
 

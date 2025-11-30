@@ -28,26 +28,49 @@ class MoviesController
     }
 
     /**
-     * DANH SÁCH PHIM (ADMIN)
+     * DANH SÁCH PHIM (ADMIN/MANAGER)
      * 
      * LUỒNG CHẠY:
-     * 1. Lấy số trang từ URL (?page=1)
-     * 2. Gọi Model Movie->paginate() để lấy dữ liệu phân trang
-     * 3. Render view admin/movies/list.php với dữ liệu và phân trang
+     * 1. Kiểm tra quyền và lấy cinema_id nếu là manager
+     * 2. Lấy số trang từ URL (?page=1)
+     * 3. Gọi Model Movie->paginate() với cinema_id để lấy dữ liệu phân trang
+     * 4. Render view admin/movies/list.php với dữ liệu và phân trang
      * 
      * DỮ LIỆU LẤY:
      * - Từ $_GET: page (số trang)
      * - Từ Model Movie: paginate() -> danh sách phim, tổng số trang, tổng số record
-     * - Hiển thị: danh sách phim với phân trang
+     * - Hiển thị: danh sách phim với phân trang (đã lọc theo rạp nếu là manager)
      */
     public function list()
     {
-        // Lấy số trang từ URL, mặc định là trang 1
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $page = max(1, $page); // Đảm bảo page >= 1 (không cho số âm)
+        require_once __DIR__ . '/../commons/auth.php';
         
-        // Gọi Model để lấy dữ liệu phân trang (5 phim mỗi trang)
-        $result = $this->movie->paginate($page, 5);
+        // Lấy tham số filter và search từ URL
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $page = max(1, $page);
+        $searchKeyword = trim($_GET['search'] ?? '');
+        $statusFilter = $_GET['status'] ?? '';
+        $cinemaFilter = null; // Lọc theo rạp
+        
+        // Phân quyền lọc theo rạp
+        if (isAdmin()) {
+            // Admin có thể lọc theo rạp hoặc xem tất cả
+            $cinemaFilter = !empty($_GET['cinema_id']) ? (int)$_GET['cinema_id'] : null;
+        } elseif (isManager()) {
+            // Manager chỉ xem phim của rạp được gán
+            $cinemaFilter = getCurrentCinemaId();
+        }
+        
+        // Gọi Model để lấy dữ liệu phân trang với filter
+        $result = $this->movie->paginate($page, 5, $cinemaFilter, $statusFilter ?: null, $searchKeyword ?: null);
+        
+        // Lấy danh sách rạp để hiển thị trong filter (chỉ admin)
+        $cinemas = [];
+        if (isAdmin()) {
+            require_once __DIR__ . '/../models/Cinema.php';
+            $cinemaModel = new Cinema();
+            $cinemas = $cinemaModel->all();
+        }
         
         // Render view với dữ liệu và thông tin phân trang
         render('admin/movies/list.php', [
@@ -57,18 +80,41 @@ class MoviesController
                 'totalPages' => $result['totalPages'], // Tổng số trang
                 'total' => $result['total'], // Tổng số phim
                 'perPage' => $result['perPage'] // Số phim mỗi trang
-            ]
+            ],
+            'searchKeyword' => $searchKeyword,
+            'statusFilter' => $statusFilter,
+            'cinemaFilter' => $cinemaFilter,
+            'cinemas' => $cinemas
         ]);
     }
 
     /**
-     * Hiển thị form tạo phim mới (Admin)
+     * Hiển thị form tạo phim mới (Admin/Manager)
      */
     public function create()
 {
+    require_once __DIR__ . '/../commons/auth.php';
     $errors = [];
     $genres = $this->genre->all();
     $uploaded_image = null;
+    
+    // Lấy danh sách rạp
+    require_once __DIR__ . '/../models/Cinema.php';
+    $cinemaModel = new Cinema();
+    $cinemas = [];
+    if (isAdmin()) {
+        // Admin xem tất cả rạp
+        $cinemas = $cinemaModel->all();
+    } elseif (isManager()) {
+        // Manager chỉ thấy rạp được gán
+        $cinemaId = getCurrentCinemaId();
+        if ($cinemaId) {
+            $cinema = $cinemaModel->find($cinemaId);
+            if ($cinema) {
+                $cinemas = [$cinema];
+            }
+        }
+    }
     
     // validate form
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -91,6 +137,31 @@ class MoviesController
 
         if (empty(trim($_POST['genre_id'] ?? ''))) {
             $errors['genre_id'] = "Bạn vui lòng chọn thể loại";
+        }
+
+        // Kiểm tra rạp (nhiều rạp)
+        $cinemaIds = [];
+        if (isAdmin()) {
+            // Admin phải chọn ít nhất 1 rạp, tối đa 3 rạp
+            if (empty($_POST['cinema_ids'] ?? [])) {
+                $errors['cinema_ids'] = "Bạn vui lòng chọn ít nhất một rạp";
+            } else {
+                $cinemaIds = array_map('intval', $_POST['cinema_ids']);
+                $cinemaIds = array_filter($cinemaIds, function($id) { return $id > 0; });
+                if (empty($cinemaIds)) {
+                    $errors['cinema_ids'] = "Bạn vui lòng chọn ít nhất một rạp hợp lệ";
+                } elseif (count($cinemaIds) > 3) {
+                    $errors['cinema_ids'] = "Chỉ được chọn tối đa 3 rạp";
+                }
+            }
+        } elseif (isManager()) {
+            // Manager tự động dùng rạp được gán
+            $cinemaId = getCurrentCinemaId();
+            if (!$cinemaId) {
+                $errors['cinema_ids'] = "Bạn chưa được gán rạp";
+            } else {
+                $cinemaIds = [$cinemaId];
+            }
         }
 
         if (empty(trim($_POST['release_date'] ?? ''))) {
@@ -168,6 +239,7 @@ class MoviesController
                 'age_rating' => trim($_POST['age_rating'] ?? ''),
                 'producer' => trim($_POST['producer'] ?? ''),
                 'genre_id' => trim($_POST['genre_id']),
+                'cinema_ids' => $cinemaIds,
                 'status' => $status
             ];
             $this->movie->insert($data);
@@ -176,15 +248,22 @@ class MoviesController
         }
     }
 
-    render('admin/movies/create.php', ['errors' => $errors, 'genres' => $genres, 'uploaded_image' => $uploaded_image]);
+    render('admin/movies/create.php', [
+        'errors' => $errors, 
+        'genres' => $genres, 
+        'uploaded_image' => $uploaded_image,
+        'cinemas' => $cinemas
+    ]);
 }
 
 
     /**
-     * Hiển thị form sửa phim (Admin)
+     * Hiển thị form sửa phim (Admin/Manager)
      */
     public function edit()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        
         $id = $_GET['id'] ?? null;
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=/');
@@ -196,9 +275,43 @@ class MoviesController
             header('Location: ' . BASE_URL . '?act=/');
             exit;
         }
+        
+        // Kiểm tra quyền: Manager chỉ sửa phim của rạp mình
+        if (isManager()) {
+            $cinemaId = getCurrentCinemaId();
+            if (!$cinemaId) {
+                header('Location: ' . BASE_URL . '?act=/');
+                exit;
+            }
+            // Kiểm tra phim có thuộc rạp của manager không
+            $movieCinemas = $this->movie->getCinemasByMovieId($id);
+            $movieCinemaIds = array_column($movieCinemas, 'id');
+            if (!in_array($cinemaId, $movieCinemaIds)) {
+                header('Location: ' . BASE_URL . '?act=/');
+                exit;
+            }
+        }
 
         $errors = [];
         $genres = $this->genre->all();
+        
+        // Lấy danh sách rạp
+        require_once __DIR__ . '/../models/Cinema.php';
+        $cinemaModel = new Cinema();
+        $cinemas = [];
+        if (isAdmin()) {
+            // Admin xem tất cả rạp
+            $cinemas = $cinemaModel->all();
+        } elseif (isManager()) {
+            // Manager chỉ thấy rạp được gán
+            $cinemaId = getCurrentCinemaId();
+            if ($cinemaId) {
+                $cinema = $cinemaModel->find($cinemaId);
+                if ($cinema) {
+                    $cinemas = [$cinema];
+                }
+            }
+        }
 
         // validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -217,6 +330,63 @@ class MoviesController
 
             if (empty(trim($_POST['genre_id'] ?? ''))) {
                 $errors['genre_id'] = "Bạn vui lòng chọn thể loại";
+            }
+
+            // Kiểm tra rạp (nhiều rạp)
+            $cinemaIds = [];
+            if (isAdmin()) {
+                // Admin phải chọn ít nhất 1 rạp, tối đa 3 rạp
+                if (empty($_POST['cinema_ids'] ?? [])) {
+                    $errors['cinema_ids'] = "Bạn vui lòng chọn ít nhất một rạp";
+                } else {
+                    $cinemaIds = array_map('intval', $_POST['cinema_ids']);
+                    $cinemaIds = array_filter($cinemaIds, function($id) { return $id > 0; });
+                    if (empty($cinemaIds)) {
+                        $errors['cinema_ids'] = "Bạn vui lòng chọn ít nhất một rạp hợp lệ";
+                    } elseif (count($cinemaIds) > 3) {
+                        $errors['cinema_ids'] = "Chỉ được chọn tối đa 3 rạp";
+                    } else {
+                        // Kiểm tra rạp trùng: Lấy danh sách rạp hiện tại của phim
+                        $existingCinemas = $this->movie->getCinemasByMovieId($id);
+                        $existingCinemaIds = array_column($existingCinemas, 'id');
+                        
+                        // Kiểm tra xem có rạp nào đã tồn tại không
+                        $duplicateCinemas = array_intersect($cinemaIds, $existingCinemaIds);
+                        if (!empty($duplicateCinemas)) {
+                            // Lấy tên các rạp trùng
+                            require_once __DIR__ . '/../models/Cinema.php';
+                            $cinemaModel = new Cinema();
+                            $duplicateNames = [];
+                            foreach ($duplicateCinemas as $dupId) {
+                                $cinema = $cinemaModel->find($dupId);
+                                if ($cinema) {
+                                    $duplicateNames[] = $cinema['name'];
+                                }
+                            }
+                            $errors['cinema_ids'] = "Phim đã có rạp: " . implode(', ', $duplicateNames) . ". Vui lòng chọn rạp khác.";
+                        }
+                    }
+                }
+            } elseif (isManager()) {
+                // Manager tự động dùng rạp được gán
+                $cinemaId = getCurrentCinemaId();
+                if (!$cinemaId) {
+                    $errors['cinema_ids'] = "Bạn chưa được gán rạp";
+                } else {
+                    // Kiểm tra rạp trùng: Lấy danh sách rạp hiện tại của phim
+                    $existingCinemas = $this->movie->getCinemasByMovieId($id);
+                    $existingCinemaIds = array_column($existingCinemas, 'id');
+                    
+                    if (in_array($cinemaId, $existingCinemaIds)) {
+                        require_once __DIR__ . '/../models/Cinema.php';
+                        $cinemaModel = new Cinema();
+                        $cinema = $cinemaModel->find($cinemaId);
+                        $cinemaName = $cinema ? $cinema['name'] : 'Rạp này';
+                        $errors['cinema_ids'] = "Phim đã có rạp: " . $cinemaName . ". Vui lòng chọn rạp khác.";
+                    } else {
+                        $cinemaIds = [$cinemaId];
+                    }
+                }
             }
 
             if (empty(trim($_POST['release_date'] ?? ''))) {
@@ -283,6 +453,60 @@ class MoviesController
                     $status = 'active';
                 }
                 
+                // Lấy danh sách rạp hiện tại của phim
+                $existingCinemas = $this->movie->getCinemasByMovieId($id);
+                $existingCinemaIds = array_column($existingCinemas, 'id');
+                
+                // Chỉ lấy rạp mới (không trùng với rạp hiện tại)
+                $newCinemaIds = array_diff($cinemaIds, $existingCinemaIds);
+                
+                // Nếu có rạp mới, thêm vào danh sách rạp hiện tại
+                if (!empty($newCinemaIds)) {
+                    $allCinemaIds = array_merge($existingCinemaIds, $newCinemaIds);
+                    // Đảm bảo không vượt quá 3 rạp
+                    if (count($allCinemaIds) > 3) {
+                        $errors['cinema_ids'] = "Tổng số rạp không được vượt quá 3. Phim hiện có " . count($existingCinemaIds) . " rạp.";
+                    } else {
+                        $cinemaIds = $allCinemaIds;
+                    }
+                } else {
+                    // Không có rạp mới, giữ nguyên rạp hiện tại
+                    $cinemaIds = $existingCinemaIds;
+                }
+                
+                // Nếu vẫn có lỗi sau khi kiểm tra rạp, render lại form
+                if (!empty($errors)) {
+                    // Giữ nguyên dữ liệu đã nhập
+                    $movie = $this->movie->find($id);
+                    if (!$movie) {
+                        header('Location: ' . BASE_URL . '?act=/');
+                        exit;
+                    }
+                    
+                    require_once __DIR__ . '/../models/Genre.php';
+                    $genreModel = new Genre();
+                    $genres = $genreModel->all();
+                    
+                    require_once __DIR__ . '/../models/Cinema.php';
+                    $cinemaModel = new Cinema();
+                    $cinemas = $cinemaModel->all();
+                    
+                    $movieCinemas = $this->movie->getCinemasByMovieId($id);
+                    $movieCinemaIds = array_column($movieCinemas, 'id');
+                    
+                    render('admin/movies/edit.php', [
+                        'movie' => $movie, 
+                        'errors' => $errors, 
+                        'genres' => $genres,
+                        'cinemas' => $cinemas,
+                        'movieCinemas' => $movieCinemaIds
+                    ]);
+                    exit;
+                }
+                
+                // Chỉ lấy rạp mới để thêm (không bao gồm rạp đã có)
+                $newCinemaIds = array_diff($cinemaIds, $existingCinemaIds);
+                
                 $data = [
                     'title' => trim($_POST['title']),
                     'description' => trim($_POST['description']),
@@ -297,6 +521,8 @@ class MoviesController
                     'age_rating' => trim($_POST['age_rating'] ?? ''),
                     'producer' => trim($_POST['producer'] ?? ''),
                     'genre_id' => trim($_POST['genre_id']),
+                    'cinema_ids' => $newCinemaIds, // Chỉ gửi rạp mới
+                    'replace_cinemas' => false, // Không thay thế, chỉ thêm mới
                     'status' => $status
                 ];
                 $this->movie->update($id, $data);
@@ -305,7 +531,17 @@ class MoviesController
             }
         }
 
-        render('admin/movies/edit.php', ['movie' => $movie, 'errors' => $errors, 'genres' => $genres]);
+        // Lấy danh sách rạp đã chọn của phim
+        $movieCinemas = $this->movie->getCinemasByMovieId($id);
+        $movieCinemaIds = array_column($movieCinemas, 'id');
+        
+        render('admin/movies/edit.php', [
+            'movie' => $movie, 
+            'errors' => $errors, 
+            'genres' => $genres,
+            'cinemas' => $cinemas,
+            'movieCinemas' => $movieCinemaIds
+        ]);
     }
 
 
@@ -314,6 +550,9 @@ class MoviesController
      */
     public function delete()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdmin(); // Chỉ admin mới được xóa phim
+        
         $id = $_GET['id'] ?? null;
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=/');
@@ -321,14 +560,66 @@ class MoviesController
         }
 
         $movie = $this->movie->find($id);
-        if ($movie) {
-            // Xóa hình ảnh nếu có
-            if (!empty($movie['image']) && file_exists($movie['image'])) {
-                unlink($movie['image']);
-            }
-            $this->movie->delete($id);
+        if (!$movie) {
+            header('Location: ' . BASE_URL . '?act=/');
+            exit;
         }
 
+        // Kiểm tra phim có đang chiếu không
+        $today = date('Y-m-d');
+        $isNowShowing = false;
+        
+        if ($movie['status'] === 'active') {
+            $releaseDate = $movie['release_date'] ?? null;
+            $endDate = $movie['end_date'] ?? null;
+            
+            // Phim đang chiếu nếu: release_date <= today <= end_date
+            if ($releaseDate && $endDate) {
+                if ($releaseDate <= $today && $today <= $endDate) {
+                    $isNowShowing = true;
+                }
+            } elseif ($releaseDate && !$endDate) {
+                // Chỉ có release_date, không có end_date
+                if ($releaseDate <= $today) {
+                    $isNowShowing = true;
+                }
+            } elseif (!$releaseDate && $endDate) {
+                // Chỉ có end_date, không có release_date
+                if ($today <= $endDate) {
+                    $isNowShowing = true;
+                }
+            } elseif (!$releaseDate && !$endDate) {
+                // Không có cả hai, coi như đang chiếu nếu status = active
+                $isNowShowing = true;
+            }
+        }
+        
+        // Kiểm tra có booking nào liên quan đến phim này không
+        require_once __DIR__ . '/../models/Booking.php';
+        $bookingModel = new Booking();
+        $hasBookings = $bookingModel->hasBookingsByMovieId($id);
+        
+        // Nếu phim đang chiếu hoặc có booking thì không cho xóa
+        if ($isNowShowing) {
+            $_SESSION['error'] = 'Không thể xóa phim đang chiếu. Vui lòng đợi đến khi phim kết thúc chiếu.';
+            header('Location: ' . BASE_URL . '?act=/');
+            exit;
+        }
+        
+        if ($hasBookings) {
+            $_SESSION['error'] = 'Không thể xóa phim này vì đã có người đặt vé. Vui lòng kiểm tra lại danh sách đặt vé.';
+            header('Location: ' . BASE_URL . '?act=/');
+            exit;
+        }
+        
+        // Nếu không có vấn đề gì, tiến hành xóa
+        // Xóa hình ảnh nếu có
+        if (!empty($movie['image']) && file_exists($movie['image'])) {
+            unlink($movie['image']);
+        }
+        $this->movie->delete($id);
+        
+        $_SESSION['success'] = 'Xóa phim thành công!';
         header('Location: ' . BASE_URL . '?act=/');
         exit;
     }
@@ -420,27 +711,69 @@ class MoviesController
         
         // Chuyển đổi discount codes thành format promotions
         $dbPromotions = [];
+        $now = date('Y-m-d');
+        
         foreach ($discountCodes as $dc) {
             if ($dc['status'] === 'active') {
+                // Xác định trạng thái dựa trên ngày (giống logic admin)
+                $startDate = $dc['start_date'] ?? null;
+                $endDate = $dc['end_date'] ?? null;
+                $displayStatus = 'ongoing'; // Mặc định
+                
+                if ($startDate && $now < $startDate) {
+                    // Chưa đến ngày bắt đầu -> Sắp diễn ra
+                    $displayStatus = 'upcoming';
+                } elseif ($endDate && $now > $endDate) {
+                    // Đã quá ngày kết thúc -> Đã kết thúc
+                    $displayStatus = 'ended';
+                } else {
+                    // Đang trong thời gian hiệu lực -> Đang diễn ra
+                    $displayStatus = 'ongoing';
+                }
+                
+                // Format ngày cho period
+                $period = '';
+                if ($startDate && $endDate) {
+                    $period = date('d/m/Y', strtotime($startDate)) . ' - ' . date('d/m/Y', strtotime($endDate));
+                } elseif ($startDate) {
+                    $period = 'Từ ' . date('d/m/Y', strtotime($startDate));
+                } elseif ($endDate) {
+                    $period = 'Đến ' . date('d/m/Y', strtotime($endDate));
+                }
+                
+                // Format benefits
+                $benefits = [
+                    'Giảm ' . $dc['discount_percent'] . '% cho tổng đơn hàng',
+                    'Áp dụng cho tất cả suất chiếu'
+                ];
+                if ($period) {
+                    $benefits[] = 'Có hiệu lực từ ' . $period;
+                }
+                
                 $dbPromotions[] = [
                     'title' => 'Mã giảm giá: ' . $dc['code'],
                     'tag' => 'general',
-                    'status' => 'ongoing',
-                    'period' => ($dc['start_date'] ?? '') . ' - ' . ($dc['end_date'] ?? ''),
+                    'status' => $displayStatus,
+                    'display_status' => $displayStatus, // Để view sử dụng
+                    'period' => $period,
                     'description' => 'Giảm ' . $dc['discount_percent'] . '% cho đơn hàng của bạn.',
-                    'benefits' => [
-                        'Giảm ' . $dc['discount_percent'] . '% cho tổng đơn hàng',
-                        'Áp dụng cho tất cả suất chiếu',
-                        'Có hiệu lực từ ' . ($dc['start_date'] ?? '') . ' đến ' . ($dc['end_date'] ?? '')
-                    ],
+                    'benefits' => $benefits,
                     'code' => $dc['code'],
                     'cta' => 'Sử dụng mã'
                 ];
             }
         }
 
+        // Đếm số mã đang diễn ra (chỉ tính ongoing)
+        $ongoingCount = 0;
+        foreach ($dbPromotions as $promo) {
+            if (($promo['status'] ?? 'ongoing') === 'ongoing') {
+                $ongoingCount++;
+            }
+        }
+        
         $heroStats = [
-            ['label' => 'Ưu đãi đang diễn ra', 'value' => count($dbPromotions)],
+            ['label' => 'Ưu đãi đang diễn ra', 'value' => $ongoingCount],
             ['label' => 'Khách nhận mã trong tuần', 'value' => '12.457'],
             ['label' => 'Điểm thưởng đã tặng', 'value' => '3.2M']
         ];
@@ -473,18 +806,19 @@ class MoviesController
         }
         
         $discountCodeModel = new DiscountCode();
-        $discount = $discountCodeModel->validateDiscountCode($code, $totalAmount);
+        $result = $discountCodeModel->validateDiscountCode($code, $totalAmount);
         
-        if ($discount) {
+        if ($result && !isset($result['error'])) {
             echo json_encode([
                 'success' => true,
-                'message' => 'Áp dụng thành công! Giảm ' . $discount['discount_percent'] . '%',
-                'discount_code' => $discount
+                'message' => 'Áp dụng thành công! Giảm ' . $result['discount_percent'] . '%',
+                'discount_code' => $result
             ]);
         } else {
+            $errorMessage = isset($result['error']) ? $result['error'] : 'Mã giảm giá không hợp lệ';
             echo json_encode([
                 'success' => false,
-                'message' => 'Mã giảm giá không hợp lệ hoặc đã hết hạn'
+                'message' => $errorMessage
             ]);
         }
         exit;

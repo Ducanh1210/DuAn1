@@ -569,6 +569,28 @@ class Booking
             return false;
         }
     }
+    
+    /**
+     * Kiểm tra phim có booking nào không (bất kỳ status nào)
+     */
+    public function hasBookingsByMovieId($movieId)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count 
+                    FROM bookings
+                    INNER JOIN showtimes ON bookings.showtime_id = showtimes.id
+                    WHERE showtimes.movie_id = :movie_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                ':movie_id' => $movieId
+            ]);
+            $result = $stmt->fetch();
+            return ($result['count'] ?? 0) > 0;
+        } catch (Exception $e) {
+            error_log('Error in Booking->hasBookingsByMovieId(): ' . $e->getMessage());
+            return false;
+        }
+    }
 }
 
 ?>

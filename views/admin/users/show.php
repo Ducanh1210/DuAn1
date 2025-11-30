@@ -48,11 +48,13 @@
                   <?php
                     $roleColors = [
                       'admin' => 'danger',
+                      'manager' => 'info',
                       'staff' => 'warning',
                       'customer' => 'success'
                     ];
                     $roleLabels = [
                       'admin' => 'Admin',
+                      'manager' => 'Manager',
                       'staff' => 'Staff',
                       'customer' => 'Customer'
                     ];
@@ -91,8 +93,10 @@
         <div class="alert alert-info">
           <?php if ($user['role'] == 'admin'): ?>
             <strong>Admin:</strong> Có toàn quyền quản trị hệ thống, bao gồm quản lý phim, lịch chiếu, người dùng, và tất cả các chức năng khác.
+          <?php elseif ($user['role'] == 'manager'): ?>
+            <strong>Manager:</strong> Quản lý rạp được gán, có quyền quản lý phim, lịch chiếu, phòng chiếu của rạp mình, nhưng không có quyền quản lý người dùng và cài đặt hệ thống.
           <?php elseif ($user['role'] == 'staff'): ?>
-            <strong>Staff:</strong> Có quyền quản lý một số chức năng nhất định như quản lý lịch chiếu, đặt vé, nhưng không có quyền quản lý người dùng và cài đặt hệ thống.
+            <strong>Staff:</strong> Nhân viên, có quyền quản lý một số chức năng nhất định như quản lý lịch chiếu, đặt vé, nhưng không có quyền quản lý người dùng và cài đặt hệ thống.
           <?php else: ?>
             <strong>Customer:</strong> Khách hàng, chỉ có quyền xem phim, đặt vé và quản lý thông tin cá nhân của mình.
           <?php endif; ?>
