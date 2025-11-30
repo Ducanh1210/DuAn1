@@ -1,34 +1,203 @@
 <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css">
+<style>
+    .lichchieu-layout {
+        display: flex;
+        gap: 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .cinema-sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.05));
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+    
+    .cinema-sidebar h3 {
+        font-family: "Montserrat", sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        margin: 0 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .cinema-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .cinema-item {
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .cinema-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .cinema-item.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+        font-weight: 600;
+    }
+    
+    .cinema-item.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-color: transparent !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    .cinema-item.disabled:hover {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-color: transparent !important;
+    }
+    
+    .movies-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .movies-content-header {
+        margin-bottom: 20px;
+    }
+    
+    .movies-content-header h2 {
+        font-family: "Montserrat", sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #fff;
+        margin: 0 0 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .movie-disabled {
+        opacity: 0.5;
+        position: relative;
+    }
+    
+    .movie-disabled a {
+        cursor: not-allowed !important;
+        pointer-events: none;
+    }
+    
+    .movie-disabled::after {
+        content: 'Vui lòng chọn rạp trước';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+        z-index: 100;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    
+    @media (max-width: 980px) {
+        .lichchieu-layout {
+            flex-direction: column;
+        }
+        
+        .cinema-sidebar {
+            width: 100%;
+            max-height: 300px;
+        }
+    }
+</style>
+
 <!-- Phần nội dung lịch chiếu -->
 <div class="page">
-    <header class="page-header" role="banner">
-        <h2><span class="dot" aria-hidden="true"></span> Phim đang
-            chiếu</h2>
+    <div class="date-pills" role="navigation" aria-label="Chọn ngày" style="margin-bottom: 24px;">
+        <?php foreach ($dates as $dateItem):
+            $isActive = ($dateItem['date'] === $selectedDate) ? 'active' : '';
+            // Giữ lại tham số search, cinema và movie khi chuyển ngày
+            $urlParams = ['act' => 'lichchieu', 'date' => $dateItem['date']];
+            if (!empty($searchKeyword)) $urlParams['search'] = $searchKeyword;
+            if (!empty($cinemaId)) $urlParams['cinema'] = $cinemaId;
+            if (!empty($movieId)) $urlParams['movie'] = $movieId;
+            $url = BASE_URL . '?' . http_build_query($urlParams);
+            ?>
+            <a href="<?= $url ?>" class="pill <?= $isActive ?>"
+                data-date="<?= $dateItem['date'] ?>">
+                <?= htmlspecialchars($dateItem['formatted']) ?>
+            </a>
+        <?php endforeach; ?>
+    </div>
 
-        <div class="date-pills" role="navigation" aria-label="Chọn ngày">
-            <?php foreach ($dates as $dateItem):
-                $isActive = ($dateItem['date'] === $selectedDate) ? 'active' : '';
-                // Giữ lại tham số search và cinema khi chuyển ngày
-                $urlParams = ['act' => 'lichchieu', 'date' => $dateItem['date']];
-                if (!empty($searchKeyword)) $urlParams['search'] = $searchKeyword;
-                if (!empty($cinemaId)) $urlParams['cinema'] = $cinemaId;
-                $url = BASE_URL . '?' . http_build_query($urlParams);
-                ?>
-                <a href="<?= $url ?>" class="pill <?= $isActive ?>"
-                    data-date="<?= $dateItem['date'] ?>">
-                    <?= htmlspecialchars($dateItem['formatted']) ?>
-                </a>
-            <?php endforeach; ?>
-        </div>
-    </header>
+    <div class="lichchieu-layout">
+        <!-- Sidebar Rạp bên trái -->
+        <aside class="cinema-sidebar">
+            <h3>Rạp</h3>
+            <ul class="cinema-list">
+                <?php if (!empty($cinemas)): ?>
+                    <?php foreach ($cinemas as $cinema): 
+                        $isSelected = ($cinemaId == $cinema['id']);
+                        $hasShowtime = !empty($cinema['has_showtime']);
+                        
+                        // URL khi click rạp
+                        $urlParams = ['act' => 'lichchieu', 'date' => $selectedDate];
+                        if (!empty($movieId)) $urlParams['movie'] = $movieId;
+                        $urlParams['cinema'] = $cinema['id'];
+                        $cinemaUrl = BASE_URL . '?' . http_build_query($urlParams);
+                    ?>
+                        <li class="cinema-item <?= $isSelected ? 'active' : '' ?> <?= !$hasShowtime ? 'disabled' : '' ?>"
+                            <?php if ($hasShowtime): ?>
+                                onclick="window.location.href='<?= $cinemaUrl ?>'"
+                            <?php endif; ?>>
+                            <?= htmlspecialchars($cinema['name']) ?>
+                        </li>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <li style="color: rgba(255, 255, 255, 0.5); padding: 12px;">Chưa có rạp nào</li>
+                <?php endif; ?>
+            </ul>
+        </aside>
 
-    <section class="movies-grid" aria-live="polite" id="moviesGrid">
+        <!-- Nội dung Phim bên phải -->
+        <div class="movies-content">
+            <div class="movies-content-header">
+                <h2><span class="dot" aria-hidden="true"></span> Phim đang chiếu</h2>
+            </div>
+
+            <section class="movies-grid" aria-live="polite" id="moviesGrid">
         <?php if (!empty($movies)): ?>
             <?php foreach ($movies as $movie): 
-                $movieUrl = BASE_URL . '?act=movies&id=' . $movie['id'];
+                // Chỉ cho phép click vào phim khi đã chọn rạp
+                // Nếu có movie_id thì BẮT BUỘC phải có cinema_id
+                // Nếu không có movie_id thì có thể click (hiển thị tất cả phim)
+                $canClick = !empty($cinemaId);
+                $movieUrl = $canClick ? BASE_URL . '?act=movies&id=' . $movie['id'] . '&cinema=' . $cinemaId . '&date=' . $selectedDate : 'javascript:void(0);';
             ?>
-                <article class="movie-card">
-                    <a href="<?= $movieUrl ?>" class="poster" title="Xem chi tiết phim <?= htmlspecialchars($movie['title']) ?>">
+                <article class="movie-card <?= !$canClick ? 'movie-disabled' : '' ?>">
+                    <a href="<?= $movieUrl ?>" class="poster" 
+                       title="<?= $canClick ? 'Xem chi tiết phim ' . htmlspecialchars($movie['title']) : 'Vui lòng chọn rạp trước' ?>"
+                       <?= !$canClick ? 'onclick="event.preventDefault(); alert(\'Vui lòng chọn rạp trước khi xem chi tiết phim\'); return false;"' : '' ?>>
                         <?php if (!empty($movie['image'])): ?>
                             <img src="<?= BASE_URL . '/' . htmlspecialchars($movie['image']) ?>"
                                 alt="<?= htmlspecialchars($movie['title']) ?> - Poster">
@@ -39,7 +208,9 @@
                     </a>
 
                     <div class="info">
-                        <a href="<?= $movieUrl ?>" class="info-link" title="Xem chi tiết phim <?= htmlspecialchars($movie['title']) ?>">
+                        <a href="<?= $movieUrl ?>" class="info-link" 
+                           title="<?= $canClick ? 'Xem chi tiết phim ' . htmlspecialchars($movie['title']) : 'Vui lòng chọn rạp trước' ?>"
+                           <?= !$canClick ? 'onclick="event.preventDefault(); alert(\'Vui lòng chọn rạp trước khi xem chi tiết phim\'); return false;"' : '' ?>>
                             <div class="badge-2d">
                                 <?= !empty($movie['format']) ? htmlspecialchars($movie['format']) : '2D' ?>
                             </div>
@@ -86,11 +257,13 @@
                                 foreach ($movie['showtimes'] as $index => $time):
                                     $showtimeId = $movie['showtime_ids'][$index] ?? null;
                                     if (!$showtimeId) continue;
-                                    // Link đến trang chi tiết phim với ngày đã chọn
-                                    $movieDetailUrl = BASE_URL . '?act=movies&id=' . $movie['id'] . '&date=' . $selectedDate;
+                                    // Link đến trang chi tiết phim với ngày và rạp đã chọn
+                                    $movieDetailUrl = $canClick ? BASE_URL . '?act=movies&id=' . $movie['id'] . '&date=' . $selectedDate . '&cinema=' . $cinemaId : 'javascript:void(0);';
                                     ?>
                                     <a class="time-btn" href="<?= $movieDetailUrl ?>"
-                                        title="Xem chi tiết phim và chọn ghế cho suất chiếu <?= date('H:i', strtotime($time)) ?>">
+                                        title="<?= $canClick ? 'Xem chi tiết phim và chọn ghế cho suất chiếu ' . date('H:i', strtotime($time)) : 'Vui lòng chọn rạp trước' ?>"
+                                        <?= !$canClick ? 'onclick="event.preventDefault(); alert(\'Vui lòng chọn rạp trước khi xem chi tiết phim\'); return false;"' : '' ?>
+                                        style="<?= !$canClick ? 'opacity: 0.5; cursor: not-allowed;' : '' ?>">
                                         <?= date('H:i', strtotime($time)) ?>
                                     </a>
                                 <?php endforeach; ?>
@@ -109,10 +282,41 @@
                 <p style="font-size: 14px; margin-top: 8px;">Vui lòng chọn ngày khác</p>
             </div>
         <?php endif; ?>
-    </section>
+            </section>
+        </div>
+    </div>
 </div>
 
 <script>
+    // Lấy tham số từ URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const movieId = urlParams.get('movie') || '';
+    const cinemaId = urlParams.get('cinema') || '';
+    const cinemasWithMovie = <?= !empty($cinemasWithMovie) ? json_encode(array_column($cinemasWithMovie, 'id')) : '[]' ?>;
+
+    // Disable các link phim khi chưa chọn rạp
+    document.addEventListener('DOMContentLoaded', function() {
+        // Nếu có movie_id thì BẮT BUỘC phải có cinema_id
+        // Nếu không có cinema_id thì disable tất cả các link phim
+        if (!cinemaId) {
+            const movieCards = document.querySelectorAll('.movie-card');
+            movieCards.forEach(card => {
+                if (card.classList.contains('movie-disabled')) {
+                    const links = card.querySelectorAll('a');
+                    links.forEach(link => {
+                        // Đảm bảo tất cả các link đều bị disable
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            alert('Vui lòng chọn rạp trước khi xem chi tiết phim');
+                            return false;
+                        }, true); // Use capture phase để chắc chắn
+                    });
+                }
+            });
+        }
+    });
+
     // Smooth scroll khi click vào ngày
     document.querySelectorAll('.date-pills .pill').forEach(function (pill) {
         pill.addEventListener('click', function (e) {

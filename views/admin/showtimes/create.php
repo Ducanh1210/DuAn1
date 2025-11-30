@@ -135,17 +135,15 @@
             <div class="alert alert-info">
               <i class="bi bi-info-circle"></i> 
               <strong>Lưu ý:</strong> Giá vé được quản lý tại <a href="<?= BASE_URL ?>?act=ticket-prices" class="alert-link">Quản lý giá vé</a>. 
-              Giá sẽ tự động được tính dựa trên ngày chiếu, định dạng phim và loại khách hàng.
+              Giá sẽ tự động được tính dựa trên ngày chiếu, loại phim và loại khách hàng.
             </div>
 
             <div class="mb-3">
-              <label for="format" class="form-label">Định dạng <span class="text-danger">*</span></label>
+              <label for="format" class="form-label">Loại <span class="text-danger">*</span></label>
               <select name="format" id="format" class="form-select <?= !empty($errors['format']) ? 'is-invalid' : '' ?>" >
-                <option value="">-- Chọn định dạng --</option>
+                <option value="">-- Chọn loại --</option>
                 <option value="2D" <?= (isset($_POST['format']) && $_POST['format'] == '2D') ? 'selected' : 'selected' ?>>2D</option>
                 <option value="3D" <?= (isset($_POST['format']) && $_POST['format'] == '3D') ? 'selected' : '' ?>>3D</option>
-                <option value="IMAX" <?= (isset($_POST['format']) && $_POST['format'] == 'IMAX') ? 'selected' : '' ?>>IMAX</option>
-                <option value="4DX" <?= (isset($_POST['format']) && $_POST['format'] == '4DX') ? 'selected' : '' ?>>4DX</option>
               </select>
               <?php if (!empty($errors['format'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['format'] ?></div>
@@ -332,7 +330,7 @@
 
 
     if (!format || format === '') {
-      alert('Vui lòng chọn định dạng!');
+      alert('Vui lòng chọn loại!');
       document.getElementById('format').focus();
       return false;
     }

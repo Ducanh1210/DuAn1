@@ -47,8 +47,8 @@
     </a>
     <?php endif; ?>
     
-    <!-- Quản lý Thể loại - Admin và Manager -->
-    <?php if ($isAdmin || $isManager): ?>
+    <!-- Quản lý Thể loại - Chỉ Admin -->
+    <?php if ($isAdmin): ?>
     <a href="?act=genres" class="<?= in_array($_GET['act'] ?? '', ['genres', 'genres-create', 'genres-edit', 'genres-delete']) ? 'active' : '' ?>">
       <i class="bi bi-tags"></i><span class="label">Quản lý Thể loại</span>
     </a>
@@ -133,14 +133,14 @@
     
     <!-- Quản lý Liên hệ - Admin và Manager -->
     <?php if ($isAdmin || $isManager): ?>
-    <a href="?act=contacts" class="<?= in_array($_GET['act'] ?? '', ['contacts', 'contacts-show', 'contacts-delete']) ? 'active' : '' ?>">
+    <a href="?act=contacts" class="<?= in_array($_GET['act'] ?? '', ['contacts', 'contacts-show', 'contacts-edit', 'contacts-delete', 'contacts-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-envelope"></i><span class="label">Quản lý Liên hệ</span>
     </a>
     <?php endif; ?>
     
     <!-- Thống Kê - Tất cả -->
     <?php if ($isAdmin || $isManager || $isStaff): ?>
-    <a href="?act=thongke" class="<?= ($_GET['act'] ?? '') == 'thongke' ? 'active' : '' ?>">
+    <a href="?act=thongke" class="<?= in_array($_GET['act'] ?? '', ['thongke', 'statistics']) ? 'active' : '' ?>">
       <i class="bi bi-bar-chart"></i><span class="label">Thống Kê</span>
     </a>
     <?php endif; ?>

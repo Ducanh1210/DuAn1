@@ -38,7 +38,11 @@
               <option value="">-- Chọn phòng để xem sơ đồ ghế --</option>
               <?php foreach ($rooms as $r): ?>
                 <option value="<?= $r['id'] ?>" <?= $selectedRoomId == $r['id'] ? 'selected' : '' ?>>
-                  <?= htmlspecialchars($r['name'] ?? '') ?> (<?= htmlspecialchars($r['room_code'] ?? '') ?>)
+                  <?php if (isAdmin()): ?>
+                    <?= htmlspecialchars($r['name'] ?? '') ?> - <?= htmlspecialchars($r['cinema_name'] ?? '') ?> (<?= htmlspecialchars($r['room_code'] ?? '') ?>)
+                  <?php else: ?>
+                    <?= htmlspecialchars($r['name'] ?? '') ?> (<?= htmlspecialchars($r['room_code'] ?? '') ?>)
+                  <?php endif; ?>
                 </option>
               <?php endforeach; ?>
             </select>

@@ -507,6 +507,31 @@ class Booking
             return [];
         }
     }
+
+    /**
+     * Kiểm tra user đã mua vé phim đó chưa
+     * Kiểm tra booking có tồn tại và không bị hủy (status != 'cancelled')
+     */
+    public function hasPurchasedMovie($userId, $movieId)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count 
+                    FROM bookings
+                    INNER JOIN showtimes ON bookings.showtime_id = showtimes.id
+                    WHERE bookings.user_id = :user_id
+                    AND showtimes.movie_id = :movie_id
+                    AND bookings.status IN ('paid', 'completed')";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                ':user_id' => $userId,
+                ':movie_id' => $movieId
+            ]);
+            $result = $stmt->fetch();
+            return ($result['count'] ?? 0) > 0;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
 }
 
 ?>

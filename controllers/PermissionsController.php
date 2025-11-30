@@ -17,24 +17,41 @@ class PermissionsController
         require_once __DIR__ . '/../commons/auth.php';
         requireAdmin();
         
-        // Lấy tất cả permissions được nhóm theo module
-        $permissionsGrouped = $this->permission->getGroupedByModule();
+        require_once __DIR__ . '/../models/User.php';
+        require_once __DIR__ . '/../models/Cinema.php';
+        $userModel = new User();
+        $cinemaModel = new Cinema();
         
-        // Lấy permissions của từng role
-        $adminPermissions = $this->permission->getPermissionIdsByRole('admin');
+        // Lấy danh sách Manager và Staff
+        $managers = $userModel->getByRole('manager');
+        $staffs = $userModel->getByRole('staff');
+        
+        // Lấy thông tin rạp cho manager
+        foreach ($managers as &$manager) {
+            if (!empty($manager['cinema_id'])) {
+                $cinema = $cinemaModel->find($manager['cinema_id']);
+                $manager['cinema_name'] = $cinema['name'] ?? 'N/A';
+            } else {
+                $manager['cinema_name'] = 'Chưa gán rạp';
+            }
+        }
+        
+        // Lấy permissions của manager và staff role
+        $managerPermissions = $this->permission->getPermissionIdsByRole('manager');
         $staffPermissions = $this->permission->getPermissionIdsByRole('staff');
-        $customerPermissions = $this->permission->getPermissionIdsByRole('customer');
+        $managerPermissionCount = count($managerPermissions);
+        $staffPermissionCount = count($staffPermissions);
 
         render('admin/permissions/list.php', [
-            'permissionsGrouped' => $permissionsGrouped,
-            'adminPermissions' => $adminPermissions,
-            'staffPermissions' => $staffPermissions,
-            'customerPermissions' => $customerPermissions
+            'managers' => $managers,
+            'staffs' => $staffs,
+            'managerPermissionCount' => $managerPermissionCount,
+            'staffPermissionCount' => $staffPermissionCount
         ]);
     }
 
     /**
-     * Phân quyền cho role
+     * Phân quyền cho role (Manager hoặc Staff)
      */
     public function assign()
     {
@@ -45,20 +62,9 @@ class PermissionsController
         $errors = [];
         $role = $_GET['role'] ?? null;
 
-        if (!in_array($role, ['admin', 'staff', 'customer'])) {
-            header('Location: ' . BASE_URL . '?act=permissions');
-            exit;
-        }
-
-        // Không cho phép chỉnh sửa quyền của admin (admin luôn có tất cả quyền)
-        if ($role === 'admin') {
-            header('Location: ' . BASE_URL . '?act=permissions&error=admin_cannot_edit');
-            exit;
-        }
-
-        // Không cho phép phân quyền cho customer (customer chỉ mua hàng)
-        if ($role === 'customer') {
-            header('Location: ' . BASE_URL . '?act=permissions&error=customer_no_permissions');
+        // Chỉ cho phép phân quyền cho manager hoặc staff
+        if (!in_array($role, ['manager', 'staff'])) {
+            header('Location: ' . BASE_URL . '?act=permissions&error=invalid_role');
             exit;
         }
 
@@ -72,16 +78,15 @@ class PermissionsController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $permissionIds = $_POST['permissions'] ?? [];
             
-            // Gán permissions cho staff
+            // Gán permissions cho role
             $this->permission->assignToRole($role, $permissionIds);
             header('Location: ' . BASE_URL . '?act=permissions&success=1');
             exit;
         }
 
         $roleLabels = [
-            'admin' => 'Admin',
-            'staff' => 'Nhân viên',
-            'customer' => 'Khách hàng'
+            'manager' => 'Quản lý',
+            'staff' => 'Nhân viên'
         ];
 
         render('admin/permissions/assign.php', [

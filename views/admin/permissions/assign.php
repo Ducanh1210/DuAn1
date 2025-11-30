@@ -1,21 +1,23 @@
 <div class="container-fluid">
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+  <div class="card shadow-sm">
+    <div class="card-header bg-<?= $role === 'manager' ? 'primary' : 'warning' ?> text-<?= $role === 'manager' ? 'white' : 'dark' ?> d-flex justify-content-between align-items-center">
       <h4 class="mb-0">
-        Phân quyền cho: 
-        <span class="badge bg-<?= $role === 'admin' ? 'danger' : ($role === 'staff' ? 'warning' : 'success') ?>">
-          <?= $roleLabel ?>
-        </span>
+        <i class="bi bi-<?= $role === 'manager' ? 'person-badge' : 'people' ?>"></i> Cấu hình quyền mặc định cho: 
+        <strong><?= $roleLabel ?></strong>
       </h4>
-      <a href="<?= BASE_URL ?>?act=permissions" class="btn btn-secondary">
+      <a href="<?= BASE_URL ?>?act=permissions" class="btn btn-light">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
-      <div class="alert alert-info alert-dismissible fade show" role="alert">
-        <i class="bi bi-info-circle"></i> <strong>Hướng dẫn:</strong> 
-        Chọn các quyền mà nhân viên có thể thực hiện. Bạn có thể chọn từng quyền cụ thể cho từng chức năng (xem, thêm, sửa, xóa).
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> <strong>Hướng dẫn:</strong> 
+            Chọn các quyền mặc định cho tất cả <strong><?= $roleLabel ?></strong>. Tất cả tài khoản có role "<?= $roleLabel ?>" sẽ tự động có các quyền này.
+            Bạn có thể chọn từng quyền cụ thể cho từng chức năng (xem, thêm, sửa, xóa).
+          </div>
+        </div>
       </div>
 
       <?php if (!empty($errors)): ?>
@@ -115,16 +117,22 @@
     checkboxes.forEach(cb => {
       cb.checked = checkbox.checked;
     });
+    updateBadges();
+  }
+
+  function updateBadges() {
+    document.querySelectorAll('.accordion-item').forEach(item => {
+      const badge = item.querySelector('.badge');
+      const total = item.querySelectorAll('.permission-checkbox').length;
+      const checked = item.querySelectorAll('.permission-checkbox:checked').length;
+      badge.textContent = checked + '/' + total + ' đã chọn';
+    });
   }
 
   // Cập nhật badge khi checkbox thay đổi
   document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', function() {
-      const accordionItem = this.closest('.accordion-item');
-      const badge = accordionItem.querySelector('.badge');
-      const total = accordionItem.querySelectorAll('.permission-checkbox').length;
-      const checked = accordionItem.querySelectorAll('.permission-checkbox:checked').length;
-      badge.textContent = checked + '/' + total + ' đã chọn';
+      updateBadges();
     });
   });
 </script>

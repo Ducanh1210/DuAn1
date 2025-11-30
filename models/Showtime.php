@@ -109,7 +109,7 @@ class Showtime
     /**
      * Lấy lịch chiếu với phân trang
      */
-    public function paginate($page = 1, $perPage = 5, $date = null, $status = null)
+    public function paginate($page = 1, $perPage = 5, $date = null, $status = null, $cinemaId = null)
     {
         try {
             $offset = ($page - 1) * $perPage;
@@ -121,6 +121,16 @@ class Showtime
             if ($date) {
                 $whereClause = "WHERE showtimes.show_date = :date";
                 $params[':date'] = $date;
+            }
+            
+            // Filter theo rạp
+            if ($cinemaId) {
+                if ($whereClause) {
+                    $whereClause .= " AND cinemas.id = :cinema_id";
+                } else {
+                    $whereClause = "WHERE cinemas.id = :cinema_id";
+                }
+                $params[':cinema_id'] = $cinemaId;
             }
             
             // Filter theo trạng thái
@@ -174,6 +184,8 @@ class Showtime
             $countSql = "SELECT COUNT(*) as total 
                         FROM showtimes
                         LEFT JOIN movies ON showtimes.movie_id = movies.id
+                        LEFT JOIN rooms ON showtimes.room_id = rooms.id
+                        LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
                         $whereClause";
             $countStmt = $this->conn->prepare($countSql);
             $countStmt->execute($params);
@@ -417,7 +429,7 @@ class Showtime
      * Lấy lịch chiếu theo phim và ngày
      * Chỉ lấy lịch chiếu của phim đang chiếu
      */
-    public function getByMovieAndDate($movie_id, $date)
+    public function getByMovieAndDate($movie_id, $date, $cinema_id = '')
     {
         try {
             $sql = "SELECT showtimes.*, 
@@ -427,7 +439,8 @@ class Showtime
                     movies.end_date AS movie_end_date,
                     rooms.name AS room_name,
                     rooms.room_code AS room_code,
-                    cinemas.name AS cinema_name
+                    cinemas.name AS cinema_name,
+                    cinemas.id AS cinema_id
                     FROM showtimes
                     LEFT JOIN movies ON showtimes.movie_id = movies.id
                     LEFT JOIN rooms ON showtimes.room_id = rooms.id
@@ -436,13 +449,23 @@ class Showtime
                     AND showtimes.show_date = :date
                     AND movies.status = 'active'
                     AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
-                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)
-                    ORDER BY showtimes.start_time ASC";
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute([
+                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)";
+            
+            $params = [
                 ':movie_id' => $movie_id,
                 ':date' => $date
-            ]);
+            ];
+            
+            // Lọc theo rạp nếu có
+            if (!empty($cinema_id)) {
+                $sql .= " AND cinemas.id = :cinema_id";
+                $params[':cinema_id'] = $cinema_id;
+            }
+            
+            $sql .= " ORDER BY showtimes.start_time ASC";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute($params);
             return $stmt->fetchAll();
         } catch (Exception $e) {
             debug($e);
@@ -453,7 +476,7 @@ class Showtime
      * Lấy lịch chiếu theo ngày
      * Chỉ lấy lịch chiếu của phim đang chiếu
      */
-    public function getByDate($date, $cinemaId = '')
+    public function getByDate($date, $cinemaId = '', $movieId = '')
     {
         try {
             $sql = "SELECT showtimes.*, 
@@ -488,6 +511,12 @@ class Showtime
             if (!empty($cinemaId)) {
                 $sql .= " AND rooms.cinema_id = :cinema_id";
                 $params[':cinema_id'] = $cinemaId;
+            }
+            
+            // Lọc theo phim nếu có
+            if (!empty($movieId)) {
+                $sql .= " AND showtimes.movie_id = :movie_id";
+                $params[':movie_id'] = $movieId;
             }
             
             $sql .= " ORDER BY movies.title ASC, showtimes.start_time ASC";

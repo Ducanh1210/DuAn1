@@ -16,7 +16,7 @@
               <th>Ngày chiếu</th>
               <th>Giờ chiếu</th>
               <th>Ghế</th>
-              <th>Định dạng</th>
+              <th>Loại</th>
               <th>Ngày đặt</th>
               <th>Trạng thái</th>
               <th>Tổng tiền</th>

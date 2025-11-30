@@ -20,7 +20,7 @@
               <th>Thời lượng (phút)</th>
               <th>Ngày phát hành</th>
               <th>Ngày kết thúc</th>
-              <th>Định dạng</th>
+              <th>Loại</th>
               <th>Trailer</th>
               <th>Trạng thái</th>
               <th>Thao tác</th>

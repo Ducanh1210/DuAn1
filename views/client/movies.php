@@ -993,7 +993,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         if (count === 1) {
             // Nếu cho phép ghế lẻ cuối cùng trong cùng hàng, bỏ qua kiểm tra
             if (!allowLastSingleSeat && !ALLOWED_SINGLE_COLUMNS.includes(startColumn)) {
-                alert('Ghế đơn chỉ được chọn ở các cột: 1, 3, 4, 6, 7, 9, 10, 12');
+                // Không hiển thị thông báo, chỉ return rỗng để ẩn
                 return [];
             }
         }
@@ -1716,6 +1716,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         
         if (totalPeople === 1 && selectedAdjacentCount === 1) {
             // Hiển thị X và làm mờ các ghế không được chọn
+            // Ẩn các ghế không được chọn
             seats.forEach(seat => {
                 const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
                 if (col > 0 && !ALLOWED_SINGLE_COLUMNS.includes(col) &&

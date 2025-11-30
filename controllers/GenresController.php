@@ -13,6 +13,9 @@ class GenresController
      */
     public function list()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdmin();
+        
         $data = $this->genre->all();
         
         render('admin/genres/list.php', [
@@ -25,6 +28,9 @@ class GenresController
      */
     public function create()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdmin();
+        
         $errors = [];
 
         // Validate form
@@ -60,6 +66,9 @@ class GenresController
      */
     public function edit()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdmin();
+        
         $id = $_GET['id'] ?? null;
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=genres');
@@ -107,6 +116,9 @@ class GenresController
      */
     public function delete()
     {
+        require_once __DIR__ . '/../commons/auth.php';
+        requireAdmin();
+        
         $id = $_GET['id'] ?? null;
         if (!$id) {
             header('Location: ' . BASE_URL . '?act=genres');
