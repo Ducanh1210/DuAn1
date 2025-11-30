@@ -488,7 +488,8 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
 
     function toggleSeat(seatElement) {
         if (seatElement.classList.contains('booked') ||
-            seatElement.classList.contains('maintenance')) {
+            seatElement.classList.contains('maintenance') ||
+            seatElement.classList.contains('disabled-column')) {
             return;
         }
 
@@ -501,6 +502,20 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         if (selectedAdjacentCount === 0) {
             alert('Vui lòng chọn số lượng ghế liền nhau!');
             return;
+        }
+
+        // Kiểm tra nếu chọn 1 vé đơn lẻ
+        if (selectedAdjacentCount === 1) {
+            const seatColumn = parseInt(seatElement.getAttribute('data-seat-column')) || 0;
+            const row = seatElement.closest('.seat-row');
+            const rowLabel = row ? (row.getAttribute('data-row-label') || '').toUpperCase() : '';
+            const allSeatsInSameRow = selectedSeats.length > 0 && selectedSeats.every(seat => seat.row === rowLabel);
+            const allowLastSingleSeat = (totalPeople - selectedSeats.length === 1) && allSeatsInSameRow;
+            
+            if (!allowLastSingleSeat && !ALLOWED_SINGLE_COLUMNS.includes(seatColumn)) {
+                alert('Ghế đơn chỉ được chọn ở các cột: 1, 3, 4, 6, 7, 9, 10, 12');
+                return;
+            }
         }
 
         remainingSeats = totalPeople - selectedSeats.length;
@@ -1700,6 +1715,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         const seatRows = document.querySelectorAll('#seatsGrid .seat-row');
         
         if (totalPeople === 1 && selectedAdjacentCount === 1) {
+            // Hiển thị X và làm mờ các ghế không được chọn
             // Ẩn các ghế không được chọn
             seats.forEach(seat => {
                 const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
@@ -1713,32 +1729,9 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 }
             });
             
-            // Ẩn toàn bộ các hàng không có ghế nào được phép chọn
+            // Hiển thị tất cả các hàng (không ẩn hàng nào)
             seatRows.forEach(row => {
-                const rowSeats = row.querySelectorAll('.seat:not(.gap)');
-                let hasSelectableSeat = false;
-                
-                rowSeats.forEach(seat => {
-                    const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
-                    // Kiểm tra xem ghế này có được phép chọn không
-                    if (col > 0 && ALLOWED_SINGLE_COLUMNS.includes(col) &&
-                        !seat.classList.contains('booked') &&
-                        !seat.classList.contains('maintenance') &&
-                        !seat.classList.contains('disabled-column')) {
-                        hasSelectableSeat = true;
-                    }
-                    // Hoặc ghế đã được chọn
-                    if (seat.classList.contains('selected')) {
-                        hasSelectableSeat = true;
-                    }
-                });
-                
-                // Ẩn hàng nếu không có ghế nào được phép chọn
-                if (!hasSelectableSeat) {
-                    row.style.display = 'none';
-                } else {
-                    row.style.display = '';
-                }
+                row.style.display = '';
             });
         } else {
             // Hiển thị tất cả các hàng và ghế khi số lượng > 1

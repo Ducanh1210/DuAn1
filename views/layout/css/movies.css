@@ -736,22 +736,27 @@ h1.title {
   max-width: 1200px;
   margin: 30px auto;
   padding: 0 20px;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
   visibility: visible;
   opacity: 1;
+  transform: translateX(-30px);
 }
 
 .seat-row {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   margin-bottom: 15px;
   gap: 12px;
   flex-wrap: nowrap;
-  width: 100%;
+  width: auto;
   min-height: 55px;
   padding: 5px 0;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .seat-row-content {
@@ -1293,25 +1298,55 @@ h1.title {
   flex-wrap: nowrap;
 }
 
-/* Disabled Column - Ẩn ghế không được phép chọn khi chọn 1 người */
+/* Disabled Column - Hiển thị X và làm mờ ghế không được phép chọn khi chọn 1 người */
 .seat.disabled-column {
-  opacity: 0.3 !important;
+  background: #4a4a4a !important;
+  color: transparent !important;
+  /* Ẩn số ghế, chỉ hiển thị dấu X */
   cursor: not-allowed !important;
+  opacity: 0.5 !important;
+  position: relative !important;
   pointer-events: none !important;
-  display: none !important; /* Ẩn hoàn toàn thay vì chỉ làm mờ */
-  visibility: hidden !important;
+  border-color: #555 !important;
+}
+
+.seat.vip.disabled-column {
+  background: #4a4a4a !important;
+  border-color: #555 !important;
+}
+
+.seat.disabled-column::after {
+  content: '✕' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  font-size: 22px !important;
+  font-weight: bold !important;
+  color: #fff !important;
+  z-index: 2 !important;
+  line-height: 1 !important;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 8px rgba(220, 53, 69, 0.5);
 }
 
 /* Ensure seats are visible */
 #seatsGrid {
-  display: block !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
   visibility: visible !important;
   opacity: 1 !important;
+  transform: translateX(-30px) !important;
 }
 
 #seatsGrid .seat-row {
   display: flex !important;
+  justify-content: center !important;
   visibility: visible !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 #seatsGrid .seat {

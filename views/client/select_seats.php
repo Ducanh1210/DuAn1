@@ -102,6 +102,7 @@ $maxColumns = 12;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
+        transform: translateX(-30px) !important;
     }
 
     .seat-selection-container .seat-row {
@@ -260,9 +261,32 @@ $maxColumns = 12;
     }
 
     .seat-selection-container .seat.disabled-column {
-        opacity: 0.3 !important;
+        background: #4a4a4a !important;
+        color: transparent !important;
+        /* Ẩn số ghế, chỉ hiển thị dấu X */
         cursor: not-allowed !important;
+        opacity: 0.5 !important;
+        position: relative !important;
         pointer-events: none !important;
+        border-color: #555 !important;
+    }
+
+    .seat-selection-container .seat.vip.disabled-column {
+        background: #4a4a4a !important;
+        border-color: #555 !important;
+    }
+
+    .seat-selection-container .seat.disabled-column::after {
+        content: '✕' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        color: #fff !important;
+        z-index: 2 !important;
+        line-height: 1 !important;
     }
 
 
