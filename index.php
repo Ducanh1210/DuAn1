@@ -59,6 +59,7 @@ match ($act) {
     'lichchieu' => (new MoviesController)->lichchieu(),
     'khuyenmai' => (new MoviesController)->khuyenmai(),
     'giave' => (new TicketPriceController)->index(),
+    'khuyenmai' => (new MoviesController)->khuyenmai(),
     'lienhe' => (new MoviesController)->lienhe(),
     'check-voucher' => (new MoviesController)->checkVoucher(),
     'movies' => (new MoviesController)->movieDetail(),
@@ -81,7 +82,6 @@ match ($act) {
     'profile-change-password' => (new ProfileController)->changePassword(),
     'review-movie' => (new ProfileController)->reviewMovie(),
     'submit-review' => (new ProfileController)->submitReview(),
-    'submit-movie-review' => (new MoviesController)->submitMovieReview(),
 
     // Dashboard route
     'dashboard' => (new DashboardController)->index(),
@@ -158,28 +158,16 @@ match ($act) {
     'discounts-create' => (new DiscountsController)->create(),
     'discounts-edit' => (new DiscountsController)->edit(),
     'discounts-delete' => (new DiscountsController)->delete(),
-    
     // Ticket Prices routes (Admin)
     'ticket-prices' => (new TicketPriceController)->list(),
     'ticket-prices-edit' => (new TicketPriceController)->edit(),
     'ticket-prices-update' => (new TicketPriceController)->update(),
 
     // Discount Codes routes (Admin)
-    'discount-codes' => (new DiscountCodesController)->list(),
-    'discount-codes-create' => (new DiscountCodesController)->create(),
-    'discount-codes-edit' => (new DiscountCodesController)->edit(),
-    'discount-codes-delete' => (new DiscountCodesController)->delete(),
-
-    // Contacts routes (Admin)
-    'contacts' => (new ContactsController)->list(),
-    'contacts-show' => (new ContactsController)->show(),
-    'contacts-edit' => (new ContactsController)->edit(),
-    'contacts-update-status' => (new ContactsController)->updateStatus(),
-    'contacts-delete' => (new ContactsController)->delete(),
-
-    // Statistics routes (Admin/Manager/Staff)
-    'thongke' => (new StatisticsController)->index(),
-    'statistics' => (new StatisticsController)->index(),
+    'discounts' => (new DiscountCodesController)->list(),
+    'discounts-create' => (new DiscountCodesController)->create(),
+    'discounts-edit' => (new DiscountCodesController)->edit(),
+    'discounts-delete' => (new DiscountCodesController)->delete(),
 
     // Notifications API routes (Admin)
     'api-notifications' => (new NotificationController)->getNotifications(),

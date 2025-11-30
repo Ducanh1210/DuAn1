@@ -69,9 +69,7 @@ class MoviesController
         }
 
         if (empty(trim($_POST['format'] ?? ''))) {
-            $errors['format'] = "Bạn vui lòng chọn loại";
-        } elseif (!in_array(strtoupper(trim($_POST['format'])), ['2D', '3D'])) {
-            $errors['format'] = "Loại phim chỉ có thể là 2D hoặc 3D";
+            $errors['format'] = "Bạn vui lòng chọn định dạng";
         }
 
         // Kiểm tra và upload ảnh (chỉ khi không có lỗi validation ban đầu)
@@ -195,7 +193,7 @@ class MoviesController
             }
 
             if (empty(trim($_POST['format'] ?? ''))) {
-                $errors['format'] = "Bạn vui lòng chọn loại";
+                $errors['format'] = "Bạn vui lòng chọn định dạng";
             }
 
             // Lấy thông tin phim hiện tại
@@ -554,14 +552,11 @@ class MoviesController
     public function lichchieu()
     {
         require_once './models/Showtime.php';
-        require_once './models/Cinema.php';
         $showtimeModel = new Showtime();
-        $cinemaModel = new Cinema();
 
         // Lấy tham số tìm kiếm/lọc
         $searchKeyword = $_GET['search'] ?? '';
         $cinemaId = $_GET['cinema'] ?? '';
-        $movieId = $_GET['movie'] ?? ''; // Tham số phim từ trang chủ
 
         // Lấy ngày được chọn từ URL hoặc mặc định là hôm nay
         $selectedDate = $_GET['date'] ?? date('Y-m-d');
@@ -576,26 +571,21 @@ class MoviesController
             ];
         }
 
-        // Lấy danh sách lịch chiếu theo ngày (đã lọc theo rạp nếu có, và theo phim nếu có)
-        $showtimes = $showtimeModel->getByDate($selectedDate, $cinemaId, $movieId);
+        // Lấy danh sách lịch chiếu theo ngày (đã lọc theo rạp nếu có)
+        $showtimes = $showtimeModel->getByDate($selectedDate, $cinemaId);
 
         // Nhóm lịch chiếu theo phim và lọc theo tên phim
         $movies = [];
         foreach ($showtimes as $st) {
-            $movieIdItem = $st['movie_id'];
+            $movieId = $st['movie_id'];
 
             // Lọc theo tên phim
             if (!empty($searchKeyword) && stripos($st['movie_title'], $searchKeyword) === false) {
                 continue;
             }
 
-            // Nếu có tham số movie_id, chỉ hiển thị phim đó
-            if (!empty($movieId) && $movieIdItem != $movieId) {
-                continue;
-            }
-
-            if (!isset($movies[$movieIdItem])) {
-                $movies[$movieIdItem] = [
+            if (!isset($movies[$movieId])) {
+                $movies[$movieId] = [
                     'id' => $st['movie_id'],
                     'title' => $st['movie_title'],
                     'image' => $st['movie_image'],
@@ -611,8 +601,8 @@ class MoviesController
             }
 
             // Thêm showtime vào phim
-            $movies[$movieIdItem]['showtimes'][] = $st['start_time'];
-            $movies[$movieIdItem]['showtime_ids'][] = $st['id'];
+            $movies[$movieId]['showtimes'][] = $st['start_time'];
+            $movies[$movieId]['showtime_ids'][] = $st['id'];
         }
 
         // Chuyển sang array và sắp xếp
@@ -621,44 +611,8 @@ class MoviesController
             return strcmp($a['title'], $b['title']);
         });
 
-        // Lấy tất cả rạp
+        // Lấy danh sách rạp để hiển thị trong filter
         $cinemas = $this->getCinemas();
-        
-        // Kiểm tra rạp nào có showtime trong ngày được chọn
-        $cinemasWithShowtimes = [];
-        try {
-            $sql = "SELECT DISTINCT cinemas.id 
-                    FROM cinemas
-                    INNER JOIN rooms ON cinemas.id = rooms.cinema_id
-                    INNER JOIN showtimes ON rooms.id = showtimes.room_id
-                    INNER JOIN movies ON showtimes.movie_id = movies.id
-                    WHERE showtimes.show_date = :selected_date
-                    AND movies.status = 'active'
-                    AND (movies.release_date <= CURDATE() OR movies.release_date IS NULL)
-                    AND (movies.end_date >= CURDATE() OR movies.end_date IS NULL)";
-            
-            $params = [':selected_date' => $selectedDate];
-            
-            // Nếu có tham số movie_id, chỉ lấy rạp có phim đó trong ngày đó
-            if (!empty($movieId)) {
-                $sql .= " AND showtimes.movie_id = :movie_id";
-                $params[':movie_id'] = $movieId;
-            }
-            
-            $stmt = $cinemaModel->conn->prepare($sql);
-            $stmt->execute($params);
-            $cinemasWithShowtimes = array_column($stmt->fetchAll(), 'id');
-        } catch (Exception $e) {
-            $cinemasWithShowtimes = [];
-        }
-        
-        // Đánh dấu rạp nào có showtime
-        foreach ($cinemas as &$cinema) {
-            $cinema['has_showtime'] = in_array($cinema['id'], $cinemasWithShowtimes);
-        }
-        
-        // Giữ lại biến cinemasWithMovie để tương thích với view (không dùng nữa nhưng giữ để tránh lỗi)
-        $cinemasWithMovie = [];
 
         // Sử dụng layout client chung
         renderClient('client/lichchieu.php', [
@@ -667,9 +621,7 @@ class MoviesController
             'selectedDate' => $selectedDate,
             'searchKeyword' => $searchKeyword,
             'cinemaId' => $cinemaId,
-            'cinemas' => $cinemas,
-            'movieId' => $movieId,
-            'cinemasWithMovie' => $cinemasWithMovie
+            'cinemas' => $cinemas
         ], 'Lịch Chiếu');
         exit;
     }
@@ -733,133 +685,15 @@ class MoviesController
             $currentDate = strtotime('+1 day', $currentDate);
         }
 
-        // Lấy cinema_id từ URL nếu có (để lọc suất chiếu theo rạp)
-        $cinemaId = $_GET['cinema'] ?? '';
-
-        // Lấy lịch chiếu cho phim và ngày được chọn (đã lọc theo rạp nếu có)
-        $showtimes = $showtimeModel->getByMovieAndDate($movieId, $selectedDate, $cinemaId);
-
-        // Kiểm tra user đã đăng nhập và đã mua vé phim này chưa
-        require_once __DIR__ . '/../commons/auth.php';
-        $isLoggedIn = isLoggedIn();
-        $userId = $isLoggedIn ? ($_SESSION['user_id'] ?? null) : null;
-        $hasPurchased = false;
-        $existingComment = null;
-        
-        if ($userId) {
-            require_once __DIR__ . '/../models/Booking.php';
-            require_once __DIR__ . '/../models/Comment.php';
-            $bookingModel = new Booking();
-            $commentModel = new Comment();
-            
-            // Kiểm tra đã mua vé chưa
-            $hasPurchased = $bookingModel->hasPurchasedMovie($userId, $movieId);
-            
-            // Kiểm tra đã đánh giá chưa
-            if ($hasPurchased) {
-                $existingComment = $commentModel->getByUserAndMovie($userId, $movieId);
-            }
-        }
-        
-        // Lấy danh sách bình luận của phim
-        require_once __DIR__ . '/../models/Comment.php';
-        $commentModel = new Comment();
-        $comments = $commentModel->getByMovie($movieId);
-        $ratingStats = $commentModel->getAverageRating($movieId);
+        // Lấy lịch chiếu cho phim và ngày được chọn
+        $showtimes = $showtimeModel->getByMovieAndDate($movieId, $selectedDate);
 
         renderClient('client/movies.php', [
             'movie' => $movie,
             'showtimes' => $showtimes,
             'dates' => $dates,
-            'selectedDate' => $selectedDate,
-            'cinemaId' => $cinemaId,
-            'isLoggedIn' => $isLoggedIn,
-            'hasPurchased' => $hasPurchased,
-            'existingComment' => $existingComment,
-            'comments' => $comments,
-            'ratingStats' => $ratingStats
+            'selectedDate' => $selectedDate
         ], htmlspecialchars($movie['title']));
-        exit;
-    }
-
-    /**
-     * Submit review từ trang chi tiết phim
-     */
-    public function submitMovieReview()
-    {
-        require_once __DIR__ . '/../commons/auth.php';
-        if (!isLoggedIn()) {
-            header('Location: ' . BASE_URL . '?act=dangnhap');
-            exit;
-        }
-
-        $userId = $_SESSION['user_id'];
-        $errors = [];
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $movieId = $_POST['movie_id'] ?? null;
-            $rating = isset($_POST['rating']) ? (int)$_POST['rating'] : null;
-            $content = trim($_POST['content'] ?? '');
-
-            // Validation
-            if (!$movieId) {
-                $errors[] = 'Thông tin không hợp lệ';
-            }
-
-            // Kiểm tra user đã mua vé phim này chưa
-            require_once __DIR__ . '/../models/Booking.php';
-            $bookingModel = new Booking();
-            if (!$bookingModel->hasPurchasedMovie($userId, $movieId)) {
-                $errors[] = 'Bạn cần mua vé phim này trước khi đánh giá';
-            }
-
-            if ($rating === null || $rating < 1 || $rating > 5) {
-                $errors[] = 'Vui lòng chọn đánh giá từ 1 đến 5 sao';
-            }
-
-            if (empty($content)) {
-                $errors[] = 'Vui lòng nhập nội dung bình luận';
-            } elseif (strlen($content) < 10) {
-                $errors[] = 'Nội dung bình luận phải có ít nhất 10 ký tự';
-            } elseif (strlen($content) > 1000) {
-                $errors[] = 'Nội dung bình luận không được vượt quá 1000 ký tự';
-            }
-
-            if (empty($errors)) {
-                require_once __DIR__ . '/../models/Comment.php';
-                $commentModel = new Comment();
-
-                // Kiểm tra đã bình luận chưa - mỗi user chỉ được đánh giá 1 lần
-                $existingComment = $commentModel->getByUserAndMovie($userId, $movieId);
-
-                if ($existingComment) {
-                    // Đã đánh giá rồi, không cho phép đánh giá lại
-                    $_SESSION['error'] = 'Bạn đã đánh giá bộ phim này rồi. Mỗi tài khoản chỉ được đánh giá 1 lần cho mỗi bộ phim.';
-                    header('Location: ' . BASE_URL . '?act=movies&id=' . $movieId);
-                    exit;
-                }
-
-                // Tạo bình luận mới
-                $commentModel->insert([
-                    'user_id' => $userId,
-                    'movie_id' => $movieId,
-                    'rating' => $rating,
-                    'content' => $content
-                ]);
-
-                header('Location: ' . BASE_URL . '?act=movies&id=' . $movieId . '&review_success=1');
-                exit;
-            }
-        }
-
-        // Nếu có lỗi, quay lại trang chi tiết phim
-        $movieId = $_GET['id'] ?? $_POST['movie_id'] ?? null;
-        if ($movieId) {
-            $errorMsg = !empty($errors) ? implode(', ', $errors) : 'Có lỗi xảy ra';
-            header('Location: ' . BASE_URL . '?act=movies&id=' . $movieId . '&error=' . urlencode($errorMsg));
-        } else {
-            header('Location: ' . BASE_URL . '?act=trangchu');
-        }
         exit;
     }
 

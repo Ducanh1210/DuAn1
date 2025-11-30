@@ -37,15 +37,7 @@ class Seat
     public function paginate($page = 1, $perPage = 20, $roomId = null)
     {
         try {
-            // Đảm bảo $page là số nguyên dương
-            $page = max(1, intval($page));
-            $perPage = max(1, intval($perPage));
             $offset = ($page - 1) * $perPage;
-            
-            // Đảm bảo offset không âm
-            if ($offset < 0) {
-                $offset = 0;
-            }
             
             // Xây dựng WHERE clause
             $whereClause = "";

@@ -38,7 +38,7 @@
                   <th>Ngày chiếu</th>
                   <th>Giờ bắt đầu</th>
                   <th>Giờ kết thúc</th>
-                  <th>Loại</th>
+                  <th>Định dạng</th>
                   <th>Trạng thái</th>
                   <th>Thao tác</th>
                 </tr>
@@ -101,7 +101,8 @@
                     </td>
                     <td>
                       <a href="<?= BASE_URL ?>?act=datve&showtime_id=<?= $showtime['id'] ?>" 
-                         class="btn btn-sm btn-primary">
+                         class="btn btn-sm btn-primary" 
+                         target="_blank">
                         <i class="bi bi-cart-plus"></i> Bán Vé
                       </a>
                     </td>

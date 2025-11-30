@@ -3,24 +3,6 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-// Kiểm tra nếu user là admin, manager hoặc staff thì redirect về trang quản lý tương ứng
-// Nhưng cho phép truy cập trang đặt vé (datve) để bán vé cho khách hàng
-require_once __DIR__ . '/../../commons/auth.php';
-if (isLoggedIn()) {
-    $userRole = $_SESSION['user_role'] ?? 'customer';
-    $currentAct = $_GET['act'] ?? '';
-    // Cho phép admin/manager/staff truy cập trang đặt vé để bán vé
-    if (in_array($userRole, ['admin', 'manager', 'staff']) && $currentAct !== 'datve') {
-        // Redirect theo role
-        if ($userRole === 'admin' || $userRole === 'manager') {
-            header('Location: ' . BASE_URL . '?act=dashboard');
-        } elseif ($userRole === 'staff') {
-            header('Location: ' . BASE_URL . '?act=banve');
-        }
-        exit;
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="vi">

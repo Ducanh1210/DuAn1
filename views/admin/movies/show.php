@@ -81,7 +81,7 @@
             <?php if (!empty($movie['format'])): ?>
             <div class="col-md-6 mb-3">
               <div class="border-bottom pb-2">
-                <label class="text-muted small mb-1 d-block">Loại</label>
+                <label class="text-muted small mb-1 d-block">Định dạng</label>
                 <span class="badge bg-secondary"><?= htmlspecialchars($movie['format']) ?></span>
               </div>
             </div>

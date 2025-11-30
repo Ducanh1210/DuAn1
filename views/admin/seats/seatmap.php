@@ -8,11 +8,7 @@
           <select name="room_id" class="form-select d-inline-block" style="width: auto;" onchange="this.form.submit()">
             <?php foreach ($rooms as $r): ?>
               <option value="<?= $r['id'] ?>" <?= $room['id'] == $r['id'] ? 'selected' : '' ?>>
-                <?php if (isAdmin()): ?>
-                  <?= htmlspecialchars($r['name'] ?? '') ?> - <?= htmlspecialchars($r['cinema_name'] ?? '') ?> (<?= htmlspecialchars($r['room_code'] ?? '') ?>)
-                <?php else: ?>
-                  <?= htmlspecialchars($r['name'] ?? '') ?> (<?= htmlspecialchars($r['room_code'] ?? '') ?>)
-                <?php endif; ?>
+                <?= htmlspecialchars($r['name'] ?? '') ?> (<?= htmlspecialchars($r['room_code'] ?? '') ?>)
               </option>
             <?php endforeach; ?>
           </select>

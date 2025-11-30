@@ -122,7 +122,7 @@
               </td>
             </tr>
             <tr>
-              <th>Loại:</th>
+              <th>Định dạng:</th>
               <td><?= htmlspecialchars($booking['showtime_format'] ?? '2D') ?></td>
             </tr>
           </table>

@@ -178,32 +178,6 @@ class Permission
             return [];
         }
     }
-
-    /**
-     * Kiểm tra user có permission không (dựa vào role)
-     */
-    public function userHasPermission($userId, $permissionName)
-    {
-        try {
-            require_once __DIR__ . '/User.php';
-            $userModel = new User();
-            $user = $userModel->find($userId);
-            
-            if (!$user) {
-                return false;
-            }
-
-            // Admin luôn có tất cả quyền
-            if ($user['role'] === 'admin') {
-                return true;
-            }
-
-            // Kiểm tra role_permissions
-            return $this->hasPermission($user['role'], $permissionName);
-        } catch (Exception $e) {
-            return false;
-        }
-    }
 }
 
 ?>

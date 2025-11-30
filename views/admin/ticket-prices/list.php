@@ -61,7 +61,7 @@ function getSeatTypeLabel($seatType) {
                 <table class="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>Loại</th>
+                            <th>Định dạng</th>
                             <th>Loại khách hàng</th>
                             <th>Loại ghế</th>
                             <th class="text-end">Giá vé (VNĐ)</th>
@@ -110,7 +110,7 @@ function getSeatTypeLabel($seatType) {
                 <table class="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <th>Loại</th>
+                            <th>Định dạng</th>
                             <th>Loại khách hàng</th>
                             <th>Loại ghế</th>
                             <th class="text-end">Giá vé (VNĐ)</th>

@@ -95,9 +95,11 @@ class BookingController
             // Đảm bảo format được lấy đúng từ showtime
             $showtimeFormat = isset($showtime['format']) ? trim($showtime['format']) : '2D';
             
-            // Format chỉ có 2D hoặc 3D
+            // Chuyển đổi format để đảm bảo đúng: IMAX/4DX -> 3D
             $formatUpper = strtoupper($showtimeFormat);
-            if ($formatUpper !== '3D') {
+            if (in_array($formatUpper, ['3D', 'IMAX', '4DX'])) {
+                $showtimeFormat = '3D';
+            } else {
                 $showtimeFormat = '2D';
             }
             
@@ -190,9 +192,11 @@ class BookingController
             // Đảm bảo format được lấy đúng từ showtime
             $showtimeFormat = isset($showtime['format']) ? trim($showtime['format']) : '2D';
             
-            // Format chỉ có 2D hoặc 3D
+            // Chuyển đổi format để đảm bảo đúng: IMAX/4DX -> 3D
             $formatUpper = strtoupper($showtimeFormat);
-            if ($formatUpper !== '3D') {
+            if (in_array($formatUpper, ['3D', 'IMAX', '4DX'])) {
+                $showtimeFormat = '3D';
+            } else {
                 $showtimeFormat = '2D';
             }
             
@@ -367,9 +371,11 @@ class BookingController
             // Đảm bảo format được lấy đúng từ showtime
             $showtimeFormat = isset($showtime['format']) ? trim($showtime['format']) : '2D';
             
-            // Format chỉ có 2D hoặc 3D
+            // Chuyển đổi format để đảm bảo đúng: IMAX/4DX -> 3D
             $formatUpper = strtoupper($showtimeFormat);
-            if ($formatUpper !== '3D') {
+            if (in_array($formatUpper, ['3D', 'IMAX', '4DX'])) {
+                $showtimeFormat = '3D';
+            } else {
                 $showtimeFormat = '2D';
             }
             
