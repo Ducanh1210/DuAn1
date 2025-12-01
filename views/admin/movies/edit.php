@@ -128,7 +128,6 @@
                                  id="cinema_<?= $cinema['id'] ?>"
                                  <?= $isSelected ? 'checked' : '' ?>
                                  <?= (isManager() && count($cinemas) == 1) ? 'disabled' : '' ?>
-                                 <?= $isExisting ? 'disabled' : '' ?>
                                  onchange="checkCinemaLimit()">
                           <label class="form-check-label" for="cinema_<?= $cinema['id'] ?>">
                             <?= htmlspecialchars($cinema['name']) ?>
@@ -145,7 +144,13 @@
                       <p class="text-muted mb-0">Chưa có rạp nào</p>
                     <?php endif; ?>
                   </div>
-                  <small class="text-muted"><?= isAdmin() ? 'Chọn tối đa 3 rạp' : 'Rạp của bạn' ?></small>
+                  <small class="text-muted">
+                    <?php if (isAdmin()): ?>
+                      Chọn tối đa 3 rạp. Để trống nếu muốn giữ nguyên rạp hiện tại. Có thể bỏ chọn rạp hiện tại và chọn rạp khác.
+                    <?php else: ?>
+                      Rạp của bạn
+                    <?php endif; ?>
+                  </small>
                   <?php if (!empty($errors['cinema_ids'])): ?>
                     <div class="text-danger small mt-1"><?= $errors['cinema_ids'] ?></div>
                   <?php endif; ?>
@@ -289,12 +294,8 @@
     const format = document.getElementById('format').value;
     const originalLanguage = document.getElementById('original_language').value.trim();
     
-    // Kiểm tra rạp đã chọn
+    // Kiểm tra rạp đã chọn (không bắt buộc khi cập nhật, nếu không chọn thì giữ nguyên rạp hiện tại)
     const cinemaCheckboxes = document.querySelectorAll('input[name="cinema_ids[]"]:checked');
-    if (cinemaCheckboxes.length === 0) {
-      alert('Vui lòng chọn ít nhất một rạp!');
-      return false;
-    }
     
     if (cinemaCheckboxes.length > 3) {
       alert('Chỉ được chọn tối đa 3 rạp!');

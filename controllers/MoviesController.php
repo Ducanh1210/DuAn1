@@ -332,59 +332,65 @@ class MoviesController
                 $errors['genre_id'] = "Bạn vui lòng chọn thể loại";
             }
 
-            // Kiểm tra rạp (nhiều rạp)
+            // Kiểm tra rạp (nhiều rạp) - Khi cập nhật, không bắt buộc phải chọn rạp mới
             $cinemaIds = [];
+            $replaceCinemas = false; // Mặc định là không thay thế, chỉ thêm mới
+            
+            // Lấy danh sách rạp hiện tại của phim
+            $existingCinemas = $this->movie->getCinemasByMovieId($id);
+            $existingCinemaIds = array_column($existingCinemas, 'id');
+            
             if (isAdmin()) {
-                // Admin phải chọn ít nhất 1 rạp, tối đa 3 rạp
-                if (empty($_POST['cinema_ids'] ?? [])) {
-                    $errors['cinema_ids'] = "Bạn vui lòng chọn ít nhất một rạp";
-                } else {
-                    $cinemaIds = array_map('intval', $_POST['cinema_ids']);
-                    $cinemaIds = array_filter($cinemaIds, function($id) { return $id > 0; });
-                    if (empty($cinemaIds)) {
-                        $errors['cinema_ids'] = "Bạn vui lòng chọn ít nhất một rạp hợp lệ";
-                    } elseif (count($cinemaIds) > 3) {
+                // Admin có thể chọn rạp mới hoặc không chọn (giữ nguyên rạp hiện tại)
+                if (!empty($_POST['cinema_ids'] ?? [])) {
+                    $selectedCinemaIds = array_map('intval', $_POST['cinema_ids']);
+                    $selectedCinemaIds = array_filter($selectedCinemaIds, function($id) { return $id > 0; });
+                    
+                    if (count($selectedCinemaIds) > 3) {
                         $errors['cinema_ids'] = "Chỉ được chọn tối đa 3 rạp";
                     } else {
-                        // Kiểm tra rạp trùng: Lấy danh sách rạp hiện tại của phim
-                        $existingCinemas = $this->movie->getCinemasByMovieId($id);
-                        $existingCinemaIds = array_column($existingCinemas, 'id');
+                        // So sánh rạp đã chọn với rạp hiện tại
+                        $newCinemaIds = array_diff($selectedCinemaIds, $existingCinemaIds); // Rạp mới (chưa có)
+                        $removedCinemaIds = array_diff($existingCinemaIds, $selectedCinemaIds); // Rạp bị bỏ chọn
                         
-                        // Kiểm tra xem có rạp nào đã tồn tại không
-                        $duplicateCinemas = array_intersect($cinemaIds, $existingCinemaIds);
-                        if (!empty($duplicateCinemas)) {
-                            // Lấy tên các rạp trùng
-                            require_once __DIR__ . '/../models/Cinema.php';
-                            $cinemaModel = new Cinema();
-                            $duplicateNames = [];
-                            foreach ($duplicateCinemas as $dupId) {
-                                $cinema = $cinemaModel->find($dupId);
-                                if ($cinema) {
-                                    $duplicateNames[] = $cinema['name'];
-                                }
+                        if (empty($newCinemaIds) && empty($removedCinemaIds)) {
+                            // Không có thay đổi gì (tất cả rạp đã chọn đều là rạp hiện tại)
+                            // Giữ nguyên rạp hiện tại, không cần cập nhật
+                            $cinemaIds = [];
+                        } elseif (!empty($removedCinemaIds) || !empty($newCinemaIds)) {
+                            // Có thay đổi: bỏ rạp cũ hoặc thêm rạp mới
+                            // Nếu có bỏ rạp cũ, cần thay thế toàn bộ bằng danh sách rạp đã chọn
+                            if (!empty($removedCinemaIds)) {
+                                // Có bỏ rạp cũ, thay thế toàn bộ
+                                $cinemaIds = $selectedCinemaIds;
+                                $replaceCinemas = true;
+                            } else {
+                                // Chỉ thêm rạp mới, không bỏ rạp cũ
+                                $cinemaIds = $newCinemaIds;
+                                $replaceCinemas = false;
                             }
-                            $errors['cinema_ids'] = "Phim đã có rạp: " . implode(', ', $duplicateNames) . ". Vui lòng chọn rạp khác.";
                         }
                     }
                 }
+                // Nếu không chọn rạp nào, giữ nguyên rạp hiện tại (cinemaIds sẽ rỗng, không gửi vào update)
             } elseif (isManager()) {
                 // Manager tự động dùng rạp được gán
                 $cinemaId = getCurrentCinemaId();
                 if (!$cinemaId) {
                     $errors['cinema_ids'] = "Bạn chưa được gán rạp";
                 } else {
-                    // Kiểm tra rạp trùng: Lấy danh sách rạp hiện tại của phim
-                    $existingCinemas = $this->movie->getCinemasByMovieId($id);
-                    $existingCinemaIds = array_column($existingCinemas, 'id');
-                    
+                    // Kiểm tra rạp trùng
                     if (in_array($cinemaId, $existingCinemaIds)) {
-                        require_once __DIR__ . '/../models/Cinema.php';
-                        $cinemaModel = new Cinema();
-                        $cinema = $cinemaModel->find($cinemaId);
-                        $cinemaName = $cinema ? $cinema['name'] : 'Rạp này';
-                        $errors['cinema_ids'] = "Phim đã có rạp: " . $cinemaName . ". Vui lòng chọn rạp khác.";
+                        // Rạp đã có, không cần thêm
+                        $cinemaIds = [];
                     } else {
+                        // Rạp mới, thêm vào
                         $cinemaIds = [$cinemaId];
+                        // Kiểm tra tổng số rạp không vượt quá 3
+                        $totalCinemas = count($existingCinemaIds) + count($cinemaIds);
+                        if ($totalCinemas > 3) {
+                            $errors['cinema_ids'] = "Tổng số rạp không được vượt quá 3. Phim hiện có " . count($existingCinemaIds) . " rạp.";
+                        }
                     }
                 }
             }
@@ -453,59 +459,8 @@ class MoviesController
                     $status = 'active';
                 }
                 
-                // Lấy danh sách rạp hiện tại của phim
-                $existingCinemas = $this->movie->getCinemasByMovieId($id);
-                $existingCinemaIds = array_column($existingCinemas, 'id');
-                
-                // Chỉ lấy rạp mới (không trùng với rạp hiện tại)
-                $newCinemaIds = array_diff($cinemaIds, $existingCinemaIds);
-                
-                // Nếu có rạp mới, thêm vào danh sách rạp hiện tại
-                if (!empty($newCinemaIds)) {
-                    $allCinemaIds = array_merge($existingCinemaIds, $newCinemaIds);
-                    // Đảm bảo không vượt quá 3 rạp
-                    if (count($allCinemaIds) > 3) {
-                        $errors['cinema_ids'] = "Tổng số rạp không được vượt quá 3. Phim hiện có " . count($existingCinemaIds) . " rạp.";
-                    } else {
-                        $cinemaIds = $allCinemaIds;
-                    }
-                } else {
-                    // Không có rạp mới, giữ nguyên rạp hiện tại
-                    $cinemaIds = $existingCinemaIds;
-                }
-                
-                // Nếu vẫn có lỗi sau khi kiểm tra rạp, render lại form
-                if (!empty($errors)) {
-                    // Giữ nguyên dữ liệu đã nhập
-                    $movie = $this->movie->find($id);
-                    if (!$movie) {
-                        header('Location: ' . BASE_URL . '?act=/');
-                        exit;
-                    }
-                    
-                    require_once __DIR__ . '/../models/Genre.php';
-                    $genreModel = new Genre();
-                    $genres = $genreModel->all();
-                    
-                    require_once __DIR__ . '/../models/Cinema.php';
-                    $cinemaModel = new Cinema();
-                    $cinemas = $cinemaModel->all();
-                    
-                    $movieCinemas = $this->movie->getCinemasByMovieId($id);
-                    $movieCinemaIds = array_column($movieCinemas, 'id');
-                    
-                    render('admin/movies/edit.php', [
-                        'movie' => $movie, 
-                        'errors' => $errors, 
-                        'genres' => $genres,
-                        'cinemas' => $cinemas,
-                        'movieCinemas' => $movieCinemaIds
-                    ]);
-                    exit;
-                }
-                
-                // Chỉ lấy rạp mới để thêm (không bao gồm rạp đã có)
-                $newCinemaIds = array_diff($cinemaIds, $existingCinemaIds);
+                // Xử lý rạp: nếu có rạp mới thì thêm vào, nếu không thì giữ nguyên rạp hiện tại
+                // $cinemaIds đã được xử lý ở trên: chỉ chứa rạp mới (không trùng với rạp hiện tại)
                 
                 $data = [
                     'title' => trim($_POST['title']),
@@ -521,8 +476,8 @@ class MoviesController
                     'age_rating' => trim($_POST['age_rating'] ?? ''),
                     'producer' => trim($_POST['producer'] ?? ''),
                     'genre_id' => trim($_POST['genre_id']),
-                    'cinema_ids' => $newCinemaIds, // Chỉ gửi rạp mới
-                    'replace_cinemas' => false, // Không thay thế, chỉ thêm mới
+                    'cinema_ids' => $cinemaIds, // Rạp mới (nếu có) hoặc danh sách rạp đã chọn (nếu thay thế)
+                    'replace_cinemas' => $replaceCinemas, // true nếu thay thế toàn bộ, false nếu chỉ thêm mới, hoặc giữ nguyên nếu không có rạp mới
                     'status' => $status
                 ];
                 $this->movie->update($id, $data);
