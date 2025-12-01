@@ -118,6 +118,7 @@ $maxColumns = 12;
         position: relative !important;
         margin-left: auto !important;
         margin-right: auto !important;
+        transform: translateX(-30px) !important;
     }
 
     .seat-selection-container .seat-row::after {
@@ -260,9 +261,25 @@ $maxColumns = 12;
     }
 
     .seat-selection-container .seat.disabled-column {
-        opacity: 0.3 !important;
+        background: #4a4a4a !important;
+        color: transparent !important;
+        opacity: 0.5 !important;
         cursor: not-allowed !important;
         pointer-events: none !important;
+        position: relative !important;
+    }
+
+    .seat-selection-container .seat.disabled-column::after {
+        content: '✕' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        color: #fff !important;
+        z-index: 2 !important;
+        line-height: 1 !important;
     }
 
 

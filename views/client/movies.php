@@ -253,6 +253,59 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         const cinemaName = room && room.cinema_name ? room.cinema_name : '';
 
         let html = `
+        <style>
+            .seat-selection-wrapper {
+                background: #2a2a2a;
+                min-height: 100vh;
+                padding: 20px 0;
+                color: #fff;
+            }
+            .seats-grid {
+                max-width: 1400px !important;
+                margin: 20px auto !important;
+                padding: 0 20px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .seat-row {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                margin-bottom: 6px !important;
+                gap: 4px !important;
+                transition: opacity 0.3s, transform 0.3s;
+                flex-wrap: nowrap !important;
+                width: auto !important;
+                min-height: auto !important;
+                padding: 0 25px 0 55px !important;
+                position: relative !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                transform: translateX(-30px) !important;
+            }
+            .seat.disabled-column {
+                background: #4a4a4a !important;
+                color: transparent !important;
+                opacity: 0.5 !important;
+                cursor: not-allowed !important;
+                pointer-events: none !important;
+                position: relative !important;
+            }
+            .seat.disabled-column::after {
+                content: '✕' !important;
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                font-size: 16px !important;
+                font-weight: bold !important;
+                color: #fff !important;
+                z-index: 2 !important;
+                line-height: 1 !important;
+            }
+        </style>
         <div class="seat-selection-wrapper">
             <div class="seat-selection-header">
                 <div class="showtime-info">
@@ -1713,32 +1766,9 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 }
             });
             
-            // Ẩn toàn bộ các hàng không có ghế nào được phép chọn
+            // Hiển thị tất cả các hàng - không ẩn hàng nào
             seatRows.forEach(row => {
-                const rowSeats = row.querySelectorAll('.seat:not(.gap)');
-                let hasSelectableSeat = false;
-                
-                rowSeats.forEach(seat => {
-                    const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
-                    // Kiểm tra xem ghế này có được phép chọn không
-                    if (col > 0 && ALLOWED_SINGLE_COLUMNS.includes(col) &&
-                        !seat.classList.contains('booked') &&
-                        !seat.classList.contains('maintenance') &&
-                        !seat.classList.contains('disabled-column')) {
-                        hasSelectableSeat = true;
-                    }
-                    // Hoặc ghế đã được chọn
-                    if (seat.classList.contains('selected')) {
-                        hasSelectableSeat = true;
-                    }
-                });
-                
-                // Ẩn hàng nếu không có ghế nào được phép chọn
-                if (!hasSelectableSeat) {
-                    row.style.display = 'none';
-                } else {
-                    row.style.display = '';
-                }
+                row.style.display = '';
             });
         } else {
             // Hiển thị tất cả các hàng và ghế khi số lượng > 1

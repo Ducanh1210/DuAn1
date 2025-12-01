@@ -484,3 +484,37 @@ textarea.form-control {
     }
 }
 
+/* ===== LIGHT MODE OVERRIDES ===== */
+[data-theme="light"] .contact-form-section,
+[data-theme="light"] .contact-card,
+[data-theme="light"] .social-section,
+[data-theme="light"] .map-container {
+    background: #c8d0db !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="light"] .contact-card:hover {
+    background: #bcc4d0 !important;
+}
+
+/* Ensure all text in boxes is black in light mode */
+[data-theme="light"] .section-title,
+[data-theme="light"] .section-description,
+[data-theme="light"] .form-group label,
+[data-theme="light"] .card-title,
+[data-theme="light"] .card-text,
+[data-theme="light"] .social-title,
+[data-theme="light"] .social-link {
+    color: #000 !important;
+}
+
+[data-theme="light"] .form-control {
+    background: rgba(255, 255, 255, 0.5) !important;
+    color: #000 !important;
+    border: 2px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="light"] .form-control::placeholder {
+    color: #666 !important;
+}
+

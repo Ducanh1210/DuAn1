@@ -774,3 +774,92 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== LIGHT MODE OVERRIDES ===== */
+[data-theme="light"] .promo-page {
+    background: #ffffff !important;
+    color: #000 !important;
+}
+
+[data-theme="light"] .promo-hero,
+[data-theme="light"] .promo-card,
+[data-theme="light"] .stat-card,
+[data-theme="light"] .benefit-card,
+[data-theme="light"] .steps li,
+[data-theme="light"] .faq-item,
+[data-theme="light"] .newsletter-card {
+    background: #f5f7fa !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Hover states - lighter and more visible in light mode */
+[data-theme="light"] .promo-card:hover,
+[data-theme="light"] .stat-card:hover,
+[data-theme="light"] .benefit-card:hover,
+[data-theme="light"] .steps li:hover,
+[data-theme="light"] .faq-item:hover {
+    background: #e8ecf1 !important;
+    border-color: rgba(255, 105, 120, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .promo-hero:hover {
+    background: #f0f2f5 !important;
+    border-color: rgba(255, 105, 120, 0.2) !important;
+}
+
+[data-theme="light"] .code-btn:hover {
+    background: rgba(255, 105, 120, 0.1) !important;
+    border-color: #ff6978 !important;
+    color: #ff6978 !important;
+}
+
+[data-theme="light"] .promo-page .btn-outline:hover {
+    background: rgba(255, 105, 120, 0.1) !important;
+    border-color: #ff6978 !important;
+    color: #ff6978 !important;
+}
+
+[data-theme="light"] .newsletter-form input:hover {
+    border-color: rgba(255, 105, 120, 0.3) !important;
+}
+
+[data-theme="light"] .newsletter-form input:focus {
+    border-color: #ff6978 !important;
+    box-shadow: 0 0 0 3px rgba(255, 105, 120, 0.1) !important;
+}
+
+/* Ensure all text in boxes is black in light mode */
+[data-theme="light"] .promo-hero h1,
+[data-theme="light"] .promo-hero .lead,
+[data-theme="light"] .promo-card h3,
+[data-theme="light"] .promo-card .desc,
+[data-theme="light"] .promo-card .benefits li,
+[data-theme="light"] .stat-card .value,
+[data-theme="light"] .stat-card .label,
+[data-theme="light"] .benefit-card h3,
+[data-theme="light"] .benefit-card p,
+[data-theme="light"] .steps li h3,
+[data-theme="light"] .steps li p,
+[data-theme="light"] .faq-item h3,
+[data-theme="light"] .faq-item p,
+[data-theme="light"] .newsletter-card h2,
+[data-theme="light"] .newsletter-card p,
+[data-theme="light"] .section-header h2,
+[data-theme="light"] .eyebrow,
+[data-theme="light"] .filter-note,
+[data-theme="light"] .promo-tag,
+[data-theme="light"] .meta .period,
+[data-theme="light"] .code-btn,
+[data-theme="light"] .promo-actions .hint,
+[data-theme="light"] .link-action {
+    color: #000 !important;
+}
+
+/* Special handling for gradient text - keep gradient but ensure visibility */
+[data-theme="light"] .promo-hero h1 {
+    background: linear-gradient(135deg, #000 0%, #333 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
