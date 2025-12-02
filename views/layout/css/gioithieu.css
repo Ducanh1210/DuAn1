@@ -2,10 +2,29 @@
     Giới thiệu page - Modern & Beautiful Design
     ============================================ */
 
-    /* Override hero section for gioithieu page */
-    body:has(.about-page) .header {
-        background: rgba(3, 6, 12, 0.95);
+    /* Override hero section for gioithieu page - chỉ khi light mode */
+    [data-theme="light"] body:has(.about-page) .header {
+        background: #f5f7fa;
         backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dark mode: giữ nguyên, không override gì cả */
+    /* Light mode: override menu styling để match light theme */
+    [data-theme="light"] body:has(.about-page) .header .menu a {
+        color: #000;
+    }
+
+    [data-theme="light"] body:has(.about-page) .header .menu a:hover {
+        color: #000;
+    }
+
+    [data-theme="light"] body:has(.about-page) .header .menu a.active {
+        color: #ff6978 !important;
+    }
+
+    [data-theme="light"] body:has(.about-page) .header .menu a.active::after {
+        background-color: #ff6978;
     }
 
     body:has(.about-page) main {

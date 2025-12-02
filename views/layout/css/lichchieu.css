@@ -82,6 +82,7 @@ body {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  position: relative;
 }
 
 .logo a {
@@ -98,6 +99,27 @@ body {
   transition: 0.3s ease;
   display: block;
   max-width: 100%;
+}
+
+/* Light mode: overlay text TicketHub màu đen lên ảnh và ẩn text trong ảnh */
+[data-theme="light"] .logo::after {
+  content: "TicketHub";
+  position: absolute;
+  left: 60px; /* Vị trí text bên cạnh icon */
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #000;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Light mode: crop ảnh để chỉ hiển thị icon, ẩn text trong ảnh */
+[data-theme="light"] .logo img {
+  clip-path: inset(0 50% 0 0); /* Chỉ hiển thị nửa trái (icon) */
+  width: 60px; /* Giảm width để chỉ hiển thị icon */
 }
 
 /* ===== MENU ===== */
@@ -692,6 +714,8 @@ body {
 [data-theme="light"] .title {
   color: var(--text-primary) !important;
 }
+
+.title {
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
   display: -webkit-box !important;
@@ -701,8 +725,6 @@ body {
   text-overflow: ellipsis !important;
   text-transform: none !important;
   max-width: 100% !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
 }
 
 .meta-lines {
