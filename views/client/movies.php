@@ -253,6 +253,181 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         const cinemaName = room && room.cinema_name ? room.cinema_name : '';
 
         let html = `
+        <style>
+           /* ==== KHUNG CHỌN GHẾ ==== */
+.ticket-selection-panel {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 24px 26px;
+    border-radius: 18px;
+    background: radial-gradient(circle at top left, #444 0, #2c2c2c 40%, #262626 100%);
+    box-shadow:
+        0 16px 30px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.03);
+    position: relative;
+    color: #f5f5f5;
+    overflow: hidden;
+}
+
+/* viền cam phía trên */
+.ticket-selection-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 18px;
+    right: 18px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ffb347, #ff7b00);
+}
+
+/* viền cam phía trái tiêu đề */
+.ticket-panel-title {
+    margin: 10px 0 22px;
+    font-size: 22px;
+    font-weight: 600;
+    position: relative;
+    padding-left: 24px;
+}
+
+.ticket-panel-title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 3px;
+    bottom: 3px;
+    width: 5px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffb347, #ff7b00);
+}
+
+/* ==== HÀNG SỐ LƯỢNG ==== */
+.quantity-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    margin-bottom: 24px;
+}
+
+.quantity-wrapper {
+    flex: 1;
+}
+
+.quantity-label {
+    font-size: 15px;
+    letter-spacing: 0.2px;
+    display: block;
+    margin-bottom: 6px;
+    position: relative;
+}
+
+/* gạch ngang mỏng sau label */
+.quantity-label::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+}
+
+/* select kiểu neumorphism */
+.quantity-select {
+    width: 100%;
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: linear-gradient(145deg, #383838, #2a2a2a);
+    box-shadow:
+        4px 4px 10px rgba(0, 0, 0, 0.9),
+        -3px -3px 8px rgba(90, 90, 90, 0.25);
+    color:rgb(74, 28, 28);
+    font-size: 15px;
+    appearance: none;
+    outline: none;
+    position: relative;
+}
+
+/* mũi tên giả */
+.quantity-select {
+    background-image:
+        linear-gradient(145deg, #383838, #2a2a2a),
+        linear-gradient(135deg, transparent 50%, #f5f5f5 50%);
+    background-repeat: no-repeat;
+    background-position:
+        0 0,
+        calc(100% - 14px) center;
+    background-size:
+        100% 100%,
+        8px 8px;
+    padding-right: 32px;
+}
+
+.quantity-select:focus {
+    border-color: #ff9f3b;
+    box-shadow:
+        0 0 0 1px rgba(255, 159, 59, 0.5),
+        4px 4px 12px rgba(0, 0, 0, 0.95);
+}
+
+/* ==== PHẦN GHẾ LIỀN NHAU ==== */
+.adjacent-section {
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.adjacent-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.adjacent-header-label {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.info-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #2f4f74;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: default;
+    box-shadow: 0 0 0 1px rgba(173, 216, 230, 0.4);
+}
+
+/* container nút số ghế liền nhau (nếu có) */
+.adjacent-options-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* ghi chú max ghế */
+.max-seats-note {
+    margin-top: 12px;
+    font-size: 13px;
+    opacity: 0.85;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.max-seats-note::before {
+    content: "💡";
+    font-size: 14px;
+}
+
+        </style>
         <div class="seat-selection-wrapper">
             <div class="seat-selection-header">
                 <div class="showtime-info">
@@ -1700,7 +1875,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         const seatRows = document.querySelectorAll('#seatsGrid .seat-row');
         
         if (totalPeople === 1 && selectedAdjacentCount === 1) {
-            // Hiển thị các ghế không được chọn với dấu X
+            // Ẩn các ghế không được chọn
             seats.forEach(seat => {
                 const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
                 if (col > 0 && !ALLOWED_SINGLE_COLUMNS.includes(col) &&
@@ -1708,43 +1883,19 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     !seat.classList.contains('maintenance') &&
                     !seat.classList.contains('selected')) {
                     seat.classList.add('disabled-column');
-                    // Remove other classes to ensure proper styling
-                    seat.classList.remove('vip', 'available');
                 } else {
                     seat.classList.remove('disabled-column');
-                    // Restore original class if not booked/maintenance/selected
-                    if (!seat.classList.contains('booked') && 
-                        !seat.classList.contains('maintenance') && 
-                        !seat.classList.contains('selected')) {
-                        const seatType = seat.getAttribute('data-seat-type');
-                        if (seatType === 'vip') {
-                            seat.classList.add('vip');
-                        } else {
-                            seat.classList.add('available');
-                        }
-                    }
                 }
             });
             
-            // Hiển thị tất cả các hàng (không ẩn hàng nữa)
+            // Hiển thị tất cả các hàng - không ẩn hàng nào
             seatRows.forEach(row => {
                 row.style.display = '';
             });
         } else {
-            // Bỏ disabled khi không phải chọn 1 vé
+            // Hiển thị tất cả các hàng và ghế khi số lượng > 1
             seats.forEach(seat => {
                 seat.classList.remove('disabled-column');
-                // Restore original class if not booked/maintenance/selected
-                if (!seat.classList.contains('booked') && 
-                    !seat.classList.contains('maintenance') && 
-                    !seat.classList.contains('selected')) {
-                    const seatType = seat.getAttribute('data-seat-type');
-                    if (seatType === 'vip') {
-                        seat.classList.add('vip');
-                    } else {
-                        seat.classList.add('available');
-                    }
-                }
             });
             seatRows.forEach(row => {
                 row.style.display = '';

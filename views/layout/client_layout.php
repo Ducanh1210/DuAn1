@@ -79,7 +79,7 @@ if (isLoggedIn()) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
+<body data-theme="dark">
     <!-- Client Header -->
     <header class="header">
         <div class="header-container">
@@ -111,6 +111,11 @@ if (isLoggedIn()) {
             </nav>
 
             <div class="nav-actions">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Chuyển đổi giao diện">
+                    <i class="bi bi-moon-fill theme-icon" id="themeIcon"></i>
+                </button>
+                
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <!-- Notifications for logged-in users - ĐẶT TRƯỚC SEARCH -->
                     <div class="notification-wrapper">
@@ -355,6 +360,45 @@ if (isLoggedIn()) {
     <script>
         // Đặt năm hiện tại
         document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Theme Toggle Functionality
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const html = document.documentElement;
+            const body = document.body;
+            
+            // Get saved theme or default to dark
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            html.setAttribute('data-theme', savedTheme);
+            body.setAttribute('data-theme', savedTheme);
+            
+            // Update icon based on theme
+            function updateIcon(theme) {
+                if (theme === 'light') {
+                    themeIcon.classList.remove('bi-moon-fill');
+                    themeIcon.classList.add('bi-sun-fill');
+                } else {
+                    themeIcon.classList.remove('bi-sun-fill');
+                    themeIcon.classList.add('bi-moon-fill');
+                }
+            }
+            
+            updateIcon(savedTheme);
+            
+            // Toggle theme
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = html.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    
+                    html.setAttribute('data-theme', newTheme);
+                    body.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    updateIcon(newTheme);
+                });
+            }
+        })();
 
         // Search box toggle functionality
         (function () {

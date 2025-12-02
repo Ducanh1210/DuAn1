@@ -102,7 +102,6 @@ $maxColumns = 12;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        position: relative !important;
     }
 
     .seat-selection-container .seat-row {
@@ -113,13 +112,13 @@ $maxColumns = 12;
         gap: 4px !important;
         transition: opacity 0.3s, transform 0.3s;
         flex-wrap: nowrap !important;
-        width: 100% !important;
+        width: auto !important;
         min-height: auto !important;
         padding: 0 25px 0 55px !important;
         position: relative !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        box-sizing: border-box !important;
+        transform: translateX(-30px) !important;
     }
 
     .seat-selection-container .seat-row::after {
@@ -262,11 +261,11 @@ $maxColumns = 12;
     }
 
     .seat-selection-container .seat.disabled-column {
-        opacity: 0.3 !important;
-        cursor: not-allowed !important;
-        pointer-events: none !important;
         background: #4a4a4a !important;
         color: transparent !important;
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
         position: relative !important;
     }
 
@@ -1324,36 +1323,12 @@ $maxColumns = 12;
                     !seat.classList.contains('maintenance') &&
                     !seat.classList.contains('selected')) {
                     seat.classList.add('disabled-column');
-                    // Remove other classes to ensure proper styling
-                    seat.classList.remove('vip', 'available');
                 } else {
                     seat.classList.remove('disabled-column');
-                    // Restore original class if not booked/maintenance/selected
-                    if (!seat.classList.contains('booked') && 
-                        !seat.classList.contains('maintenance') && 
-                        !seat.classList.contains('selected')) {
-                        const seatType = seat.getAttribute('data-seat-type');
-                        if (seatType === 'vip') {
-                            seat.classList.add('vip');
-                        } else {
-                            seat.classList.add('available');
-                        }
-                    }
                 }
             } else {
                 // Bỏ disabled khi không phải chọn 1 vé
                 seat.classList.remove('disabled-column');
-                // Restore original class if not booked/maintenance/selected
-                if (!seat.classList.contains('booked') && 
-                    !seat.classList.contains('maintenance') && 
-                    !seat.classList.contains('selected')) {
-                    const seatType = seat.getAttribute('data-seat-type');
-                    if (seatType === 'vip') {
-                        seat.classList.add('vip');
-                    } else {
-                        seat.classList.add('available');
-                    }
-                }
             }
         });
     }

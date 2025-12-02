@@ -9,6 +9,14 @@
   --maxw: 1200px;
 }
 
+[data-theme="light"] {
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --muted: #333333;
+  --muted-2: #555555;
+  --glass: rgba(0, 0, 0, 0.03);
+}
+
 /* GLOBAL — Xóa mọi gạch chân */
 a,
 a:link,
@@ -51,6 +59,15 @@ a::after {
       rgba(3, 6, 12, 0.50) 70%,
       rgba(3, 6, 12, 0.25) 85%);
   z-index: 0;
+}
+
+[data-theme="light"] .movie-hero::after {
+  background: linear-gradient(90deg,
+      rgba(245, 247, 250, 0.95) 0%,
+      rgba(245, 247, 250, 0.85) 30%,
+      rgba(245, 247, 250, 0.70) 50%,
+      rgba(245, 247, 250, 0.50) 70%,
+      rgba(245, 247, 250, 0.25) 85%);
 }
 
 .container {
@@ -111,6 +128,12 @@ a::after {
   margin-right: 0;
 }
 
+[data-theme="light"] .badge-2d {
+  background: rgba(255, 255, 255, 0.8);
+  color: #000;
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+}
+
 h1.title {
   font-family: "Montserrat", sans-serif;
   font-size: 32px;
@@ -124,25 +147,41 @@ h1.title {
   margin-right: 0;
 }
 
+[data-theme="light"] h1.title {
+  color: #000;
+}
+
 /* meta info */
 .meta-line {
-  color: var(--muted-2);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
   margin-bottom: 10px;
 }
 
+[data-theme="light"] .meta-line {
+  color: #555;
+}
+
 .info-line {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 14px;
   margin-bottom: 8px;
+}
+
+[data-theme="light"] .info-line {
+  color: #333;
 }
 
 .info-line strong {
   color: #fff;
 }
 
+[data-theme="light"] .info-line strong {
+  color: #000;
+}
+
 .desc {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-secondary);
   max-width: 780px;
   line-height: 1.8;
   margin-bottom: 16px;
@@ -1295,30 +1334,13 @@ h1.title {
   flex-wrap: nowrap;
 }
 
-/* Disabled Column - Hiển thị ghế không được phép chọn với dấu X khi chọn 1 người */
+/* Disabled Column - Ẩn ghế không được phép chọn khi chọn 1 người */
 .seat.disabled-column {
   opacity: 0.3 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
-  background: #4a4a4a !important;
-  color: transparent !important;
-  position: relative !important;
-}
-
-.seat.disabled-column::after {
-  content: '✕' !important;
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  font-size: 22px !important;
-  font-weight: 900 !important;
-  color: #fff !important;
-  z-index: 2 !important;
-  line-height: 1 !important;
-  text-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.3),
-    0 0 8px rgba(220, 53, 69, 0.5) !important;
+  display: none !important; /* Ẩn hoàn toàn thay vì chỉ làm mờ */
+  visibility: hidden !important;
 }
 
 /* Ensure seats are visible */
@@ -1424,6 +1446,20 @@ h1.title {
 
 .price-value.student-vip {
   color: #4caf50;
+}
+
+/* ===== LIGHT MODE OVERRIDES FOR BOXES ===== */
+[data-theme="light"] .price-info-box,
+[data-theme="light"] .price-card {
+  background: #c8d0db !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ensure all text in price boxes is black in light mode */
+[data-theme="light"] .price-info-title,
+[data-theme="light"] .price-label,
+[data-theme="light"] .price-value {
+  color: #000 !important;
 }
 
 /* Responsive */

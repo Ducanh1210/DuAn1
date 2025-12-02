@@ -272,3 +272,88 @@
     }
 }
 
+/* ===== LIGHT MODE OVERRIDES ===== */
+[data-theme="light"] .price-page {
+    background: #ffffff !important;
+    color: #000 !important;
+}
+
+[data-theme="light"] .price-section,
+[data-theme="light"] .price-card,
+[data-theme="light"] .note-card {
+    background: #f5f7fa !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Hover states - lighter and more visible in light mode */
+[data-theme="light"] .price-card:hover {
+    background: #e8ecf1 !important;
+    border-color: rgba(255, 75, 75, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .price-section:hover {
+    background: #f0f2f5 !important;
+    border-color: rgba(255, 75, 75, 0.2) !important;
+}
+
+[data-theme="light"] .price-item {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .price-item:hover {
+    background: rgba(255, 255, 255, 0.8) !important;
+    border-color: rgba(255, 75, 75, 0.3) !important;
+}
+
+[data-theme="light"] .price-item.vip-item {
+    background: rgba(255, 215, 0, 0.15) !important;
+    border-color: rgba(255, 215, 0, 0.3) !important;
+}
+
+[data-theme="light"] .price-item.vip-item:hover {
+    background: rgba(255, 215, 0, 0.2) !important;
+    border-color: rgba(255, 215, 0, 0.4) !important;
+}
+
+[data-theme="light"] .section-header {
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Ensure all text in boxes is black in light mode */
+[data-theme="light"] .section-title,
+[data-theme="light"] .format-title,
+[data-theme="light"] .seat-type,
+[data-theme="light"] .price-value,
+[data-theme="light"] .note-content h4,
+[data-theme="light"] .note-content li,
+[data-theme="light"] .price-subtitle {
+    color: #000 !important;
+}
+
+/* Special handling for gradient title - keep gradient but ensure visibility */
+[data-theme="light"] .price-title {
+    background: linear-gradient(135deg, #ff4b4b, #ffb84b) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* Badge colors in light mode */
+[data-theme="light"] .weekday-badge {
+    background: rgba(74, 158, 255, 0.15) !important;
+    color: #4a9eff !important;
+    border-color: rgba(74, 158, 255, 0.3) !important;
+}
+
+[data-theme="light"] .weekend-badge {
+    background: rgba(255, 75, 75, 0.15) !important;
+    color: #ff4b4b !important;
+    border-color: rgba(255, 75, 75, 0.3) !important;
+}
+

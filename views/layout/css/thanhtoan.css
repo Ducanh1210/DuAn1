@@ -517,6 +517,29 @@ h3.section-title {
     order: 2;
   }
 }
+
+/* ===== LIGHT MODE OVERRIDES ===== */
+[data-theme="light"] .card,
+[data-theme="light"] .side-card,
+[data-theme="light"] .booking-details-section {
+  background: #c8d0db !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ensure all text in boxes is black in light mode */
+[data-theme="light"] .movie-meta .title,
+[data-theme="light"] .meta-grid,
+[data-theme="light"] .desc,
+[data-theme="light"] .detail-label,
+[data-theme="light"] .detail-value,
+[data-theme="light"] .method .txt,
+[data-theme="light"] .cost-row,
+[data-theme="light"] .total-row,
+[data-theme="light"] .payment-table th,
+[data-theme="light"] .payment-table td,
+[data-theme="light"] .seat-label {
+  color: #000 !important;
+}
 /* phần footer */
 /* Footer - modern cinematic style */
 .footer {

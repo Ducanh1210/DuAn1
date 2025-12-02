@@ -2,16 +2,26 @@
     --accent: #ff6978;
     --glass: rgba(255, 255, 255, 0.08);
     --glass-2: rgba(255, 255, 255, 0.06);
-    --text: #ffffff;
-    --bg-dark: #03060c;
+    --text: var(--text-primary, #ffffff);
+    --bg-dark: var(--bg-tertiary, #03060c);
     --max-width: 1200px;
     --gap: 16px;
     --track-padding: 0;
     --radius: 12px;
-    --card-elev: rgba(0, 0, 0, 0.3);
-    --muted: rgba(255, 255, 255, 0.6);
-    --muted-2: rgba(255, 255, 255, 0.5);
+    --card-elev: var(--shadow, rgba(0, 0, 0, 0.3));
+    --muted: var(--text-muted, rgba(255, 255, 255, 0.6));
+    --muted-2: var(--text-muted-2, rgba(255, 255, 255, 0.5));
     --dot-size: 10px;
+  }
+
+[data-theme="light"] {
+    --glass: rgba(0, 0, 0, 0.03);
+    --glass-2: rgba(0, 0, 0, 0.02);
+    --text: var(--text-primary, #1a1f2e);
+    --bg-dark: var(--bg-tertiary, #e8ecf1);
+    --card-elev: var(--shadow, rgba(0, 0, 0, 0.1));
+    --muted: var(--text-muted, #4a5568);
+    --muted-2: var(--text-muted-2, #718096);
   }
   
   * {
@@ -25,9 +35,14 @@
   }
   body {
     font-family: "Roboto", sans-serif;
-    background: var(--bg-dark);
-    color: var(--text);
+    background: #03060c;
+    color: #fff;
     -webkit-font-smoothing: antialiased;
+  }
+
+  [data-theme="light"] body {
+    background: var(--bg-primary);
+    color: #000;
   }
   
   /* HERO */
@@ -179,16 +194,28 @@
     position: relative;
   }
 
+  [data-theme="light"] .header .menu a {
+    color: #000;
+  }
+
   .header .menu a:hover {
     color: #ffffff;
     opacity: 1;
     transform: translateY(-2px);
   }
 
+  [data-theme="light"] .header .menu a:hover {
+    color: #000;
+  }
+
   .header .menu a.active {
     color: #ff6978 !important;
     font-weight: 700;
     position: relative;
+  }
+
+  [data-theme="light"] .header .menu a.active {
+    color: #ff6978 !important;
   }
 
   .header .menu a.active::after {
@@ -203,11 +230,23 @@
     border-radius: 2px;
   }
 
+  [data-theme="light"] .header .menu a.active::after {
+    background-color: #ff6978;
+  }
+
   .header .menu a.active:hover {
     color: #ff5067 !important;
   }
 
+  [data-theme="light"] .header .menu a.active:hover {
+    color: #ff5067 !important;
+  }
+
   .header .menu a.active:hover::after {
+    background-color: #ff5067;
+  }
+
+  [data-theme="light"] .header .menu a.active:hover::after {
     background-color: #ff5067;
   }
 
