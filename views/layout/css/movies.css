@@ -805,12 +805,24 @@ h1.title {
   letter-spacing: 3px;
 }
 
-.room-title {
-  font-size: 28px;
-  font-weight: bold;
+/* Tên rạp - to hơn, ở trên */
+.room-subtitle {
+  font-size: 32px;
+  font-weight: 700;
   margin-top: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 8px;
   color: #fff;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* Tên phòng - nhỏ hơn, ở dưới */
+.room-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 30px;
+  color: rgba(255, 255, 255, 0.85);
   text-align: center;
 }
 
@@ -832,11 +844,21 @@ h1.title {
   justify-content: center;
   align-items: center;
   margin-bottom: 15px;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: nowrap;
   width: 100%;
   min-height: 55px;
   padding: 5px 0;
+  position: relative;
+}
+
+/* Đảm bảo gap có width cố định và không bị co lại, luôn ở cùng vị trí */
+.seat-gap {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
 }
 
 .seat-row-content {
