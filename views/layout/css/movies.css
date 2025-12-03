@@ -1,3 +1,13 @@
+/* Force reset zoom to prevent zoom out issues */
+html,
+body {
+  zoom: 1 !important;
+  -webkit-text-size-adjust: 100% !important;
+  -moz-text-size-adjust: 100% !important;
+  -ms-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+
 :root {
   --bg: #0d1113;
   --card: #0f1417;
@@ -262,10 +272,11 @@ h1.title {
 /* dates selector */
 .dates-wrap {
   margin-top: 32px;
-  background: rgba(11, 14, 17, 0.8);
+  background: rgba(248, 249, 250, 0.95);
   padding: 20px 24px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .date-tabs {
@@ -277,11 +288,11 @@ h1.title {
 
 .date-tab {
   min-width: 110px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.8);
   padding: 14px 18px;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   transition: 0.2s;
   text-decoration: none !important;
 }
@@ -293,7 +304,9 @@ h1.title {
 }
 
 .date-tab:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(0, 0, 0, 0.25);
+  color: rgba(0, 0, 0, 0.9);
 }
 
 /* Time pills */
@@ -304,21 +317,41 @@ h1.title {
 }
 
 .time-pill {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   padding: 12px 28px;
   border-radius: 30px;
-  color: #fff;
+  color: rgba(0, 0, 0, 0.75);
   font-weight: 700;
   font-size: 15px;
   min-width: 100px;
   text-align: center;
   transition: 0.2s;
   text-decoration: none !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
 .time-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(255, 140, 0, 0.5);
+  color: rgba(0, 0, 0, 0.9);
+  box-shadow: 0 2px 8px rgba(255, 140, 0, 0.2);
+  cursor: pointer !important;
+}
+
+.time-pill:active {
+  transform: scale(0.98);
+}
+
+.time-pill.active {
+  background: rgba(255, 140, 0, 0.2);
+  border-color: rgba(255, 140, 0, 0.6);
+  color: #ff6b00;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
 }
 
 /* Seat selection styles */
@@ -346,6 +379,12 @@ h1.title {
   margin-top: 40px;
 }
 
+/* Override container max-width for seat selection */
+#seatSelectionContainer .container {
+  max-width: 100%;
+  width: 100%;
+}
+
 /* Seat Selection Wrapper */
 .seat-selection-wrapper {
   background: #2a2a2a;
@@ -358,16 +397,16 @@ h1.title {
   justify-content: space-between;
   align-items: center;
   padding: 22px 36px;
-  background: linear-gradient(135deg, #1a1a1a 0%, #252525 50%, #1f1f1f 100%);
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f5f7fa 100%);
   border-radius: 16px;
   margin-bottom: 32px;
   flex-wrap: wrap;
   gap: 24px;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -380,11 +419,11 @@ h1.title {
   right: 0;
   height: 2px;
   background: linear-gradient(90deg, transparent 0%, #ff8c00 50%, transparent 100%);
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .showtime-info {
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(0, 0, 0, 0.85);
   font-size: 17px;
   font-weight: 500;
   display: flex;
@@ -399,7 +438,7 @@ h1.title {
   color: #ff8c00;
   font-size: 24px;
   font-weight: 800;
-  text-shadow: 
+  text-shadow:
     0 0 20px rgba(255, 140, 0, 0.5),
     0 2px 8px rgba(255, 140, 0, 0.3);
   background: linear-gradient(135deg, #ff8c00 0%, #ffa500 100%);
@@ -410,9 +449,12 @@ h1.title {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     filter: brightness(1);
   }
+
   50% {
     filter: brightness(1.2);
   }
@@ -428,9 +470,9 @@ h1.title {
 }
 
 .back-button {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  color: rgba(255, 255, 255, 0.95);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 140, 0, 0.12);
+  color: #ff6b00;
+  border: 1.5px solid rgba(255, 140, 0, 0.4);
   padding: 11px 22px;
   border-radius: 10px;
   cursor: pointer;
@@ -441,16 +483,16 @@ h1.title {
   align-items: center;
   gap: 8px;
   letter-spacing: 0.3px;
-  backdrop-filter: blur(10px);
 }
 
 .back-button:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 100%);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 140, 0, 0.2);
+  border-color: rgba(255, 140, 0, 0.6);
+  color: #ff5500;
   transform: translateY(-3px);
-  box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 12px rgba(255, 140, 0, 0.25),
+    0 0 0 1px rgba(255, 140, 0, 0.2);
 }
 
 .back-button:active {
@@ -465,7 +507,7 @@ h1.title {
   font-size: 15px;
   font-weight: 700;
   color: #fff;
-  box-shadow: 
+  box-shadow:
     0 6px 24px rgba(255, 71, 87, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -495,7 +537,7 @@ h1.title {
 
 .countdown-timer:hover {
   transform: translateY(-3px) scale(1.02);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(255, 71, 87, 0.6),
     0 0 0 1px rgba(255, 255, 255, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -515,15 +557,15 @@ h1.title {
 }
 
 .ticket-panel-content {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.15) 0%, 
-    rgba(255, 255, 255, 0.10) 50%,
-    rgba(255, 255, 255, 0.12) 100%);
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.10) 50%,
+      rgba(255, 255, 255, 0.12) 100%);
   padding: 24px;
   border-radius: 16px;
   margin-bottom: 24px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -539,12 +581,12 @@ h1.title {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    #ff8c00 20%, 
-    #ffa500 50%, 
-    #ff8c00 80%, 
-    transparent 100%);
+  background: linear-gradient(90deg,
+      transparent 0%,
+      #ff8c00 20%,
+      #ffa500 50%,
+      #ff8c00 80%,
+      transparent 100%);
   opacity: 0.7;
 }
 
@@ -568,7 +610,7 @@ h1.title {
   height: 24px;
   background: linear-gradient(180deg, #ff8c00 0%, #ffa500 50%, #ff6b00 100%);
   border-radius: 2px;
-  box-shadow: 
+  box-shadow:
     0 0 12px rgba(255, 140, 0, 0.6),
     0 0 24px rgba(255, 140, 0, 0.4);
 }
@@ -625,14 +667,14 @@ h1.title {
   background-repeat: no-repeat;
   background-position: right 14px center;
   padding-right: 40px;
-  box-shadow: 
+  box-shadow:
     0 3px 12px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .quantity-select:hover {
   border-color: rgba(255, 140, 0, 0.7);
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(255, 140, 0, 0.4),
     0 0 0 1px rgba(255, 140, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 1);
@@ -643,7 +685,7 @@ h1.title {
 .quantity-select:focus {
   outline: none;
   border-color: #ff8c00;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px rgba(255, 140, 0, 0.3),
     0 4px 16px rgba(255, 140, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 1);
@@ -687,9 +729,9 @@ h1.title {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: linear-gradient(135deg, 
-    rgba(59, 130, 246, 0.25) 0%, 
-    rgba(37, 99, 235, 0.35) 100%);
+  background: linear-gradient(135deg,
+      rgba(59, 130, 246, 0.25) 0%,
+      rgba(37, 99, 235, 0.35) 100%);
   border: 2px solid rgba(59, 130, 246, 0.5);
   display: inline-flex;
   align-items: center;
@@ -699,18 +741,18 @@ h1.title {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #7bb3ff;
   font-weight: 800;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(59, 130, 246, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .info-icon:hover {
-  background: linear-gradient(135deg, 
-    rgba(59, 130, 246, 0.35) 0%, 
-    rgba(37, 99, 235, 0.45) 100%);
+  background: linear-gradient(135deg,
+      rgba(59, 130, 246, 0.35) 0%,
+      rgba(37, 99, 235, 0.45) 100%);
   border-color: rgba(59, 130, 246, 0.7);
   transform: scale(1.15) rotate(5deg);
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(59, 130, 246, 0.4),
     0 0 0 2px rgba(59, 130, 246, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -744,7 +786,7 @@ h1.title {
 .screen-container {
   text-align: center;
   margin: 30px auto;
-  max-width: 1200px;
+  max-width: 1400px;
   padding: 0 20px;
 }
 
@@ -774,8 +816,10 @@ h1.title {
 
 /* Seats Grid */
 .seats-grid {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 30px auto;
+  margin-left: calc(50% - 700px - 30px);
+  margin-right: auto;
   padding: 0 20px;
   display: block;
   width: 100%;
@@ -785,7 +829,7 @@ h1.title {
 
 .seat-row {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   margin-bottom: 15px;
   gap: 12px;
@@ -798,14 +842,16 @@ h1.title {
 .seat-row-content {
   display: flex;
   align-items: center;
-  gap: 8px; /* gap-2 trong Bootstrap = 0.5rem = 8px */
+  gap: 8px;
+  /* gap-2 trong Bootstrap = 0.5rem = 8px */
   flex: 1;
   justify-content: center;
 }
 
 .seat-side {
   display: flex;
-  gap: 4px; /* gap-1 trong Bootstrap = 0.25rem = 4px */
+  gap: 4px;
+  /* gap-1 trong Bootstrap = 0.25rem = 4px */
   align-items: center;
 }
 
@@ -1019,15 +1065,15 @@ h1.title {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 12px 20px;
   border-radius: 12px;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.06) 0%, 
-    rgba(255, 255, 255, 0.03) 100%);
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.03) 100%);
   border: 2px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.95);
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
@@ -1041,10 +1087,10 @@ h1.title {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.1), 
-    transparent);
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent);
   transition: left 0.5s;
 }
 
@@ -1053,25 +1099,25 @@ h1.title {
 }
 
 .adjacent-option:hover:not(.disabled) {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.1) 0%, 
-    rgba(255, 255, 255, 0.06) 100%);
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.06) 100%);
   border-color: rgba(255, 140, 0, 0.5);
   transform: translateY(-3px);
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 140, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .adjacent-option.active {
-  background: linear-gradient(135deg, 
-    rgba(255, 140, 0, 0.25) 0%, 
-    rgba(255, 107, 0, 0.2) 50%,
-    rgba(255, 140, 0, 0.15) 100%);
+  background: linear-gradient(135deg,
+      rgba(255, 140, 0, 0.25) 0%,
+      rgba(255, 107, 0, 0.2) 50%,
+      rgba(255, 140, 0, 0.15) 100%);
   border-color: #ff8c00;
   color: #fff;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(255, 140, 0, 0.4),
     0 0 0 2px rgba(255, 140, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -1085,10 +1131,10 @@ h1.title {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    #ffa500 50%, 
-    transparent 100%);
+  background: linear-gradient(90deg,
+      transparent 0%,
+      #ffa500 50%,
+      transparent 100%);
   opacity: 0.8;
 }
 
@@ -1173,7 +1219,7 @@ h1.title {
   flex-shrink: 0;
   box-sizing: border-box;
   position: relative;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -1189,7 +1235,7 @@ h1.title {
   background: linear-gradient(135deg, #5a5a5a 0%, #4a4a4a 100%);
   transform: scale(1.15) translateY(-2px);
   border-color: rgba(255, 140, 0, 0.5);
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(255, 140, 0, 0.3),
     0 0 0 2px rgba(255, 140, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -1200,7 +1246,7 @@ h1.title {
   background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 50%, #ff8c00 100%);
   color: #fff;
   border-color: #ff6b00;
-  box-shadow: 
+  box-shadow:
     0 6px 24px rgba(255, 140, 0, 0.6),
     0 0 0 2px rgba(255, 140, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -1208,14 +1254,17 @@ h1.title {
 }
 
 @keyframes seat-pulse {
-  0%, 100% {
-    box-shadow: 
+
+  0%,
+  100% {
+    box-shadow:
       0 6px 24px rgba(255, 140, 0, 0.6),
       0 0 0 2px rgba(255, 140, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
+
   50% {
-    box-shadow: 
+    box-shadow:
       0 8px 32px rgba(255, 140, 0, 0.8),
       0 0 0 3px rgba(255, 140, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -1229,7 +1278,7 @@ h1.title {
   cursor: not-allowed;
   opacity: 0.85;
   border-color: #c82333;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(220, 53, 69, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -1240,7 +1289,7 @@ h1.title {
   color: #000;
   border-color: #ffb300;
   font-weight: bold;
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(255, 193, 7, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
@@ -1249,7 +1298,7 @@ h1.title {
   background: linear-gradient(135deg, #ffd54f 0%, #ffc107 50%, #ffd54f 100%);
   transform: scale(1.15) translateY(-2px);
   border-color: rgba(255, 140, 0, 0.6);
-  box-shadow: 
+  box-shadow:
     0 6px 24px rgba(255, 193, 7, 0.5),
     0 0 0 2px rgba(255, 140, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -1259,7 +1308,7 @@ h1.title {
   background: linear-gradient(135deg, #ff8c00 0%, #ff6b00 50%, #ff8c00 100%);
   color: #fff;
   border-color: #ff6b00;
-  box-shadow: 
+  box-shadow:
     0 6px 24px rgba(255, 140, 0, 0.6),
     0 0 0 2px rgba(255, 140, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -1305,7 +1354,7 @@ h1.title {
   cursor: not-allowed;
   opacity: 0.9;
   position: relative;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(255, 193, 7, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -1321,7 +1370,7 @@ h1.title {
   font-weight: 900;
   z-index: 2;
   line-height: 1;
-  text-shadow: 
+  text-shadow:
     0 2px 4px rgba(0, 0, 0, 0.3),
     0 0 8px rgba(220, 53, 69, 0.5);
 }
@@ -1334,13 +1383,31 @@ h1.title {
   flex-wrap: nowrap;
 }
 
-/* Disabled Column - Ẩn ghế không được phép chọn khi chọn 1 người */
+/* Disabled Column - Hiển thị ghế với dấu X và màu xám khi chọn 1 người */
 .seat.disabled-column {
-  opacity: 0.3 !important;
+  background: #2a2a2a !important;
+  color: transparent !important;
+  opacity: 0.5 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
-  display: none !important; /* Ẩn hoàn toàn thay vì chỉ làm mờ */
-  visibility: hidden !important;
+  position: relative !important;
+  border-color: #333 !important;
+  display: flex !important;
+  /* Hiển thị ghế */
+  visibility: visible !important;
+}
+
+.seat.disabled-column::after {
+  content: '✕' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: #999 !important;
+  z-index: 2 !important;
+  line-height: 1 !important;
 }
 
 /* Ensure seats are visible */
@@ -1464,9 +1531,18 @@ h1.title {
 
 /* Responsive */
 @media (max-width: 980px) {
-  .hero-row { flex-direction: column; }
-  .poster { width: 200px; }
-  h1.title { font-size: 26px; }
+  .hero-row {
+    flex-direction: column;
+  }
+
+  .poster {
+    width: 200px;
+  }
+
+  h1.title {
+    font-size: 26px;
+  }
+
   .seat-selection-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1474,9 +1550,18 @@ h1.title {
 }
 
 @media (max-width: 560px) {
-  .poster { width: 180px; }
-  .date-tab { min-width: 90px; }
-  .time-pill { min-width: 80px; }
+  .poster {
+    width: 180px;
+  }
+
+  .date-tab {
+    min-width: 90px;
+  }
+
+  .time-pill {
+    min-width: 80px;
+  }
+
   .quantity-section {
     flex-direction: column;
     gap: 20px;

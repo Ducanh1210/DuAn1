@@ -1,4 +1,5 @@
 <?php
+
 /**
  * INDEX.PHP - FILE CHÍNH - ĐIỂM VÀO CỦA TOÀN BỘ ỨNG DỤNG
  * 
@@ -110,8 +111,19 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Bật hiển thị lỗi để debug (nên tắt khi deploy production)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Tắt display_errors cho API endpoints để tránh output trước JSON
+$isApiEndpoint = isset($_GET['act']) && in_array($_GET['act'], ['payment-process', 'api-seats', 'check-voucher', 'update-booking-status']);
+if (!$isApiEndpoint) {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+} else {
+    // Bắt đầu output buffering ngay từ đầu cho API endpoints
+    // Đảm bảo không có output nào từ các file được require trước khi đến controller
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    ob_start();
+}
 error_reporting(E_ALL);
 
 // Load file cấu hình môi trường (database, base URL, etc.)
@@ -215,7 +227,7 @@ match ($act) {
     // ============================================
     // CLIENT ROUTES - TRANG DÀNH CHO KHÁCH HÀNG
     // ============================================
-    
+
     'trangchu' => (new MoviesController)->trangchu(), // Trang chủ - hiển thị danh sách phim đang chiếu và sắp chiếu
     'gioithieu' => (new MoviesController)->gioithieu(), // Trang giới thiệu về rạp
     'lichchieu' => (new MoviesController)->lichchieu(), // Trang lịch chiếu - xem lịch chiếu theo ngày, rạp, phim
@@ -230,12 +242,12 @@ match ($act) {
     'payment' => (new BookingController)->payment(), // Trang thanh toán - nhập thông tin thanh toán
     'payment-process' => (new BookingController)->processPayment(), // Xử lý thanh toán - tạo booking, gửi đến VNPay
     'vnpay-return' => (new BookingController)->vnpayReturn(), // Callback từ VNPay sau khi thanh toán xong
-    
+
 
     // ============================================
     // AUTH ROUTES - XÁC THỰC NGƯỜI DÙNG
     // ============================================
-    
+
     'dangky' => (new AuthController)->register(), // Trang đăng ký tài khoản mới
     'dangnhap' => (new AuthController)->login(), // Trang đăng nhập - kiểm tra email/password, tạo session
     'dangxuat' => (new AuthController)->logout(), // Đăng xuất - xóa session, chuyển về trang chủ
@@ -244,7 +256,7 @@ match ($act) {
     // ============================================
     // PROFILE ROUTES - QUẢN LÝ HỒ SƠ
     // ============================================
-    
+
     'profile' => (new ProfileController)->index(), // Trang hồ sơ cá nhân
     'profile-update' => (new ProfileController)->update(), // Cập nhật thông tin cá nhân
     'profile-change-password' => (new ProfileController)->changePassword(), // Đổi mật khẩu
@@ -255,7 +267,7 @@ match ($act) {
     // ============================================
     // ADMIN ROUTES - TRANG QUẢN LÝ
     // ============================================
-    
+
     'dashboard' => (new DashboardController)->index(), // Dashboard - trang chủ admin, hiển thị thống kê
 
     // ============================================
@@ -352,7 +364,7 @@ match ($act) {
     'discounts-create' => (new DiscountsController)->create(), // Tạo khuyến mãi mới
     'discounts-edit' => (new DiscountsController)->edit(), // Sửa khuyến mãi
     'discounts-delete' => (new DiscountsController)->delete(), // Xóa khuyến mãi
-    
+
     // ============================================
     // TICKET PRICES ROUTES - QUẢN LÝ GIÁ VÉ (Admin)
     // ============================================

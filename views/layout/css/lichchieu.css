@@ -22,6 +22,7 @@
   margin: 0;
   padding: 0;
 }
+
 html,
 body {
   margin: 0;
@@ -39,7 +40,8 @@ body {
 /* PHẦN MENU */
 .header {
   width: 100%;
-  background: #0d1113; /* MÀU NỀN HEADER LIỀN KHỐI */
+  background: #0d1113;
+  /* MÀU NỀN HEADER LIỀN KHỐI */
   padding: 20px 0;
   position: relative;
   z-index: 1000;
@@ -102,10 +104,13 @@ body {
 }
 
 /* Light mode: overlay text TicketHub màu đen lên ảnh và ẩn text trong ảnh */
-[data-theme="light"] .logo::after {
+/* Chỉ áp dụng cho logo trong navbar/header, không áp dụng cho logo trong method buttons */
+[data-theme="light"] .navbar .logo::after,
+[data-theme="light"] .header .logo::after {
   content: "TicketHub";
   position: absolute;
-  left: 60px; /* Vị trí text bên cạnh icon */
+  left: 60px;
+  /* Vị trí text bên cạnh icon */
   top: 50%;
   transform: translateY(-50%);
   font-family: "Montserrat", sans-serif;
@@ -117,9 +122,13 @@ body {
 }
 
 /* Light mode: crop ảnh để chỉ hiển thị icon, ẩn text trong ảnh */
-[data-theme="light"] .logo img {
-  clip-path: inset(0 50% 0 0); /* Chỉ hiển thị nửa trái (icon) */
-  width: 60px; /* Giảm width để chỉ hiển thị icon */
+/* Chỉ áp dụng cho logo trong navbar/header, không áp dụng cho logo trong method buttons */
+[data-theme="light"] .navbar .logo img,
+[data-theme="light"] .header .logo img {
+  clip-path: inset(0 50% 0 0);
+  /* Chỉ hiển thị nửa trái (icon) */
+  width: 60px;
+  /* Giảm width để chỉ hiển thị icon */
 }
 
 /* ===== MENU ===== */
@@ -196,8 +205,8 @@ body {
   flex-shrink: 0;
 }
 
- /* SEARCH WRAPPER */
- .search-wrapper {
+/* SEARCH WRAPPER */
+.search-wrapper {
   position: relative;
   display: flex;
   align-items: center;
@@ -394,23 +403,23 @@ body {
     max-width: calc(100vw - 20px);
     width: auto;
   }
-  
+
   .search-form-horizontal {
     flex-direction: column;
     padding: 10px;
   }
-  
+
   .search-field {
     padding: 8px 10px;
     min-width: auto;
   }
-  
+
   .search-field:first-child {
     border-right: none;
     border-bottom: 1px solid #e0e0e0;
     padding-bottom: 10px;
   }
-  
+
   .search-submit-btn,
   .search-clear-btn {
     width: 100%;
@@ -445,9 +454,11 @@ body {
 
 @media (max-width: 900px) {
   .menu {
-    display: none; /* Ẩn menu nếu cần responsive mobile */
+    display: none;
+    /* Ẩn menu nếu cần responsive mobile */
   }
 }
+
 /* PHẦN NỘI DUNG */
 .page {
   max-width: 1200px;
@@ -466,7 +477,7 @@ body {
 }
 
 /* Đảm bảo nội dung có cùng padding với header */
-.page > * {
+.page>* {
   max-width: 100%;
 }
 
@@ -479,6 +490,7 @@ body {
   padding: 0 0;
   box-sizing: border-box;
 }
+
 .page-header h2 {
   display: inline-flex;
   align-items: center;
@@ -493,6 +505,7 @@ body {
 [data-theme="light"] .page-header h2 {
   color: var(--text-primary);
 }
+
 .dot {
   width: 10px;
   height: 10px;
@@ -513,6 +526,7 @@ body {
   max-width: 100%;
   box-sizing: border-box;
 }
+
 .pill {
   padding: 8px 14px;
   border-radius: 10px;
@@ -524,6 +538,7 @@ body {
   font-weight: 600;
   display: inline-block;
 }
+
 .pill:hover {
   transform: translateY(-3px);
   border-color: rgba(255, 255, 255, 0.12);
@@ -537,6 +552,7 @@ body {
   border-color: var(--border-color);
   background: var(--glass);
 }
+
 .pill.active {
   background: var(--accent);
   color: #fff;
@@ -569,11 +585,9 @@ body {
 .movie-card {
   display: flex !important;
   gap: 18px !important;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    rgba(0, 0, 0, 0.03)
-  ) !important;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.01),
+      rgba(0, 0, 0, 0.03)) !important;
   padding: 18px !important;
   border-radius: 12px !important;
   border: 1px solid rgba(255, 255, 255, 0.03) !important;
@@ -621,14 +635,17 @@ body {
   border: none !important;
   outline: none !important;
 }
+
 .poster:hover {
   transform: translateY(-4px) !important;
   box-shadow: 0 16px 40px rgba(255, 105, 120, 0.3) !important;
 }
+
 .poster:focus {
   outline: none !important;
   border: none !important;
 }
+
 .poster img {
   width: 100% !important;
   height: 100% !important;
@@ -678,6 +695,7 @@ body {
   flex-wrap: wrap !important;
   margin-bottom: 2px !important;
 }
+
 .tags {
   font-size: 13px !important;
   line-height: 1.4 !important;
@@ -686,6 +704,7 @@ body {
   min-width: 0 !important;
   margin: 0 !important;
 }
+
 .badge-2d {
   position: absolute !important;
   top: 0 !important;
@@ -737,7 +756,7 @@ body {
   text-decoration: none !important;
 }
 
-.meta-lines > div {
+.meta-lines>div {
   margin-bottom: 2px !important;
   display: block !important;
   text-decoration: none !important;
@@ -770,6 +789,7 @@ body {
   align-items: center !important;
   padding-top: 4px !important;
 }
+
 .time-btn {
   padding: 8px 12px !important;
   border-radius: 8px !important;
@@ -790,10 +810,12 @@ body {
   width: 100% !important;
   box-sizing: border-box !important;
 }
+
 .time-btn:hover {
   transform: translateY(-4px);
   border-color: rgba(255, 255, 255, 0.12);
 }
+
 .time-btn:focus {
   outline: none !important;
 }
@@ -803,11 +825,11 @@ body {
   .header-container {
     padding: 0 20px;
   }
-  
+
   .logo img {
     width: 100px;
   }
-  
+
   .menu {
     gap: 18px;
   }
@@ -818,18 +840,18 @@ body {
     flex-wrap: wrap;
     gap: 12px;
   }
-  
+
   .logo {
     order: 1;
   }
-  
+
   .menu {
     order: 3;
     width: 100%;
     justify-content: center;
     gap: 12px;
   }
-  
+
   .nav-actions {
     order: 2;
     margin-left: auto;
@@ -840,13 +862,14 @@ body {
   .header-container {
     padding: 0 16px;
   }
-  
+
   .logo img {
     width: 90px;
   }
-  
+
   .menu {
-    display: none; /* Ẩn menu nếu cần responsive mobile */
+    display: none;
+    /* Ẩn menu nếu cần responsive mobile */
   }
 }
 
@@ -856,15 +879,18 @@ body {
     padding: 40px 16px;
     max-width: 100%;
   }
+
   .movies-grid {
     grid-template-columns: 1fr !important;
     gap: 18px !important;
     max-width: 100% !important;
   }
+
   .movie-card {
     flex-direction: column !important;
     align-items: center !important;
   }
+
   .poster {
     width: 100% !important;
     max-width: 300px !important;
@@ -875,18 +901,22 @@ body {
     max-width: 300px !important;
     margin-bottom: 16px !important;
   }
+
   .info {
     width: 100% !important;
     text-align: center !important;
   }
+
   .badge-2d {
     top: 0 !important;
     right: 0 !important;
   }
+
   .date-pills {
     gap: 8px;
     padding: 0 10px;
   }
+
   .pill {
     padding: 6px 12px;
     font-size: 13px;
@@ -902,7 +932,7 @@ body {
     padding-left: 20px;
     padding-right: 20px;
   }
-  
+
   .movies-grid {
     max-width: 100%;
     margin-left: auto;
@@ -916,6 +946,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   outline-offset: 3px;
   border-radius: 6px;
 }
+
 /* phần footer */
 /* Footer - modern cinematic style */
 .footer {
@@ -966,6 +997,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   display: grid;
   gap: 10px;
 }
+
 .links a {
   color: rgba(233, 238, 243, 0.86);
   text-decoration: none;
@@ -992,6 +1024,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   align-items: center;
   margin-bottom: 12px;
 }
+
 .app-badge {
   height: 40px;
   object-fit: contain;
@@ -1005,6 +1038,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   gap: 10px;
   margin-top: 8px;
 }
+
 .s-ico {
   width: 40px;
   height: 40px;
@@ -1018,6 +1052,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   text-decoration: none;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
+
 .s-ico:hover {
   transform: translateY(-6px);
   background: linear-gradient(180deg, #ff6a72, #ff3d57);
@@ -1053,12 +1088,14 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
 [data-theme="light"] .subscribe .muted {
   color: var(--text-muted);
 }
+
 .subscribe-form {
   display: flex;
   gap: 8px;
   align-items: center;
   margin-top: 6px;
 }
+
 .subscribe-form input {
   flex: 1;
   padding: 10px 12px;
@@ -1085,6 +1122,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   box-shadow: 0 6px 18px var(--shadow-lg);
   border-color: var(--border-color);
 }
+
 .subscribe-form button {
   padding: 10px 14px;
   border-radius: 8px;
@@ -1095,6 +1133,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   cursor: pointer;
   transition: transform 0.12s;
 }
+
 .subscribe-form button:hover {
   transform: translateY(-4px);
 }
@@ -1114,6 +1153,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   padding-top: 18px;
   text-align: center;
 }
+
 .footer-bottom .copy {
   color: rgba(233, 238, 243, 0.66);
   margin: 0;
@@ -1130,18 +1170,22 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
     grid-template-columns: 1fr 1fr;
   }
 }
+
 @media (max-width: 720px) {
   .footer-top {
     grid-template-columns: 1fr;
   }
+
   .badges {
     gap: 8px;
   }
+
   .app-badge {
     height: 34px;
   }
+
   .s-ico {
     width: 36px;
     height: 36px;
   }
-} 
+}

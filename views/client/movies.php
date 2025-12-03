@@ -6,6 +6,70 @@ $dates = $dates ?? [];
 $selectedDate = $selectedDate ?? date('Y-m-d');
 ?>
 
+<!-- Định nghĩa hàm showSeatSelection TRƯỚC khi render HTML -->
+<script>
+    // Đảm bảo hàm showSeatSelection được định nghĩa trong global scope NGAY LẬP TỨC
+    window.showSeatSelection = function(button) {
+        // Kiểm tra xem button có tồn tại không
+        if (!button) {
+            console.error('Button không tồn tại');
+            return;
+        }
+        
+        const showtimeId = button.getAttribute('data-showtime-id');
+        const showtimeTime = button.getAttribute('data-showtime-time');
+
+        // Kiểm tra xem có showtimeId không
+        if (!showtimeId) {
+            console.error('Không có showtime ID');
+            alert('Không tìm thấy thông tin suất chiếu');
+            return;
+        }
+
+        // Đánh dấu button đang active
+        document.querySelectorAll('.time-pill').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        button.classList.add('active');
+
+        // Đảm bảo button có thể click được
+        button.style.pointerEvents = 'auto';
+        button.style.cursor = 'pointer';
+
+        // Hiển thị container chọn ghế
+        const container = document.getElementById('seatSelectionContainer');
+        if (container) {
+            container.style.display = 'block';
+
+            // Scroll đến phần chọn ghế
+            container.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // Load dữ liệu ghế - sẽ được định nghĩa sau
+        // Đợi một chút để đảm bảo loadSeatData đã được định nghĩa
+        setTimeout(() => {
+            if (typeof window.loadSeatData === 'function') {
+                window.loadSeatData(showtimeId, showtimeTime);
+            } else {
+                console.error('loadSeatData function không tồn tại, đang thử lại...');
+                // Thử lại sau 500ms
+                setTimeout(() => {
+                    if (typeof window.loadSeatData === 'function') {
+                        window.loadSeatData(showtimeId, showtimeTime);
+                    } else {
+                        console.error('loadSeatData function vẫn không tồn tại');
+                        alert('Đang tải dữ liệu ghế... Vui lòng đợi một chút.');
+                    }
+                }, 500);
+            }
+        }, 100);
+    };
+    console.log('showSeatSelection function defined:', typeof window.showSeatSelection === 'function');
+</script>
+
 <!-- phần nội dung -->
 <section class="movie-hero" aria-label="Chi tiết phim"
     <?php if ($movie && !empty($movie['image'])): ?>
@@ -123,9 +187,85 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     </div>
 </div>
 
+<!-- Hàm showSeatSelection đã được định nghĩa ở đầu file -->
 <script>
-    // Xử lý xem trailer
+    // Hàm showSeatSelection đã được định nghĩa ở đầu file (dòng 12)
+    // Các hàm và biến khác cho seat selection
+
+    // Reset viewport khi trang load để tránh zoom
+    function resetViewport() {
+        // Reset zoom level
+        if (document.body.style.zoom) {
+            document.body.style.zoom = '';
+        }
+        // Reset transform scale nếu có
+        if (document.body.style.transform) {
+            document.body.style.transform = '';
+        }
+        // Reset document zoom
+        if (document.documentElement.style.zoom) {
+            document.documentElement.style.zoom = '';
+        }
+        // Reset viewport meta tag
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        }
+        // Force reset browser zoom
+        if (window.devicePixelRatio && window.devicePixelRatio !== 1) {
+            // Nếu có zoom, reset về 1
+            document.body.style.zoom = '1';
+        }
+    }
+
+    // Gọi reset viewport ngay khi script chạy
+    resetViewport();
+    
+    // Reset lại khi URL có parameter _reset_zoom (không reload lại trang)
+    if (window.location.search.includes('_reset_zoom')) {
+        // Reset viewport ngay lập tức
+        resetViewport();
+        
+        // Xóa parameters khỏi URL sau khi reset (không reload)
+        const url = new URL(window.location.href);
+        url.searchParams.delete('_reset_zoom');
+        url.searchParams.delete('_t');
+        url.searchParams.delete('_r');
+        url.searchParams.delete('_nocache');
+        window.history.replaceState({}, '', url.toString());
+        
+        // Reset lại viewport một lần nữa
+        setTimeout(resetViewport, 100);
+    }
+
+    // Xử lý xem trailer và đảm bảo time-pill có thể click được
     document.addEventListener('DOMContentLoaded', function() {
+        // Reset viewport khi DOM load xong
+        resetViewport();
+        
+        // Kiểm tra nếu có showtime_id trong URL (quay lại từ thanh toán)
+        const urlParams = new URLSearchParams(window.location.search);
+        const showtimeId = urlParams.get('showtime_id');
+        if (showtimeId) {
+            // Tìm button time-pill tương ứng và tự động click để mở phần chọn ghế
+            // Chỉ chạy 1 lần, đợi đủ thời gian để DOM và functions đã load xong
+            let autoOpenAttempted = false;
+            const tryAutoOpen = () => {
+                if (autoOpenAttempted) return;
+                const timePill = document.querySelector(`.time-pill[data-showtime-id="${showtimeId}"]`);
+                if (timePill && typeof window.showSeatSelection === 'function' && typeof window.loadSeatData === 'function') {
+                    autoOpenAttempted = true;
+                    console.log('Auto-opening seat selection for showtime:', showtimeId);
+                    window.showSeatSelection(timePill);
+                }
+            };
+            
+            // Thử ngay, sau đó thử lại nếu chưa sẵn sàng
+            tryAutoOpen();
+            setTimeout(tryAutoOpen, 300);
+            setTimeout(tryAutoOpen, 600);
+        }
+        
         const watchTrailerBtn = document.getElementById('watchTrailer');
         if (watchTrailerBtn) {
             watchTrailerBtn.addEventListener('click', function() {
@@ -135,6 +275,49 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 }
             });
         }
+        
+        // Đảm bảo tất cả time-pill buttons có thể click được
+        const timePills = document.querySelectorAll('.time-pill');
+        console.log('Found time-pill buttons:', timePills.length);
+        console.log('showSeatSelection function exists:', typeof window.showSeatSelection === 'function');
+        
+        timePills.forEach((pill, index) => {
+            // Đảm bảo pointer-events và cursor được set đúng
+            pill.style.pointerEvents = 'auto';
+            pill.style.cursor = 'pointer';
+            pill.style.zIndex = '10';
+            pill.style.position = 'relative';
+            
+            // Lấy thông tin showtime
+            const showtimeId = pill.getAttribute('data-showtime-id');
+            const showtimeTime = pill.getAttribute('data-showtime-time');
+            
+            console.log(`Time-pill ${index}: showtimeId=${showtimeId}, showtimeTime=${showtimeTime}`);
+            
+            if (showtimeId) {
+                // Xóa onclick attribute cũ
+                pill.removeAttribute('onclick');
+                
+                // Thêm event listener mới (sử dụng capture phase để đảm bảo không bị block)
+                pill.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Time-pill clicked:', showtimeId, showtimeTime);
+                    
+                    if (typeof window.showSeatSelection === 'function') {
+                        window.showSeatSelection(this);
+                    } else {
+                        console.error('showSeatSelection function not found');
+                        alert('Có lỗi xảy ra. Vui lòng tải lại trang.');
+                    }
+                }, true); // Use capture phase
+                
+                // Thêm một event listener khác ở bubble phase để đảm bảo
+                pill.addEventListener('click', function(e) {
+                    console.log('Time-pill click (bubble phase):', showtimeId);
+                }, false);
+            }
+        });
     });
 
     // Biến toàn cục cho chọn ghế
@@ -156,31 +339,11 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     let lastAdultCount = 0;
     let lastStudentCount = 0;
 
-    function showSeatSelection(button) {
-        const showtimeId = button.getAttribute('data-showtime-id');
-        const showtimeTime = button.getAttribute('data-showtime-time');
+    // Hàm showSeatSelection đã được định nghĩa ở đầu script tag trong global scope (window.showSeatSelection)
+    // Không cần định nghĩa lại ở đây
 
-        // Đánh dấu button đang active
-        document.querySelectorAll('.time-pill').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        button.classList.add('active');
-
-        // Hiển thị container chọn ghế
-        const container = document.getElementById('seatSelectionContainer');
-        container.style.display = 'block';
-
-        // Scroll đến phần chọn ghế
-        container.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-
-        // Load dữ liệu ghế
-        loadSeatData(showtimeId, showtimeTime);
-    }
-
-    function loadSeatData(showtimeId, showtimeTime) {
+    // Định nghĩa loadSeatData trong global scope để có thể gọi từ showSeatSelection
+    window.loadSeatData = function(showtimeId, showtimeTime) {
         currentShowtimeId = showtimeId;
         selectedSeats = [];
         selectedGroups = [];
@@ -220,7 +383,9 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 console.error('Error:', error);
                 alert('Có lỗi xảy ra khi tải dữ liệu ghế');
             });
-    }
+    };
+    console.log('loadSeatData function defined:', typeof window.loadSeatData === 'function');;
+    console.log('loadSeatData function defined:', typeof window.loadSeatData === 'function');
 
     function renderSeatSelection(data, showtimeTime) {
         const content = document.getElementById('seatSelectionContent');
@@ -254,6 +419,73 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
 
         let html = `
         <style>
+           /* Force reset zoom khi trang load */
+           html, body {
+               zoom: 1 !important;
+               -webkit-text-size-adjust: 100% !important;
+               -moz-text-size-adjust: 100% !important;
+               -ms-text-size-adjust: 100% !important;
+               text-size-adjust: 100% !important;
+           }
+           
+           /* ==== CỘT BỊ DISABLE KHI CHỌN 1 GHẾ LẺ ==== */
+.seat.disabled-column {
+    background: #2a2a2a !important;
+    color: transparent !important;
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    position: relative !important;
+    border-color: #333 !important;
+}
+
+.seat.disabled-column::after {
+    content: '✕' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    color: #999 !important;
+    z-index: 2 !important;
+    line-height: 1 !important;
+}
+
+           /* ==== HÀNG BỊ DISABLE KHI CHỌN 1 GHẾ LẺ ==== */
+.seat-row.disabled-row {
+    opacity: 0.4 !important;
+    pointer-events: none !important;
+}
+
+.seat-row.disabled-row .seat {
+    background: #2a2a2a !important;
+    color: transparent !important;
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    position: relative !important;
+    border-color: #333 !important;
+}
+
+.seat-row.disabled-row .seat::after {
+    content: '✕' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    color: #999 !important;
+    z-index: 2 !important;
+    line-height: 1 !important;
+}
+
+.seat-row.disabled-row .row-label {
+    color: #666 !important;
+    opacity: 0.5 !important;
+}
+
            /* ==== KHUNG CHỌN GHẾ ==== */
 .ticket-selection-panel {
     max-width: 1200px;
@@ -343,11 +575,13 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     box-shadow:
         4px 4px 10px rgba(0, 0, 0, 0.9),
         -3px -3px 8px rgba(90, 90, 90, 0.25);
-    color:rgb(74, 28, 28);
+    color: #f5f5f5;
     font-size: 15px;
     appearance: none;
     outline: none;
     position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 /* mũi tên giả */
@@ -365,11 +599,37 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     padding-right: 32px;
 }
 
+.quantity-select:hover {
+    background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+    border-color: rgba(255, 159, 59, 0.6);
+    box-shadow:
+        4px 4px 12px rgba(0, 0, 0, 0.95),
+        -3px -3px 10px rgba(90, 90, 90, 0.35),
+        0 0 0 2px rgba(255, 159, 59, 0.3);
+    transform: translateY(-1px);
+    color: #ffffff;
+}
+
+/* Style cho option elements trong dropdown */
+.quantity-select option {
+    background: #2a2a2a;
+    color: #f5f5f5;
+    padding: 10px;
+    border: none;
+}
+
 .quantity-select:focus {
     border-color: #ff9f3b;
     box-shadow:
         0 0 0 1px rgba(255, 159, 59, 0.5),
         4px 4px 12px rgba(0, 0, 0, 0.95);
+}
+
+.quantity-select:active {
+    transform: translateY(0);
+    box-shadow:
+        2px 2px 8px rgba(0, 0, 0, 0.9),
+        -2px -2px 6px rgba(90, 90, 90, 0.25);
 }
 
 /* ==== PHẦN GHẾ LIỀN NHAU ==== */
@@ -713,7 +973,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             const rowLabel = row ? (row.getAttribute('data-row-label') || '').toUpperCase() : '';
             const allSeatsInSameRow = selectedSeats.length > 0 && selectedSeats.every(seat => seat.row === rowLabel);
             const allowLastSingleSeat = remainingSeats === 1 && allSeatsInSameRow;
-            
+
             // Nếu là chọn đi đôi (2 người) và chưa chọn ghế nào, tự động chọn ghế gần nhất
             // Hoặc khi số lượng = 4 và chọn 2 người, cũng dùng logic cặp cố định
             let groupSeats = [];
@@ -728,8 +988,8 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 // Vì logic đã tự động chọn ghế gần nhất (theo cặp cố định)
                 // Hoặc khi số lượng = 4 và chọn 2 người, cũng dùng logic cặp cố định
                 const isCoupleSelection = (totalPeople === 2 && selectedAdjacentCount === 2 && selectedSeats.length === 0) ||
-                                         (totalPeople === 4 && selectedAdjacentCount === 2 && remainingSeats === 2);
-                
+                    (totalPeople === 4 && selectedAdjacentCount === 2 && remainingSeats === 2);
+
                 // Chỉ kiểm tra gap khi không phải là chọn ghế đi đôi lần đầu
                 if (!isCoupleSelection && selectedSeats.length > 0 && !canAddSeatsWithoutGap(groupSeats)) {
                     // Bỏ chọn các ghế vừa chọn
@@ -797,7 +1057,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             // Kiểm tra xem có đang trong quá trình chọn liền nhau không
             // Nếu selectedAdjacentCount > 0 và chưa chọn đủ nhóm hiện tại, không được nhảy sang hàng khác
             const remainingSeats = totalPeople - selectedSeats.length;
-            
+
             // Kiểm tra xem nhóm hiện tại đã chọn đủ chưa
             // Nếu đã chọn đủ một nhóm (selectedAdjacentCount ghế), có thể chọn ở hàng khác
             let currentGroupComplete = false;
@@ -808,10 +1068,10 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     currentGroupComplete = true;
                 }
             }
-            
+
             // Nếu chưa có nhóm nào hoặc nhóm hiện tại chưa chọn đủ, kiểm tra xem có đang chọn liền nhau không
             const isSelectingAdjacent = selectedAdjacentCount > 0 && remainingSeats > 0 && !currentGroupComplete;
-            
+
             if (isSelectingAdjacent) {
                 // Kiểm tra tất cả ghế đã chọn và ghế mới phải cùng một hàng
                 const allSeats = [...selectedSeats, ...newSeats];
@@ -828,13 +1088,13 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                         }
                     }
                 });
-                
+
                 // Nếu có ghế ở nhiều hơn 1 hàng, không cho phép
                 if (rows.size > 1) {
                     return false;
                 }
             }
-            
+
             // Kiểm tra không được chọn ghế 6 nhảy sang dãy bên kia (block khác)
             const newSeatsCols = newSeats.map(seat => {
                 const seatEl = document.querySelector(`[data-seat-id="${seat.id}"]`);
@@ -843,7 +1103,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 }
                 return 0;
             }).filter(col => col > 0);
-            
+
             // Kiểm tra xem có ghế nào ở cột 6 không
             if (newSeatsCols.includes(6)) {
                 // Nếu có ghế ở cột 6, kiểm tra xem có ghế nào ở cột 7-12 không
@@ -852,7 +1112,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     return false; // Không cho phép chọn ghế 6 và ghế ở dãy bên kia cùng lúc
                 }
             }
-            
+
             // Kiểm tra xem có ghế nào ở cột 7 không
             if (newSeatsCols.includes(7)) {
                 // Nếu có ghế ở cột 7, kiểm tra xem có ghế nào ở cột 1-6 không
@@ -861,7 +1121,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     return false; // Không cho phép chọn ghế 7 và ghế ở dãy bên kia cùng lúc
                 }
             }
-            
+
             // Kiểm tra gap trong cùng dãy (cho tất cả trường hợp)
             const allSeats = [...selectedSeats, ...newSeats];
             const rows = new Set();
@@ -877,7 +1137,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     }
                 }
             });
-            
+
             // Kiểm tra gap trong từng hàng
             for (const rowLabel of rows) {
                 const row = document.querySelector(`[data-row-label="${rowLabel}"]`);
@@ -1083,9 +1343,9 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         // Cặp 7-8: chọn 7→8, chọn 8→7
         // Cặp 9-10: chọn 9→10, chọn 10→9
         // Cặp 11-12: chọn 11→12, chọn 12→11
-        
+
         let partnerColumn = null;
-        
+
         // Xác định ghế đối tác dựa trên cặp
         if (startColumn === 1) {
             partnerColumn = 2;
@@ -1201,34 +1461,56 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 // Dãy trái (1-6)
                 if (count === 3) {
                     // Chỉ có thể chọn: 1-3 hoặc 4-6
-                    validRanges = [[1, 3], [4, 6]];
+                    validRanges = [
+                        [1, 3],
+                        [4, 6]
+                    ];
                 } else if (count === 4) {
                     // Chỉ có thể chọn: 1-4 hoặc 3-6
-                    validRanges = [[1, 4], [3, 6]];
+                    validRanges = [
+                        [1, 4],
+                        [3, 6]
+                    ];
                 } else if (count === 5) {
                     // Chỉ có thể chọn: 1-5 hoặc 2-6
-                    validRanges = [[1, 5], [2, 6]];
+                    validRanges = [
+                        [1, 5],
+                        [2, 6]
+                    ];
                 } else if (count === 6) {
                     // Chỉ có thể chọn: 1-6
-                    validRanges = [[1, 6]];
+                    validRanges = [
+                        [1, 6]
+                    ];
                 }
             } else if (startBlock === 'right') {
                 // Dãy phải (7-12)
                 if (count === 3) {
                     // Chỉ có thể chọn: 7-9 hoặc 10-12
-                    validRanges = [[7, 9], [10, 12]];
+                    validRanges = [
+                        [7, 9],
+                        [10, 12]
+                    ];
                 } else if (count === 4) {
                     // Chỉ có thể chọn: 7-10 hoặc 9-12
-                    validRanges = [[7, 10], [9, 12]];
+                    validRanges = [
+                        [7, 10],
+                        [9, 12]
+                    ];
                 } else if (count === 5) {
                     // Chỉ có thể chọn: 7-11 hoặc 8-12
-                    validRanges = [[7, 11], [8, 12]];
+                    validRanges = [
+                        [7, 11],
+                        [8, 12]
+                    ];
                 } else if (count === 6) {
                     // Chỉ có thể chọn: 7-12
-                    validRanges = [[7, 12]];
+                    validRanges = [
+                        [7, 12]
+                    ];
                 }
             }
-            
+
             // Tìm range chứa startColumn
             let selectedRange = null;
             for (const range of validRanges) {
@@ -1237,11 +1519,11 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     break;
                 }
             }
-            
+
             if (!selectedRange) {
                 return []; // Không có range hợp lệ
             }
-            
+
             // Tạo candidate từ range đã chọn
             const blockStart = selectedRange[0];
             const blockEnd = selectedRange[1];
@@ -1308,9 +1590,112 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 }
             });
         } else {
-            // Logic cho count = 1, 2: giữ nguyên
-            // Tạo các candidate ranges trong cùng block
-            for (let offset = 0; offset < count; offset++) {
+            // Logic cho count = 1, 2
+            // Đặc biệt: khi chọn 2 ghế, ưu tiên chọn hàng trên trước
+            if (count === 2) {
+                // Tìm hàng trên (hàng trước đó trong bảng chữ cái)
+                const currentRowIndex = rowLabel.charCodeAt(0) - 'A'.charCodeAt(0);
+                if (currentRowIndex > 0) {
+                    const prevRowLabel = String.fromCharCode('A'.charCodeAt(0) + currentRowIndex - 1);
+                    const prevRow = document.querySelector(`[data-row-label="${prevRowLabel}"]`);
+
+                    if (prevRow) {
+                        // Kiểm tra xem hàng trên có ghế trống ở cùng cột không
+                        const prevRowSeatMap = {};
+                        prevRow.querySelectorAll('.seat').forEach(seat => {
+                            const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+                            if (col > 0) {
+                                prevRowSeatMap[col] = seat;
+                            }
+                        });
+
+                        // Tạo các candidate từ hàng trên, ưu tiên chọn về bên trái (offset = 1 trước)
+                        for (let offset = count - 1; offset >= 0; offset--) {
+                            const blockStart = startColumn - offset;
+                            const blockEnd = blockStart + count - 1;
+
+                            if (!isInSameBlock(blockStart, blockEnd)) {
+                                continue;
+                            }
+
+                            if (blockStart < 1 || blockEnd > MAX_COLUMNS) {
+                                continue;
+                            }
+
+                            const seatsList = [];
+                            let isValidBlock = true;
+
+                            for (let col = blockStart; col <= blockEnd; col++) {
+                                const seat = prevRowSeatMap[col];
+                                if (!seat || !isSeatSelectable(seat)) {
+                                    isValidBlock = false;
+                                    break;
+                                }
+                                seatsList.push(seat);
+                            }
+
+                            if (isValidBlock) {
+                                const prevRowSelectedCols = selectedSeats
+                                    .filter(seat => seat.row === prevRowLabel)
+                                    .map(seat => seat.column || 0)
+                                    .filter(col => col > 0)
+                                    .sort((a, b) => a - b);
+
+                                const newCols = seatsList.map(s => parseInt(s.getAttribute('data-seat-column')) || 0);
+                                const isolatedCount = countIsolatedSeats(prevRowSelectedCols, newCols);
+
+                                const nearestLeft = (() => {
+                                    for (let i = prevRowSelectedCols.length - 1; i >= 0; i--) {
+                                        if (prevRowSelectedCols[i] < blockStart) {
+                                            return prevRowSelectedCols[i];
+                                        }
+                                    }
+                                    return null;
+                                })();
+
+                                const nearestRight = (() => {
+                                    for (let i = 0; i < prevRowSelectedCols.length; i++) {
+                                        if (prevRowSelectedCols[i] > blockEnd) {
+                                            return prevRowSelectedCols[i];
+                                        }
+                                    }
+                                    return null;
+                                })();
+
+                                const gapLeft = nearestLeft !== null ? blockStart - nearestLeft - 1 : 99;
+                                const gapRight = nearestRight !== null ? nearestRight - blockEnd - 1 : 99;
+                                const touchesLeft = gapLeft === 0 ? 0 : 1;
+                                const touchesRight = gapRight === 0 ? 0 : 1;
+                                const touchesBoth = touchesLeft + touchesRight;
+
+                                // Ưu tiên hàng trên (preferUpperRow = 0), ưu tiên offset lớn (chọn về bên trái)
+                                candidates.push({
+                                    seats: seatsList,
+                                    rowLabel: prevRowLabel,
+                                    newCols,
+                                    priority: {
+                                        isolatedCount,
+                                        touchesBoth,
+                                        preferLeft: 0,
+                                        preferUpperRow: 0, // Ưu tiên hàng trên
+                                        gapLeft,
+                                        gapRight,
+                                        centerDistance: Math.abs(startColumn - ((blockStart + blockEnd) / 2)),
+                                        leanOffset: offset, // offset lớn hơn = ưu tiên hơn (chọn về bên trái)
+                                        blockStart
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Tạo các candidate ranges trong cùng block (hàng hiện tại)
+            // Khi chọn 2 ghế, ưu tiên offset lớn hơn (chọn về bên trái) trước
+            const offsetOrder = count === 2 ? [1, 0] : [];
+            for (let i = 0; i < count; i++) {
+                const offset = offsetOrder.length > 0 ? (i < offsetOrder.length ? offsetOrder[i] : i) : i;
                 const blockStart = startColumn - offset;
                 const blockEnd = blockStart + count - 1;
 
@@ -1370,12 +1755,6 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 const touchesRight = gapRight === 0 ? 0 : 1;
                 const touchesBoth = touchesLeft + touchesRight;
 
-                // Logic đặc biệt: nếu click D5 và đã có D1,D2,D3, chọn D5,D4 thay vì D5,D6
-                let preferLeft = false;
-                if (nearestLeft !== null && gapLeft === 1 && gapRight >= 1) {
-                    preferLeft = true;
-                }
-
                 candidates.push({
                     seats: seatsList,
                     rowLabel,
@@ -1383,11 +1762,12 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     priority: {
                         isolatedCount, // Số ghế đơn lẻ (ưu tiên thấp hơn = tốt hơn)
                         touchesBoth, // Số ghế đã chọn được ghép (ưu tiên thấp hơn = tốt hơn)
-                        preferLeft: preferLeft ? 0 : 1, // Ưu tiên chọn về bên trái
+                        preferLeft: 0, // Luôn ưu tiên chọn về bên trái
+                        preferUpperRow: 1, // Hàng hiện tại (ưu tiên thấp hơn hàng trên)
                         gapLeft,
                         gapRight,
                         centerDistance: Math.abs(startColumn - ((blockStart + blockEnd) / 2)),
-                        leanOffset: offset,
+                        leanOffset: offset, // offset lớn hơn = ưu tiên hơn (chọn về bên trái)
                         blockStart
                     }
                 });
@@ -1399,14 +1779,19 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             return [];
         }
 
-        // Sắp xếp: ưu tiên ít ghế đơn lẻ, ghép với ghế đã chọn, chọn về bên trái
+        // Sắp xếp: ưu tiên ít ghế đơn lẻ, ghép với ghế đã chọn, ưu tiên hàng trên, ưu tiên offset lớn (chọn về bên trái)
         candidates.sort((a, b) => {
-            const keys = ['isolatedCount', 'touchesBoth', 'preferLeft', 'gapLeft', 'gapRight', 'centerDistance', 'leanOffset', 'blockStart'];
+            const keys = ['isolatedCount', 'touchesBoth', 'preferUpperRow', 'preferLeft', 'gapLeft', 'gapRight', 'centerDistance', 'blockStart'];
             for (const key of keys) {
-                const diff = a.priority[key] - b.priority[key];
+                const diff = (a.priority[key] || 0) - (b.priority[key] || 0);
                 if (Math.abs(diff) > 0.0001) {
                     return diff;
                 }
+            }
+            // Ưu tiên offset lớn hơn (chọn về bên trái) - sắp xếp ngược lại
+            const offsetDiff = (b.priority.leanOffset || 0) - (a.priority.leanOffset || 0);
+            if (Math.abs(offsetDiff) > 0.0001) {
+                return offsetDiff;
             }
             return 0;
         });
@@ -1548,8 +1933,11 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         const seatIds = selectedSeats.map(s => s.id).join(',');
         const seatLabels = selectedSeats.map(s => s.label).join(',');
 
-        // Truyền thêm thông tin số lượng người lớn và sinh viên
-        window.location.href = `<?= BASE_URL ?>?act=payment&showtime_id=${currentShowtimeId}&seats=${seatIds}&seat_labels=${encodeURIComponent(seatLabels)}&adult_count=${adultCount}&student_count=${studentCount}`;
+        // Truyền thêm thông tin số lượng người lớn và sinh viên, và đánh dấu đến từ movies.php
+        const movieId = '<?= $movie['id'] ?? '' ?>';
+        const cinemaId = '<?= !empty($cinemaId) ? $cinemaId : '' ?>';
+        const date = '<?= $selectedDate ?? date('Y-m-d') ?>';
+        window.location.href = `<?= BASE_URL ?>?act=payment&showtime_id=${currentShowtimeId}&seats=${seatIds}&seat_labels=${encodeURIComponent(seatLabels)}&adult_count=${adultCount}&student_count=${studentCount}&from=movies&movie_id=${movieId}&cinema=${cinemaId}&date=${date}`;
     }
 
     // Kiểm tra không cho phép có khoảng trống 1 ô giữa các ghế đã chọn
@@ -1719,7 +2107,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         }
 
         let availableOptions = [];
-        
+
         // Tính số ghế còn lại cần chọn
         remainingSeats = totalPeople - selectedSeats.length;
 
@@ -1873,12 +2261,21 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         const totalPeople = adultCount + studentCount;
         const seats = document.querySelectorAll('#seatsGrid .seat');
         const seatRows = document.querySelectorAll('#seatsGrid .seat-row');
-        
+
+        // Danh sách các cột bị disable khi chọn 1 ghế lẻ (cột 2, 5, 8, 11)
+        const DISABLED_COLUMNS_SINGLE = [2, 5, 8, 11];
+
+        // Bỏ disabled hàng (không cần disable hàng nữa)
+        seatRows.forEach(row => {
+            row.classList.remove('disabled-row');
+        });
+
         if (totalPeople === 1 && selectedAdjacentCount === 1) {
-            // Ẩn các ghế không được chọn
+            // Disable các cột 2, 5, 8, 11 và các cột không được phép chọn
             seats.forEach(seat => {
                 const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
-                if (col > 0 && !ALLOWED_SINGLE_COLUMNS.includes(col) &&
+                if (col > 0 &&
+                    (DISABLED_COLUMNS_SINGLE.includes(col) || !ALLOWED_SINGLE_COLUMNS.includes(col)) &&
                     !seat.classList.contains('booked') &&
                     !seat.classList.contains('maintenance') &&
                     !seat.classList.contains('selected')) {
@@ -1887,7 +2284,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     seat.classList.remove('disabled-column');
                 }
             });
-            
+
             // Hiển thị tất cả các hàng - không ẩn hàng nào
             seatRows.forEach(row => {
                 row.style.display = '';
@@ -2018,50 +2415,50 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                         </span>
                     </div>
                 <?php endif; ?>
-                
+
                 <form action="<?= BASE_URL ?>?act=submit-movie-review" method="POST" id="reviewForm">
-                <input type="hidden" name="movie_id" value="<?= $movie['id'] ?>">
-                
-                <div style="margin-bottom: 12px;">
-                    <label style="color: #fff; display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px;">Xếp hạng <span style="color: #ff8c00;">*</span></label>
-                    <div class="star-rating-input" style="display: flex; gap: 5px; align-items: center; <?= (!$isLoggedIn || !$hasPurchased) ? 'opacity: 0.5; pointer-events: none;' : '' ?>">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <input type="radio" name="rating" id="star<?= $i ?>" value="<?= $i ?>" 
-                                   <?= ($existingComment && $existingComment['rating'] == $i) ? 'checked' : '' ?> 
-                                   <?= (!$isLoggedIn || !$hasPurchased) ? 'disabled' : 'required' ?> 
-                                   style="display: none;">
-                            <label for="star<?= $i ?>" class="star-label-input" data-rating="<?= $i ?>" 
-                                   style="cursor: <?= ($isLoggedIn && $hasPurchased) ? 'pointer' : 'not-allowed' ?>; font-size: 20px; color: #666; transition: color 0.2s;">
-                                <i class="bi bi-star-fill"></i>
-                            </label>
-                        <?php endfor; ?>
-                        <span id="ratingText" style="color: rgba(255, 255, 255, 0.7); margin-left: 10px; font-size: 12px;">
-                            <?= $existingComment ? 'Đã chọn ' . $existingComment['rating'] . ' sao' : 'Chọn số sao' ?>
-                        </span>
-                    </div>
-                </div>
+                    <input type="hidden" name="movie_id" value="<?= $movie['id'] ?>">
 
-                <div style="margin-bottom: 12px;">
-                    <label for="reviewContent" style="color: #fff; display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px;">
-                        Bình luận <span style="color: #ff8c00;">*</span>
-                    </label>
-                    <textarea name="content" id="reviewContent" rows="4" 
-                              placeholder="<?= !$isLoggedIn ? 'Các đánh giá phim có thể được viết sau khi đăng nhập và mua vé.' : (!$hasPurchased ? 'Bạn cần mua vé phim này trước khi có thể đánh giá.' : 'Chia sẻ cảm nhận của bạn về bộ phim này...') ?>" 
-                              <?= (!$isLoggedIn || !$hasPurchased) ? 'disabled' : 'required' ?>
-                              style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.3); color: #fff; font-size: 13px; resize: vertical; <?= (!$isLoggedIn || !$hasPurchased) ? 'opacity: 0.5; cursor: not-allowed;' : '' ?>"
-                              maxlength="1000"><?= $existingComment ? htmlspecialchars($existingComment['content']) : '' ?></textarea>
-                    <div style="text-align: right; margin-top: 3px; color: rgba(255, 255, 255, 0.5); font-size: 11px;">
-                        <span id="charCount"><?= $existingComment ? strlen($existingComment['content']) : 0 ?></span>/1000 Ký tự
+                    <div style="margin-bottom: 12px;">
+                        <label style="color: #fff; display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px;">Xếp hạng <span style="color: #ff8c00;">*</span></label>
+                        <div class="star-rating-input" style="display: flex; gap: 5px; align-items: center; <?= (!$isLoggedIn || !$hasPurchased) ? 'opacity: 0.5; pointer-events: none;' : '' ?>">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <input type="radio" name="rating" id="star<?= $i ?>" value="<?= $i ?>"
+                                    <?= ($existingComment && $existingComment['rating'] == $i) ? 'checked' : '' ?>
+                                    <?= (!$isLoggedIn || !$hasPurchased) ? 'disabled' : 'required' ?>
+                                    style="display: none;">
+                                <label for="star<?= $i ?>" class="star-label-input" data-rating="<?= $i ?>"
+                                    style="cursor: <?= ($isLoggedIn && $hasPurchased) ? 'pointer' : 'not-allowed' ?>; font-size: 20px; color: #666; transition: color 0.2s;">
+                                    <i class="bi bi-star-fill"></i>
+                                </label>
+                            <?php endfor; ?>
+                            <span id="ratingText" style="color: rgba(255, 255, 255, 0.7); margin-left: 10px; font-size: 12px;">
+                                <?= $existingComment ? 'Đã chọn ' . $existingComment['rating'] . ' sao' : 'Chọn số sao' ?>
+                            </span>
+                        </div>
                     </div>
-                </div>
 
-                <button type="submit" 
+                    <div style="margin-bottom: 12px;">
+                        <label for="reviewContent" style="color: #fff; display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px;">
+                            Bình luận <span style="color: #ff8c00;">*</span>
+                        </label>
+                        <textarea name="content" id="reviewContent" rows="4"
+                            placeholder="<?= !$isLoggedIn ? 'Các đánh giá phim có thể được viết sau khi đăng nhập và mua vé.' : (!$hasPurchased ? 'Bạn cần mua vé phim này trước khi có thể đánh giá.' : 'Chia sẻ cảm nhận của bạn về bộ phim này...') ?>"
+                            <?= (!$isLoggedIn || !$hasPurchased) ? 'disabled' : 'required' ?>
+                            style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(0, 0, 0, 0.3); color: #fff; font-size: 13px; resize: vertical; <?= (!$isLoggedIn || !$hasPurchased) ? 'opacity: 0.5; cursor: not-allowed;' : '' ?>"
+                            maxlength="1000"><?= $existingComment ? htmlspecialchars($existingComment['content']) : '' ?></textarea>
+                        <div style="text-align: right; margin-top: 3px; color: rgba(255, 255, 255, 0.5); font-size: 11px;">
+                            <span id="charCount"><?= $existingComment ? strlen($existingComment['content']) : 0 ?></span>/1000 Ký tự
+                        </div>
+                    </div>
+
+                    <button type="submit"
                         <?= (!$isLoggedIn || !$hasPurchased) ? 'disabled' : '' ?>
                         style="background: <?= ($isLoggedIn && $hasPurchased) ? '#ff8c00' : '#666' ?>; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: <?= ($isLoggedIn && $hasPurchased) ? 'pointer' : 'not-allowed' ?>; transition: background 0.2s; <?= (!$isLoggedIn || !$hasPurchased) ? 'opacity: 0.6;' : '' ?>">
-                    <i class="bi bi-check-circle" style="font-size: 12px;"></i> Gửi đánh giá
-                </button>
-            </form>
-        </div>
+                        <i class="bi bi-check-circle" style="font-size: 12px;"></i> Gửi đánh giá
+                    </button>
+                </form>
+            </div>
         <?php else: ?>
             <!-- Thông báo đã đánh giá -->
             <div class="review-form-container" style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
@@ -2077,9 +2474,9 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             <h3 style="color: #fff; font-size: 15px; font-weight: 600; margin-bottom: 12px;">
                 Đánh giá từ khách hàng (<?= count($comments ?? []) ?>)
             </h3>
-            
+
             <?php if (!empty($comments)): ?>
-                <?php foreach ($comments as $comment): 
+                <?php foreach ($comments as $comment):
                     $isMyComment = ($isLoggedIn && isset($_SESSION['user_id']) && $comment['user_id'] == $_SESSION['user_id']);
                 ?>
                     <div class="comment-item" style="background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
@@ -2125,7 +2522,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     .star-label-input {
         color: #666;
     }
-    
+
     .star-label-input.active {
         color: #ff8c00 !important;
     }
@@ -2136,7 +2533,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     const starLabels = document.querySelectorAll('.star-label-input');
     const ratingText = document.getElementById('ratingText');
     const ratingInputs = document.querySelectorAll('input[name="rating"]');
-    
+
     const ratingTexts = {
         1: 'Rất tệ',
         2: 'Tệ',
@@ -2204,12 +2601,12 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     // Character count
     const reviewContent = document.getElementById('reviewContent');
     const charCount = document.getElementById('charCount');
-    
+
     if (reviewContent && charCount) {
         reviewContent.addEventListener('input', function() {
             const length = this.value.length;
             charCount.textContent = length;
-            
+
             if (length > 1000) {
                 charCount.style.color = '#dc3545';
                 this.value = this.value.substring(0, 1000);
