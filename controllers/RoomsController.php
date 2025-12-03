@@ -21,16 +21,28 @@ class RoomsController
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $page = max(1, $page);
         
+        // Lấy tham số tìm kiếm và lọc
+        $searchKeyword = isset($_GET['search']) ? trim($_GET['search']) : '';
+        $cinemaFilter = isset($_GET['cinema_id']) ? (int)$_GET['cinema_id'] : null;
+        $cinemaFilter = $cinemaFilter > 0 ? $cinemaFilter : null;
+        
+        // Lấy danh sách rạp cho filter (chỉ admin mới thấy dropdown)
+        $cinemas = [];
+        if (isAdmin()) {
+            $cinemas = $this->cinema->all();
+        }
+        
         // Nếu là manager hoặc staff, chỉ lấy phòng của rạp mình quản lý
         if (isManager() || isStaff()) {
             $cinemaId = getCurrentCinemaId();
             if ($cinemaId) {
-                $result = $this->room->paginateByCinema($cinemaId, $page, 10);
+                $result = $this->room->paginateByCinema($cinemaId, $page, 10, $searchKeyword);
             } else {
                 $result = ['data' => [], 'page' => 1, 'totalPages' => 0, 'total' => 0, 'perPage' => 10];
             }
         } else {
-            $result = $this->room->paginate($page, 10);
+            // Admin có thể lọc theo rạp và tìm kiếm
+            $result = $this->room->paginate($page, 10, $cinemaFilter, $searchKeyword);
         }
         
         // Lấy số ghế thực tế từ bảng seats cho mỗi phòng
@@ -48,7 +60,10 @@ class RoomsController
                 'totalPages' => $result['totalPages'],
                 'total' => $result['total'],
                 'perPage' => $result['perPage']
-            ]
+            ],
+            'cinemas' => $cinemas,
+            'searchKeyword' => $searchKeyword,
+            'cinemaFilter' => $cinemaFilter
         ]);
     }
 

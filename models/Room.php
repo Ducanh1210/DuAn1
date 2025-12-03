@@ -55,16 +55,47 @@ class Room
     }
 
     /**
-     * Lấy phòng với phân trang
+     * Lấy phòng với phân trang, tìm kiếm và lọc
+     * 
+     * @param int $page Số trang
+     * @param int $perPage Số phòng mỗi trang
+     * @param int|null $cinemaId Lọc theo rạp (null = tất cả)
+     * @param string|null $searchKeyword Tìm kiếm theo tên phòng, mã phòng (null = không tìm)
+     * @return array Dữ liệu phân trang
      */
-    public function paginate($page = 1, $perPage = 10)
+    public function paginate($page = 1, $perPage = 10, $cinemaId = null, $searchKeyword = null)
     {
         try {
             $offset = ($page - 1) * $perPage;
             
-            // Lấy tổng số bản ghi
-            $countSql = "SELECT COUNT(*) as total FROM rooms";
+            // Xây dựng WHERE clause
+            $whereConditions = [];
+            $params = [];
+            
+            if ($cinemaId) {
+                $whereConditions[] = "rooms.cinema_id = :cinema_id";
+                $params[':cinema_id'] = $cinemaId;
+            }
+            
+            if ($searchKeyword) {
+                $whereConditions[] = "(rooms.name LIKE :search OR rooms.room_code LIKE :search OR cinemas.name LIKE :search)";
+                $params[':search'] = '%' . $searchKeyword . '%';
+            }
+            
+            $whereClause = "";
+            if (!empty($whereConditions)) {
+                $whereClause = "WHERE " . implode(" AND ", $whereConditions);
+            }
+            
+                // Lấy tổng số bản ghi
+            $countSql = "SELECT COUNT(*) as total 
+                        FROM rooms
+                        LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                        " . $whereClause;
             $countStmt = $this->conn->prepare($countSql);
+            foreach ($params as $key => $value) {
+                $countStmt->bindValue($key, $value);
+            }
             $countStmt->execute();
             $total = $countStmt->fetch()['total'];
             
@@ -73,9 +104,13 @@ class Room
                     cinemas.name AS cinema_name
                     FROM rooms
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                    " . $whereClause . "
                     ORDER BY rooms.cinema_id ASC, rooms.id ASC
                     LIMIT :limit OFFSET :offset";
             $stmt = $this->conn->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
             $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
             $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
             $stmt->execute();
@@ -101,17 +136,40 @@ class Room
     }
 
     /**
-     * Lấy phòng với phân trang theo cinema_id
+     * Lấy phòng với phân trang theo cinema_id, có hỗ trợ tìm kiếm
+     * 
+     * @param int $cinemaId ID của rạp
+     * @param int $page Số trang
+     * @param int $perPage Số phòng mỗi trang
+     * @param string|null $searchKeyword Tìm kiếm theo tên phòng, mã phòng (null = không tìm)
+     * @return array Dữ liệu phân trang
      */
-    public function paginateByCinema($cinemaId, $page = 1, $perPage = 10)
+    public function paginateByCinema($cinemaId, $page = 1, $perPage = 10, $searchKeyword = null)
     {
         try {
             $offset = ($page - 1) * $perPage;
             
+            // Xây dựng WHERE clause
+            $whereConditions = ["rooms.cinema_id = :cinema_id"];
+            $params = [':cinema_id' => $cinemaId];
+            
+            if ($searchKeyword) {
+                $whereConditions[] = "(rooms.name LIKE :search OR rooms.room_code LIKE :search)";
+                $params[':search'] = '%' . $searchKeyword . '%';
+            }
+            
+            $whereClause = "WHERE " . implode(" AND ", $whereConditions);
+            
             // Lấy tổng số bản ghi
-            $countSql = "SELECT COUNT(*) as total FROM rooms WHERE cinema_id = :cinema_id";
+            $countSql = "SELECT COUNT(*) as total 
+                        FROM rooms
+                        LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
+                        " . $whereClause;
             $countStmt = $this->conn->prepare($countSql);
-            $countStmt->execute([':cinema_id' => $cinemaId]);
+            foreach ($params as $key => $value) {
+                $countStmt->bindValue($key, $value);
+            }
+            $countStmt->execute();
             $total = $countStmt->fetch()['total'];
             
             // Lấy dữ liệu phân trang
@@ -119,11 +177,13 @@ class Room
                     cinemas.name AS cinema_name
                     FROM rooms
                     LEFT JOIN cinemas ON rooms.cinema_id = cinemas.id
-                    WHERE rooms.cinema_id = :cinema_id
+                    " . $whereClause . "
                     ORDER BY rooms.id ASC
                     LIMIT :limit OFFSET :offset";
             $stmt = $this->conn->prepare($sql);
-            $stmt->bindValue(':cinema_id', (int)$cinemaId, PDO::PARAM_INT);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
             $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
             $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
             $stmt->execute();

@@ -492,10 +492,8 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     margin: 30px auto;
     padding: 24px 26px;
     border-radius: 18px;
-    background: radial-gradient(circle at top left, #444 0, #2c2c2c 40%, #262626 100%);
-    box-shadow:
-        0 16px 30px rgba(0, 0, 0, 0.7),
-        0 0 0 1px rgba(255, 255, 255, 0.03);
+    background: transparent;
+    box-shadow: none;
     position: relative;
     color: #f5f5f5;
     overflow: hidden;
@@ -536,13 +534,14 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
 /* ==== HÀNG SỐ LƯỢNG ==== */
 .quantity-section {
     display: flex;
-    justify-content: space-between;
-    gap: 40px;
+    justify-content: flex-start;
+    gap: 20px;
     margin-bottom: 24px;
 }
 
 .quantity-wrapper {
     flex: 1;
+    max-width: 200px; /* Giới hạn độ rộng để ngắn lại */
 }
 
 .quantity-label {
@@ -644,6 +643,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
+    justify-content: space-between; /* Để max-seats-note ở bên phải */
 }
 
 .adjacent-header-label {
@@ -672,19 +672,22 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     margin-top: 4px;
 }
 
-/* ghi chú max ghế */
+/* ghi chú max ghế - chuyển sang góc phải */
 .max-seats-note {
-    margin-top: 12px;
-    font-size: 13px;
-    opacity: 0.85;
+    margin-top: 0;
+    margin-left: auto;
+    font-size: 11px;
+    opacity: 0.75;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    text-align: right;
+    white-space: nowrap;
 }
 
 .max-seats-note::before {
     content: "💡";
-    font-size: 14px;
+    font-size: 12px;
 }
 
         </style>
@@ -743,20 +746,20 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                         <div class="adjacent-header">
                             <label class="adjacent-header-label">Chọn ghế liền nhau</label>
                             <span class="info-icon" title="Chọn số lượng ghế liền nhau bạn muốn">ℹ️</span>
+                            <div class="max-seats-note">
+                                Tối đa 8 người
+                            </div>
                         </div>
                         <div id="adjacentOptions" class="adjacent-options-container">
                             <!-- Sẽ được render động -->
-                        </div>
-                        <div class="max-seats-note">
-                            Có thể chọn tối đa 8 người. (Max:8)
                         </div>
                     </div>
                 </div>
             </div>
             
             <div class="screen-container">
-                <div class="room-title">${roomDisplay}</div>
                 <div class="room-subtitle">${cinemaName}</div>
+                <div class="room-title">${roomDisplay}</div>
                 <div class="screen">MÀN HÌNH</div>
             </div>
             
