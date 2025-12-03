@@ -515,12 +515,18 @@ class Booking
     /**
      * Lấy danh sách ghế đã đặt cho suất chiếu
      */
-    public function getBookedSeatsByShowtime($showtimeId)
+    public function getBookedSeatsByShowtime($showtimeId, $useLock = false)
     {
         try {
             $sql = "SELECT booked_seats FROM bookings 
                     WHERE showtime_id = :showtime_id 
                     AND status IN ('pending', 'confirmed', 'paid', 'completed')";
+            
+            // Nếu useLock = true, thêm SELECT FOR UPDATE để lock các bản ghi
+            if ($useLock) {
+                $sql .= " FOR UPDATE";
+            }
+            
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':showtime_id' => $showtimeId]);
             $bookings = $stmt->fetchAll();
@@ -532,7 +538,7 @@ class Booking
                     foreach ($seats as $seat) {
                         $seat = trim($seat);
                         if (!empty($seat)) {
-                            $bookedSeats[] = $seat;
+                            $bookedSeats[] = strtoupper($seat);
                         }
                     }
                 }

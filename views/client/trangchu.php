@@ -367,11 +367,10 @@ if (empty($promoBannerData)) {
 
                 <!-- Apps & Social -->
                 <div class="col media">
-                    <h4>Ứng dụng & MXH</h4>
+                     <h4>Ứng dụng & MXH</h4>
                     <div class="badges">
-                        <!-- Replace src with official badges for production -->
-                        <img src="./img/badge-googleplay.png" alt="Google Play" class="app-badge">
-                        <img src="./img/badge-appstore.png" alt="App Store" class="app-badge">
+                        <img src="<?= BASE_URL ?>/image/logo.png" alt="Google Play" class="app-badge">
+                        <img src="<?= BASE_URL ?>/image/logo.png" alt="App Store" class="app-badge">
                     </div>
 
                     <div class="socials" aria-label="Mạng xã hội">

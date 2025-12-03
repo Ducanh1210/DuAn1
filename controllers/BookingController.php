@@ -530,23 +530,102 @@ class BookingController
 
             $finalAmount = $totalPrice - $discountAmount;
 
-            // Tạo booking
-            $bookingCode = 'BK' . time() . rand(1000, 9999);
-            $bookingData = [
-                'user_id' => $_SESSION['user_id'],
-                'showtime_id' => $showtimeId,
-                'room_id' => $showtime['room_id'],
-                'discount_id' => $discountId,
-                'cinema_id' => $showtime['cinema_id'] ?? null,
-                'booked_seats' => $seatLabels,
-                'total_amount' => $totalPrice,
-                'discount_amount' => $discountAmount,
-                'final_amount' => $finalAmount,
-                'status' => 'pending',
-                'booking_code' => $bookingCode
-            ];
+            // ============================================
+            // KIỂM TRA GHẾ ĐÃ ĐƯỢC ĐẶT CHƯA (TRƯỚC KHI TẠO BOOKING)
+            // ============================================
+            // Lấy danh sách ghế đã được đặt (bao gồm cả pending, confirmed, paid)
+            $bookedSeats = $this->booking->getBookedSeatsByShowtime($showtimeId);
+            
+            // Parse ghế người dùng đang muốn đặt (chuẩn hóa về uppercase)
+            $requestedSeats = [];
+            if (!empty($seatLabels)) {
+                $requestedSeatsArray = explode(',', $seatLabels);
+                foreach ($requestedSeatsArray as $seat) {
+                    $seat = trim($seat);
+                    if (!empty($seat) && $seat !== ',') {
+                        $requestedSeats[] = strtoupper($seat);
+                    }
+                }
+            }
+            
+            // Kiểm tra xem có ghế nào đã được đặt chưa
+            $conflictedSeats = [];
+            foreach ($requestedSeats as $seat) {
+                // bookedSeats đã được normalize về uppercase trong model
+                if (in_array($seat, $bookedSeats)) {
+                    $conflictedSeats[] = $seat;
+                }
+            }
+            
+            if (!empty($conflictedSeats)) {
+                ob_clean();
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Một số ghế bạn chọn đã được đặt: ' . implode(', ', $conflictedSeats) . '. Vui lòng chọn ghế khác!'
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                exit;
+            }
 
-            $bookingId = $this->booking->insert($bookingData);
+            // ============================================
+            // SỬ DỤNG TRANSACTION ĐỂ ĐẢM BẢO ATOMIC OPERATION
+            // ============================================
+            $conn = connectDB();
+            $conn->beginTransaction();
+            
+            try {
+                // Lock bảng bookings để tránh race condition
+                // Check lại một lần nữa sau khi lock (double-check locking pattern)
+                // Sử dụng SELECT FOR UPDATE để lock các bản ghi trong transaction
+                $lockedBookedSeats = $this->booking->getBookedSeatsByShowtime($showtimeId, true);
+                $conflictedSeatsAfterLock = [];
+                foreach ($requestedSeats as $seat) {
+                    // lockedBookedSeats đã được normalize về uppercase trong model
+                    if (in_array($seat, $lockedBookedSeats)) {
+                        $conflictedSeatsAfterLock[] = $seat;
+                    }
+                }
+                
+                if (!empty($conflictedSeatsAfterLock)) {
+                    $conn->rollBack();
+                    ob_clean();
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Một số ghế bạn chọn đã được đặt: ' . implode(', ', $conflictedSeatsAfterLock) . '. Vui lòng chọn ghế khác!'
+                    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    exit;
+                }
+
+                // Tạo booking
+                $bookingCode = 'BK' . time() . rand(1000, 9999);
+                $bookingData = [
+                    'user_id' => $_SESSION['user_id'],
+                    'showtime_id' => $showtimeId,
+                    'room_id' => $showtime['room_id'],
+                    'discount_id' => $discountId,
+                    'cinema_id' => $showtime['cinema_id'] ?? null,
+                    'booked_seats' => $seatLabels,
+                    'total_amount' => $totalPrice,
+                    'discount_amount' => $discountAmount,
+                    'final_amount' => $finalAmount,
+                    'status' => 'pending',
+                    'booking_code' => $bookingCode
+                ];
+
+                $bookingId = $this->booking->insert($bookingData);
+                
+                if (!$bookingId) {
+                    $conn->rollBack();
+                    ob_clean();
+                    echo json_encode(['success' => false, 'message' => 'Không thể tạo đơn đặt vé'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    exit;
+                }
+
+                // Commit transaction
+                $conn->commit();
+            } catch (Exception $e) {
+                $conn->rollBack();
+                throw $e;
+            }
 
             if (!$bookingId) {
                 ob_clean();
@@ -669,6 +748,74 @@ class BookingController
             // Admin xem tất cả
             $result = $this->booking->paginate($page, 10, $status, $date);
         }
+
+        // Loại bỏ booking trùng lặp (cùng showtime_id và booked_seats)
+        $data = $result['data'];
+        $uniqueBookings = [];
+        $seenKeys = [];
+        
+        // Thứ tự ưu tiên trạng thái: paid > confirmed > pending > cancelled
+        $statusPriority = [
+            'paid' => 4,
+            'confirmed' => 3,
+            'pending' => 2,
+            'cancelled' => 1
+        ];
+        
+        foreach ($data as $booking) {
+            // Tạo key duy nhất dựa trên showtime_id và booked_seats
+            $bookedSeats = trim($booking['booked_seats'] ?? '', ', ');
+            $bookedSeats = preg_replace('/,+/', ',', $bookedSeats);
+            $bookedSeats = trim($bookedSeats, ', ');
+            
+            if (empty($bookedSeats) || $bookedSeats === ',') {
+                // Nếu không có ghế, vẫn hiển thị (không loại bỏ)
+                $uniqueBookings[] = $booking;
+                continue;
+            }
+            
+            $key = $booking['showtime_id'] . '_' . md5(strtolower($bookedSeats));
+            
+            if (!isset($seenKeys[$key])) {
+                // Chưa có booking nào với key này, thêm vào
+                $seenKeys[$key] = [
+                    'booking' => $booking,
+                    'index' => count($uniqueBookings)
+                ];
+                $uniqueBookings[] = $booking;
+            } else {
+                // Đã có booking với key này, so sánh để giữ booking tốt hơn
+                $existing = $seenKeys[$key]['booking'];
+                $existingIndex = $seenKeys[$key]['index'];
+                $existingPriority = $statusPriority[$existing['status'] ?? 'pending'] ?? 0;
+                $currentPriority = $statusPriority[$booking['status'] ?? 'pending'] ?? 0;
+                
+                // Nếu booking hiện tại có priority cao hơn, thay thế
+                if ($currentPriority > $existingPriority) {
+                    $uniqueBookings[$existingIndex] = $booking;
+                    $seenKeys[$key] = [
+                        'booking' => $booking,
+                        'index' => $existingIndex
+                    ];
+                }
+                // Nếu cùng priority, giữ booking mới hơn (booking_date lớn hơn)
+                elseif ($currentPriority === $existingPriority) {
+                    $existingDate = strtotime($existing['booking_date'] ?? '1970-01-01');
+                    $currentDate = strtotime($booking['booking_date'] ?? '1970-01-01');
+                    if ($currentDate > $existingDate) {
+                        $uniqueBookings[$existingIndex] = $booking;
+                        $seenKeys[$key] = [
+                            'booking' => $booking,
+                            'index' => $existingIndex
+                        ];
+                    }
+                }
+                // Nếu booking hiện tại không tốt hơn, bỏ qua (không thêm vào)
+            }
+        }
+        
+        // Cập nhật lại dữ liệu sau khi loại bỏ duplicate
+        $result['data'] = $uniqueBookings;
 
         render('admin/bookings/list.php', [
             'data' => $result['data'],
@@ -869,6 +1016,74 @@ class BookingController
         $existingPayment = $payment->findByBookingId($bookingId);
 
         if ($isSuccess) {
+            // Kiểm tra lại xem ghế đã được đặt bởi booking khác chưa (trước khi cập nhật status)
+            $showtimeId = $booking['showtime_id'] ?? null;
+            $bookedSeats = trim($booking['booked_seats'] ?? '', ', ');
+            $bookedSeats = preg_replace('/,+/', ',', $bookedSeats);
+            $bookedSeats = trim($bookedSeats, ', ');
+            
+            if (!empty($bookedSeats) && $showtimeId) {
+                // Lấy tất cả booking khác (không phải booking này) đã đặt cùng ghế với status paid/confirmed
+                $conn = connectDB();
+                $checkSql = "SELECT booked_seats FROM bookings 
+                            WHERE showtime_id = :showtime_id 
+                            AND id != :booking_id
+                            AND status IN ('paid', 'confirmed')
+                            AND booked_seats IS NOT NULL 
+                            AND booked_seats != ''";
+                $checkStmt = $conn->prepare($checkSql);
+                $checkStmt->execute([
+                    ':showtime_id' => $showtimeId,
+                    ':booking_id' => $bookingId
+                ]);
+                $otherBookings = $checkStmt->fetchAll();
+                
+                // Parse ghế của booking này
+                $thisBookingSeats = [];
+                $seatsArray = explode(',', $bookedSeats);
+                foreach ($seatsArray as $seat) {
+                    $seat = trim($seat);
+                    if (!empty($seat) && $seat !== ',') {
+                        $thisBookingSeats[] = strtoupper($seat);
+                    }
+                }
+                
+                // Kiểm tra xem có booking khác đã đặt cùng ghế chưa
+                $conflictedSeats = [];
+                foreach ($otherBookings as $otherBooking) {
+                    $otherSeats = [];
+                    if (!empty($otherBooking['booked_seats'])) {
+                        $otherSeatsArray = explode(',', $otherBooking['booked_seats']);
+                        foreach ($otherSeatsArray as $seat) {
+                            $seat = trim($seat);
+                            if (!empty($seat) && $seat !== ',') {
+                                $otherSeats[] = strtoupper($seat);
+                            }
+                        }
+                    }
+                    
+                    // Kiểm tra conflict
+                    foreach ($thisBookingSeats as $seat) {
+                        if (in_array($seat, $otherSeats)) {
+                            $conflictedSeats[] = $seat;
+                        }
+                    }
+                }
+                
+                // Nếu có conflict, hủy booking này
+                if (!empty($conflictedSeats)) {
+                    $conflictedSeats = array_unique($conflictedSeats);
+                    $this->booking->updateStatus($bookingId, 'cancelled');
+                    renderClient('client/payment-result.php', [
+                        'success' => false,
+                        'message' => 'Một số ghế bạn chọn đã được đặt bởi người khác: ' . implode(', ', $conflictedSeats) . '. Đơn đặt vé của bạn đã bị hủy.',
+                        'booking_id' => $bookingId,
+                        'booking' => $booking
+                    ], 'Kết quả thanh toán');
+                    exit;
+                }
+            }
+
             // Thanh toán thành công - cập nhật status thành 'paid' ngay lập tức
             $paymentStatus = 'paid';
             $bookingStatus = 'paid'; // Thanh toán thành công ngay lập tức
