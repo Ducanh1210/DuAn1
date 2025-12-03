@@ -622,6 +622,10 @@ class MoviesController
         // Lấy danh sách rạp để hiển thị trong filter
         $cinemas = $this->getCinemas();
 
+        // Lấy danh sách khuyến mãi dành riêng cho phim để hiển thị ở carousel trang chủ
+        $discountCodeModel = new DiscountCode();
+        $homepagePromotions = $this->getHomepageMoviePromotions($discountCodeModel->all());
+
         // Include view client (không dùng layout chung)
         require_once __DIR__ . '/../views/client/trangchu.php';
         exit; // Dừng lại để không render layout admin
@@ -1281,5 +1285,46 @@ class MoviesController
             6 => 'Thứ bảy'
         ];
         return $days[$dayOfWeek] ?? '';
+    }
+
+    /**
+     * Lọc danh sách khuyến mãi có gắn với phim để hiển thị ở trang chủ
+     */
+    private function getHomepageMoviePromotions(array $discountCodes, int $limit = 9): array
+    {
+        $now = date('Y-m-d');
+        $promotions = [];
+
+        foreach ($discountCodes as $dc) {
+            if (count($promotions) >= $limit) {
+                break;
+            }
+
+            if (($dc['status'] ?? '') !== 'active') {
+                continue;
+            }
+
+            if (!empty($dc['start_date']) && $now < $dc['start_date']) {
+                continue;
+            }
+
+            if (!empty($dc['end_date']) && $now > $dc['end_date']) {
+                continue;
+            }
+
+            if (empty($dc['movie_id']) || empty($dc['movie_image'])) {
+                continue;
+            }
+
+            $promotions[] = [
+                'title' => $dc['title'] ?? '',
+                'code' => $dc['code'] ?? '',
+                'movie_title' => $dc['movie_title'] ?? '',
+                'movie_image' => $dc['movie_image'] ?? '',
+                'cta' => $dc['cta'] ?? ''
+            ];
+        }
+
+        return $promotions;
     }
 }

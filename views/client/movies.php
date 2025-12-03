@@ -15,7 +15,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             console.error('Button không tồn tại');
             return;
         }
-        
+
         const showtimeId = button.getAttribute('data-showtime-id');
         const showtimeTime = button.getAttribute('data-showtime-time');
 
@@ -220,12 +220,12 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
 
     // Gọi reset viewport ngay khi script chạy
     resetViewport();
-    
+
     // Reset lại khi URL có parameter _reset_zoom (không reload lại trang)
     if (window.location.search.includes('_reset_zoom')) {
         // Reset viewport ngay lập tức
         resetViewport();
-        
+
         // Xóa parameters khỏi URL sau khi reset (không reload)
         const url = new URL(window.location.href);
         url.searchParams.delete('_reset_zoom');
@@ -233,7 +233,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         url.searchParams.delete('_r');
         url.searchParams.delete('_nocache');
         window.history.replaceState({}, '', url.toString());
-        
+
         // Reset lại viewport một lần nữa
         setTimeout(resetViewport, 100);
     }
@@ -242,7 +242,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
     document.addEventListener('DOMContentLoaded', function() {
         // Reset viewport khi DOM load xong
         resetViewport();
-        
+
         // Kiểm tra nếu có showtime_id trong URL (quay lại từ thanh toán)
         const urlParams = new URLSearchParams(window.location.search);
         const showtimeId = urlParams.get('showtime_id');
@@ -259,13 +259,13 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     window.showSeatSelection(timePill);
                 }
             };
-            
+
             // Thử ngay, sau đó thử lại nếu chưa sẵn sàng
             tryAutoOpen();
             setTimeout(tryAutoOpen, 300);
             setTimeout(tryAutoOpen, 600);
         }
-        
+
         const watchTrailerBtn = document.getElementById('watchTrailer');
         if (watchTrailerBtn) {
             watchTrailerBtn.addEventListener('click', function() {
@@ -275,35 +275,35 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 }
             });
         }
-        
+
         // Đảm bảo tất cả time-pill buttons có thể click được
         const timePills = document.querySelectorAll('.time-pill');
         console.log('Found time-pill buttons:', timePills.length);
         console.log('showSeatSelection function exists:', typeof window.showSeatSelection === 'function');
-        
+
         timePills.forEach((pill, index) => {
             // Đảm bảo pointer-events và cursor được set đúng
             pill.style.pointerEvents = 'auto';
             pill.style.cursor = 'pointer';
             pill.style.zIndex = '10';
             pill.style.position = 'relative';
-            
+
             // Lấy thông tin showtime
             const showtimeId = pill.getAttribute('data-showtime-id');
             const showtimeTime = pill.getAttribute('data-showtime-time');
-            
+
             console.log(`Time-pill ${index}: showtimeId=${showtimeId}, showtimeTime=${showtimeTime}`);
-            
+
             if (showtimeId) {
                 // Xóa onclick attribute cũ
                 pill.removeAttribute('onclick');
-                
+
                 // Thêm event listener mới (sử dụng capture phase để đảm bảo không bị block)
                 pill.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     console.log('Time-pill clicked:', showtimeId, showtimeTime);
-                    
+
                     if (typeof window.showSeatSelection === 'function') {
                         window.showSeatSelection(this);
                     } else {
@@ -311,7 +311,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                         alert('Có lỗi xảy ra. Vui lòng tải lại trang.');
                     }
                 }, true); // Use capture phase
-                
+
                 // Thêm một event listener khác ở bubble phase để đảm bảo
                 pill.addEventListener('click', function(e) {
                     console.log('Time-pill click (bubble phase):', showtimeId);
@@ -974,21 +974,25 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             const allSeatsInSameRow = selectedSeats.length > 0 && selectedSeats.every(seat => seat.row === rowLabel);
             const allowLastSingleSeat = remainingSeats === 1 && allSeatsInSameRow;
 
-            // Nếu là chọn đi đôi (2 người) và chưa chọn ghế nào, tự động chọn ghế gần nhất
-            // Hoặc khi số lượng = 4 và chọn 2 người, cũng dùng logic cặp cố định
+            const isPairSelection = seatsToSelect >= 2 && selectedAdjacentCount === 2;
+            let usedCoupleStrategy = false;
             let groupSeats = [];
-            if ((totalPeople === 2 && selectedAdjacentCount === 2 && selectedSeats.length === 0) ||
-                (totalPeople === 4 && selectedAdjacentCount === 2 && remainingSeats === 2)) {
+
+            if (isPairSelection) {
                 groupSeats = selectAdjacentSeatsForCouple(seatElement);
-            } else {
+                usedCoupleStrategy = groupSeats.length > 0;
+            }
+
+            if (groupSeats.length === 0) {
                 groupSeats = selectAdjacentSeatsSmart(seatElement, seatsToSelect, allowLastSingleSeat);
             }
             if (groupSeats.length > 0) {
-                // Khi chọn ghế đi đôi (2 người) và chưa chọn ghế nào, không cần kiểm tra gap
-                // Vì logic đã tự động chọn ghế gần nhất (theo cặp cố định)
-                // Hoặc khi số lượng = 4 và chọn 2 người, cũng dùng logic cặp cố định
-                const isCoupleSelection = (totalPeople === 2 && selectedAdjacentCount === 2 && selectedSeats.length === 0) ||
-                    (totalPeople === 4 && selectedAdjacentCount === 2 && remainingSeats === 2);
+                const isCoupleSelection =
+                    usedCoupleStrategy &&
+                    (
+                        (totalPeople === 2 && selectedSeats.length === 0) ||
+                        (totalPeople === 4 && remainingSeats === 2)
+                    );
 
                 // Chỉ kiểm tra gap khi không phải là chọn ghế đi đôi lần đầu
                 if (!isCoupleSelection && selectedSeats.length > 0 && !canAddSeatsWithoutGap(groupSeats)) {
@@ -1306,7 +1310,6 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
         return isolatedCount;
     }
 
-    // Hàm chọn ghế đi đôi: logic cố định theo cặp (1-2, 3-4, 5-6, 7-8, 9-10, 11-12)
     function selectAdjacentSeatsForCouple(startSeatElement) {
         const row = startSeatElement.closest('.seat-row');
         if (!row) return [];
@@ -1336,57 +1339,23 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             return [];
         }
 
-        // Logic cố định theo cặp:
-        // Cặp 1-2: chọn 1→2, chọn 2→1
-        // Cặp 3-4: chọn 3→4, chọn 4→3
-        // Cặp 5-6: chọn 5→6, chọn 6→5
-        // Cặp 7-8: chọn 7→8, chọn 8→7
-        // Cặp 9-10: chọn 9→10, chọn 10→9
-        // Cặp 11-12: chọn 11→12, chọn 12→11
+        const partnerColumn = (startColumn % 2 === 0) ? startColumn - 1 : startColumn + 1;
 
-        let partnerColumn = null;
-
-        // Xác định ghế đối tác dựa trên cặp
-        if (startColumn === 1) {
-            partnerColumn = 2;
-        } else if (startColumn === 2) {
-            partnerColumn = 1;
-        } else if (startColumn === 3) {
-            partnerColumn = 4;
-        } else if (startColumn === 4) {
-            partnerColumn = 3;
-        } else if (startColumn === 5) {
-            partnerColumn = 6;
-        } else if (startColumn === 6) {
-            partnerColumn = 5;
-        } else if (startColumn === 7) {
-            partnerColumn = 8;
-        } else if (startColumn === 8) {
-            partnerColumn = 7;
-        } else if (startColumn === 9) {
-            partnerColumn = 10;
-        } else if (startColumn === 10) {
-            partnerColumn = 9;
-        } else if (startColumn === 11) {
-            partnerColumn = 12;
-        } else if (startColumn === 12) {
-            partnerColumn = 11;
-        }
-
-        if (!partnerColumn || !seatMap[partnerColumn] || !isSeatSelectable(seatMap[partnerColumn])) {
+        if (partnerColumn < 1 || partnerColumn > MAX_COLUMNS || !isInSameBlock(startColumn, partnerColumn)) {
             return [];
         }
 
-        const selectedSeats = [seatMap[startColumn], seatMap[partnerColumn]];
+        if (!isSeatSelectable(seatMap[partnerColumn])) {
+            return [];
+        }
 
-        // Sắp xếp theo cột để đảm bảo thứ tự đúng (từ trái sang phải)
-        selectedSeats.sort((a, b) => {
+        const selectedSeatElements = [seatMap[startColumn], seatMap[partnerColumn]].sort((a, b) => {
             const colA = parseInt(a.getAttribute('data-seat-column')) || 0;
             const colB = parseInt(b.getAttribute('data-seat-column')) || 0;
             return colA - colB;
         });
 
-        return selectedSeats.map(seat => {
+        return selectedSeatElements.map(seat => {
             seat.classList.add('selected');
             seat.classList.remove('vip', 'available');
             return {
