@@ -1,5 +1,7 @@
 <?php
-$promotions = $promotions ?? [];
+$allPromotions = $allPromotions ?? [];
+$movieSpecificPromotions = $movieSpecificPromotions ?? [];
+$otherPromotions = $otherPromotions ?? [];
 $membershipBenefits = $membershipBenefits ?? [];
 $faqs = $faqs ?? [];
 $heroStats = $heroStats ?? [];
@@ -35,7 +37,7 @@ $statusLabels = [
         </div>
     </section>
 
-    <section class="promo-grid" id="promoList">
+    <section class="promo-carousels" id="promoList">
         <div class="section-header">
             <div>
                 <p class="eyebrow">Ưu đãi nổi bật</p>
@@ -46,72 +48,71 @@ $statusLabels = [
             </div>
         </div>
 
-        <div class="grid">
-            <?php foreach ($promotions as $promo): ?>
-                <?php
-                $tag = htmlspecialchars($promo['tag']);
-                $status = htmlspecialchars($promo['display_status'] ?? $promo['status'] ?? 'ongoing');
-                $code = !empty($promo['code']) ? htmlspecialchars($promo['code']) : '';
-                ?>
-                <article class="promo-card" data-status="<?= $status ?>">
-                    <div class="card-head">
-                        <span class="promo-tag tag-<?= $tag ?>"><?= ucfirst($tag) ?></span>
-                        <span class="promo-status status-<?= $status ?>">
-                            <?= $statusLabels[$status] ?? 'Ưu đãi' ?>
-                        </span>
-                    </div>
-                    <h3><?= htmlspecialchars($promo['title']) ?></h3>
-                    <p class="desc"><?= htmlspecialchars($promo['description']) ?></p>
-                    <ul class="benefits">
-                        <?php if (!empty($promo['benefits']) && is_array($promo['benefits'])): ?>
-                            <?php foreach ($promo['benefits'] as $benefit): ?>
-                                <?php if (!empty(trim($benefit))): ?>
-                                    <li>
-                                        <i class="bi bi-check2-circle"></i>
-                                        <span><?= htmlspecialchars(trim($benefit)) ?></span>
-                                    </li>
-                                <?php endif; ?>
+        <!-- Carousel 1: Tất cả mã giảm giá -->
+        <?php if (!empty($allPromotions)): ?>
+            <div class="carousel-section">
+                <h3 class="carousel-title">Tất cả ưu đãi</h3>
+                <div class="carousel-wrapper">
+                    <button class="carousel-arrow carousel-arrow-left" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <div class="carousel-container" data-carousel="all">
+                        <div class="carousel-track">
+                            <?php foreach ($allPromotions as $promo): ?>
+                                <?php include __DIR__ . '/_promo_card.php'; ?>
                             <?php endforeach; ?>
-                        <?php endif; ?>
-                    </ul>
-                    <div class="meta">
-                        <span class="period">
-                            <i class="bi bi-calendar-event"></i>
-                            <?= htmlspecialchars($promo['period'] ?? 'Áp dụng thường xuyên') ?>
-                        </span>
-                        <?php if (!empty($code) && $status === 'ongoing'): ?>
-                            <button class="code-btn" data-code="<?= $code ?>">
-                                <span><?= $code ?></span>
-                                <i class="bi bi-copy"></i>
-                            </button>
-                        <?php elseif (!empty($code)): ?>
-                            <button class="code-btn" disabled style="opacity: 0.5; cursor: not-allowed;" title="Mã này không thể sử dụng">
-                                <span><?= $code ?></span>
-                                <i class="bi bi-lock"></i>
-                            </button>
-                        <?php endif; ?>
+                        </div>
                     </div>
-                    <div class="promo-actions">
-                        <?php if ($status === 'ongoing'): ?>
-                            <a class="btn-primary" href="<?= !empty($promo['cta_link']) ? htmlspecialchars($promo['cta_link']) : BASE_URL . '?act=datve' ?>">
-                                <?= htmlspecialchars($promo['cta'] ?? 'Đặt vé ngay') ?>
-                            </a>
-                            <span class="hint">Áp dụng tự động khi nhập mã ở bước thanh toán</span>
-                        <?php elseif ($status === 'upcoming'): ?>
-                            <button class="btn-primary" disabled style="opacity: 0.6; cursor: not-allowed;">
-                                <?= htmlspecialchars($promo['cta'] ?? 'Sắp diễn ra') ?>
-                            </button>
-                            <span class="hint">Chúng tôi sẽ gửi thông báo khi ưu đãi mở</span>
-                        <?php else: ?>
-                            <button class="btn-primary" disabled style="opacity: 0.6; cursor: not-allowed;">
-                                Đã kết thúc
-                            </button>
-                            <span class="hint">Mã khuyến mãi này đã hết hạn</span>
-                        <?php endif; ?>
+                    <button class="carousel-arrow carousel-arrow-right" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Carousel 2: Mã giảm giá cho phim cụ thể -->
+        <?php if (!empty($movieSpecificPromotions)): ?>
+            <div class="carousel-section">
+                <h3 class="carousel-title">Ưu đãi phim cụ thể</h3>
+                <div class="carousel-wrapper">
+                    <button class="carousel-arrow carousel-arrow-left" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <div class="carousel-container" data-carousel="movie">
+                        <div class="carousel-track">
+                            <?php foreach ($movieSpecificPromotions as $promo): ?>
+                                <?php include __DIR__ . '/_promo_card.php'; ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
+                    <button class="carousel-arrow carousel-arrow-right" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Carousel 3: Các mã giảm giá khác -->
+        <?php if (!empty($otherPromotions)): ?>
+            <div class="carousel-section">
+                <h3 class="carousel-title">Ưu đãi tổng quát</h3>
+                <div class="carousel-wrapper">
+                    <button class="carousel-arrow carousel-arrow-left" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <div class="carousel-container" data-carousel="other">
+                        <div class="carousel-track">
+                            <?php foreach ($otherPromotions as $promo): ?>
+                                <?php include __DIR__ . '/_promo_card.php'; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <button class="carousel-arrow carousel-arrow-right" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        <?php endif; ?>
     </section>
 
     <section class="membership">
@@ -158,7 +159,7 @@ $statusLabels = [
                 <span class="step-number">2</span>
                 <div>
                     <h3>Nhập mã khuyến mãi</h3>
-                    <p>Ở bước thanh toán, dán mã hoặc chọn trực tiếp trong “Ví mã giảm”.</p>
+                    <p>Ở bước thanh toán, dán mã hoặc chọn trực tiếp trong "Ví mã giảm".</p>
                 </div>
             </li>
             <li>
@@ -204,9 +205,157 @@ $statusLabels = [
 </div>
 
 <script>
-    document.querySelectorAll('.code-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
+    // Carousel functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const carousels = document.querySelectorAll('.carousel-container');
+
+        carousels.forEach(carousel => {
+            const track = carousel.querySelector('.carousel-track');
+            const wrapper = carousel.closest('.carousel-wrapper');
+            const leftArrow = wrapper.querySelector('.carousel-arrow-left');
+            const rightArrow = wrapper.querySelector('.carousel-arrow-right');
+            const cards = track.querySelectorAll('.promo-card');
+
+            if (cards.length === 0) return;
+
+            let currentIndex = 0;
+            let isDragging = false;
+            let startX = 0;
+            let currentTranslate = 0;
+            let prevTranslate = 0;
+            let animationID = 0;
+
+            const getCardWidth = () => {
+                if (cards.length === 0) return 0;
+                const card = cards[0];
+                const cardStyle = window.getComputedStyle(card);
+                const cardWidth = card.offsetWidth;
+                const gap = parseInt(window.getComputedStyle(track).gap) || 24;
+                return cardWidth + gap;
+            };
+
+            const getMaxIndex = () => {
+                const cardWidth = getCardWidth();
+                const containerWidth = carousel.offsetWidth;
+                const visibleCards = Math.floor(containerWidth / cardWidth);
+                return Math.max(0, cards.length - visibleCards);
+            };
+
+            // Arrow navigation
+            const updateArrows = () => {
+                const maxIndex = getMaxIndex();
+                if (leftArrow) {
+                    leftArrow.style.opacity = currentIndex > 0 ? '1' : '0.3';
+                    leftArrow.style.pointerEvents = currentIndex > 0 ? 'auto' : 'none';
+                }
+                if (rightArrow) {
+                    rightArrow.style.opacity = currentIndex < maxIndex ? '1' : '0.3';
+                    rightArrow.style.pointerEvents = currentIndex < maxIndex ? 'auto' : 'none';
+                }
+            };
+
+            const setPosition = () => {
+                const cardWidth = getCardWidth();
+                currentTranslate = -currentIndex * cardWidth;
+                track.style.transform = `translateX(${currentTranslate}px)`;
+            };
+
+            const scrollToIndex = (index) => {
+                const maxIndex = getMaxIndex();
+                currentIndex = Math.max(0, Math.min(index, maxIndex));
+                setPosition();
+                updateArrows();
+            };
+
+            if (leftArrow) {
+                leftArrow.addEventListener('click', () => {
+                    scrollToIndex(currentIndex - 1);
+                });
+            }
+
+            if (rightArrow) {
+                rightArrow.addEventListener('click', () => {
+                    scrollToIndex(currentIndex + 1);
+                });
+            }
+
+            // Drag functionality
+            const getPositionX = (event) => {
+                return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+            };
+
+            const dragStart = (event) => {
+                startX = getPositionX(event);
+                isDragging = true;
+                track.style.cursor = 'grabbing';
+                track.style.transition = 'none';
+                prevTranslate = currentTranslate;
+                animationID = requestAnimationFrame(animation);
+            };
+
+            const drag = (event) => {
+                if (!isDragging) return;
+                const currentPosition = getPositionX(event);
+                const moved = currentPosition - startX;
+                currentTranslate = prevTranslate + moved;
+            };
+
+            const dragEnd = () => {
+                if (!isDragging) return;
+                cancelAnimationFrame(animationID);
+                isDragging = false;
+                track.style.cursor = 'grab';
+                track.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+
+                const cardWidth = getCardWidth();
+                const movedBy = -currentTranslate / cardWidth;
+                const roundedIndex = Math.round(movedBy);
+                scrollToIndex(roundedIndex);
+                prevTranslate = currentTranslate;
+            };
+
+            const animation = () => {
+                if (isDragging) {
+                    track.style.transform = `translateX(${currentTranslate}px)`;
+                    requestAnimationFrame(animation);
+                }
+            };
+
+            track.addEventListener('mousedown', dragStart);
+            track.addEventListener('touchstart', dragStart);
+            track.addEventListener('mousemove', drag);
+            track.addEventListener('touchmove', drag);
+            track.addEventListener('mouseup', dragEnd);
+            track.addEventListener('mouseleave', dragEnd);
+            track.addEventListener('touchend', dragEnd);
+
+            // Prevent image drag
+            track.addEventListener('dragstart', (e) => e.preventDefault());
+
+            // Initialize
+            const initCardWidth = getCardWidth();
+            currentTranslate = -currentIndex * initCardWidth;
+            prevTranslate = currentTranslate;
+            setPosition();
+            updateArrows();
+
+            // Update on resize
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    setPosition();
+                    updateArrows();
+                }, 250);
+            });
+        });
+    });
+
+    // Copy code functionality
+    document.querySelectorAll('.code-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
             const code = this.dataset.code;
+            if (!code || this.disabled) return;
             navigator.clipboard.writeText(code).then(() => {
                 this.classList.add('copied');
                 this.innerHTML = `<span>Đã sao chép</span><i class="bi bi-check-lg"></i>`;
@@ -218,13 +367,14 @@ $statusLabels = [
         });
     });
 
-    document.querySelectorAll('[data-scroll]').forEach(function (trigger) {
-        trigger.addEventListener('click', function () {
+    document.querySelectorAll('[data-scroll]').forEach(function(trigger) {
+        trigger.addEventListener('click', function() {
             const target = document.querySelector(this.dataset.scroll);
             if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
             }
         });
     });
 </script>
-

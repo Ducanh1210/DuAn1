@@ -145,9 +145,18 @@
         position: relative;
     }
     
-    .movie-disabled a {
+    /* Chỉ disable poster và info-link, KHÔNG disable time-btn */
+    .movie-disabled a.poster,
+    .movie-disabled a.info-link {
         cursor: not-allowed !important;
         pointer-events: none;
+    }
+    
+    /* Đảm bảo time-btn vẫn có thể click được */
+    .movie-disabled a.time-btn {
+        cursor: pointer !important;
+        pointer-events: auto !important;
+        opacity: 1 !important;
     }
     
     .movie-disabled::after {
@@ -307,12 +316,14 @@
                                     $showtimeId = $movie['showtime_ids'][$index] ?? null;
                                     if (!$showtimeId) continue;
                                     // Link đến trang chi tiết phim với ngày và rạp đã chọn
-                                    $movieDetailUrl = $canClick ? BASE_URL . '?act=movies&id=' . $movie['id'] . '&date=' . $selectedDate . '&cinema=' . $cinemaId : 'javascript:void(0);';
+                                    // Luôn cho phép click vào giờ chiếu để đi đến trang chi tiết phim
+                                    $movieDetailUrl = BASE_URL . '?act=movies&id=' . $movie['id'] . '&date=' . $selectedDate;
+                                    if (!empty($cinemaId)) {
+                                        $movieDetailUrl .= '&cinema=' . $cinemaId;
+                                    }
                                     ?>
                                     <a class="time-btn" href="<?= $movieDetailUrl ?>"
-                                        title="<?= $canClick ? 'Xem chi tiết phim và chọn ghế cho suất chiếu ' . date('H:i', strtotime($time)) : 'Vui lòng chọn rạp trước' ?>"
-                                        <?= !$canClick ? 'onclick="event.preventDefault(); alert(\'Vui lòng chọn rạp trước khi xem chi tiết phim\'); return false;"' : '' ?>
-                                        style="<?= !$canClick ? 'opacity: 0.5; cursor: not-allowed;' : '' ?>">
+                                        title="Xem chi tiết phim và chọn ghế cho suất chiếu <?= date('H:i', strtotime($time)) ?>">
                                         <?= date('H:i', strtotime($time)) ?>
                                     </a>
                                 <?php endforeach; ?>
@@ -351,15 +362,34 @@
             const movieCards = document.querySelectorAll('.movie-card');
             movieCards.forEach(card => {
                 if (card.classList.contains('movie-disabled')) {
-                    const links = card.querySelectorAll('a');
-                    links.forEach(link => {
-                        // Đảm bảo tất cả các link đều bị disable
+                    // Chỉ disable poster và info-link, KHÔNG disable time-btn
+                    const posterLinks = card.querySelectorAll('a.poster');
+                    const infoLinks = card.querySelectorAll('a.info-link');
+                    
+                    posterLinks.forEach(link => {
                         link.addEventListener('click', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
                             alert('Vui lòng chọn rạp trước khi xem chi tiết phim');
                             return false;
-                        }, true); // Use capture phase để chắc chắn
+                        }, true);
+                    });
+                    
+                    infoLinks.forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            alert('Vui lòng chọn rạp trước khi xem chi tiết phim');
+                            return false;
+                        }, true);
+                    });
+                    
+                    // Đảm bảo time-btn vẫn có thể click được
+                    const timeBtns = card.querySelectorAll('a.time-btn');
+                    timeBtns.forEach(btn => {
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.cursor = 'pointer';
+                        btn.style.opacity = '1';
                     });
                 }
             });

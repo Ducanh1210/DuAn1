@@ -9,11 +9,13 @@
   --radius: 14px;
   --maxw: 1100px;
 }
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
+
 body {
   margin: 0;
   font-family: "Roboto", sans-serif;
@@ -118,9 +120,11 @@ body {
 
 @media (max-width: 900px) {
   .menu {
-    display: none; /* Ẩn menu nếu cần responsive mobile */
+    display: none;
+    /* Ẩn menu nếu cần responsive mobile */
   }
 }
+
 /* PHẦN NỘI DUNG */
 .wrap {
   max-width: var(--maxw);
@@ -130,19 +134,19 @@ body {
   gap: 28px;
   align-items: start;
 }
+
 h3.section-title {
   margin: 0 0 12px 0;
   font-family: Montserrat, sans-serif;
   font-size: 18px;
   color: rgba(255, 255, 255, 0.95);
 }
+
 /* left column cards */
 .card {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02),
-    rgba(0, 0, 0, 0.03)
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.02),
+      rgba(0, 0, 0, 0.03));
   border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 18px;
@@ -155,6 +159,7 @@ h3.section-title {
   gap: 18px;
   align-items: flex-start;
 }
+
 .movie-poster {
   width: 110px;
   height: 150px;
@@ -163,15 +168,18 @@ h3.section-title {
   flex: 0 0 110px;
   background: #222;
 }
+
 .movie-poster img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+
 .movie-meta {
   flex: 1;
 }
+
 .movie-meta .title {
   font-family: Montserrat, sans-serif;
   font-weight: 700;
@@ -180,6 +188,7 @@ h3.section-title {
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.95);
 }
+
 .meta-grid {
   display: flex;
   gap: 24px;
@@ -187,10 +196,12 @@ h3.section-title {
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
 }
+
 .meta-grid .k {
   font-weight: 700;
   color: rgba(255, 255, 255, 0.95);
 }
+
 .desc {
   margin-top: 12px;
   color: var(--muted-2);
@@ -282,6 +293,7 @@ h3.section-title {
   margin-top: 8px;
   font-size: 14px;
 }
+
 .payment-table th,
 .payment-table td {
   padding: 14px 16px;
@@ -289,12 +301,14 @@ h3.section-title {
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   color: rgba(255, 255, 255, 0.9);
 }
+
 .payment-table thead th {
   background: transparent;
   color: rgba(255, 255, 255, 0.95);
   font-weight: 600;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
+
 .table-row {
   border-radius: 10px;
   overflow: hidden;
@@ -363,45 +377,52 @@ h3.section-title {
 
 /* right column: payment methods box */
 .side-card {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    rgba(0, 0, 0, 0.04)
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.01),
+      rgba(0, 0, 0, 0.04));
   padding: 18px;
   border-radius: 14px;
 }
+
 .methods {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 18px;
 }
+
 .method {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
+  gap: 12px;
+  padding: 14px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   cursor: pointer;
   transition: all 0.2s;
   background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+  position: relative;
+  overflow: visible;
 }
+
 .method:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
 }
+
 .method.active {
   border-color: rgba(255, 75, 75, 0.9);
   border-width: 2px;
   box-shadow: 0 8px 25px rgba(255, 75, 75, 0.2);
   background: linear-gradient(90deg, rgba(255, 75, 75, 0.08), rgba(255, 75, 75, 0.02));
 }
+
 .method .logo {
-  width: 100px;
+  width: 90px;
   height: 50px;
-  min-width: 100px;
+  min-width: 90px;
+  max-width: 90px;
   min-height: 50px;
   display: flex;
   align-items: center;
@@ -414,6 +435,16 @@ h3.section-title {
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s;
   box-sizing: border-box;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Đảm bảo không có text content từ các rule khác */
+.method .logo::before,
+.method .logo::after {
+  display: none !important;
+  content: none !important;
 }
 
 .method .logo img {
@@ -421,6 +452,8 @@ h3.section-title {
   height: 100%;
   object-fit: contain;
   display: block;
+  position: relative;
+  z-index: 1;
 }
 
 .method:hover .logo {
@@ -433,10 +466,20 @@ h3.section-title {
   border-color: rgba(255, 75, 75, 0.3);
   box-shadow: 0 4px 12px rgba(255, 75, 75, 0.15);
 }
+
 .method .txt {
   flex: 1;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  min-width: 0;
+  padding-left: 8px;
+  position: relative;
+  z-index: 1;
+  line-height: 1.4;
 }
 
 /* fees / totals */
@@ -447,6 +490,7 @@ h3.section-title {
   flex-direction: column;
   gap: 8px;
 }
+
 .cost-row {
   display: flex;
   justify-content: space-between;
@@ -454,6 +498,7 @@ h3.section-title {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
 }
+
 .total-row {
   font-size: 20px;
   font-weight: 800;
@@ -469,12 +514,14 @@ h3.section-title {
   color: var(--muted-2);
   font-size: 14px;
 }
+
 .confirm input {
   width: 18px;
   height: 18px;
   accent-color: var(--accent);
   margin-top: 3px;
 }
+
 .pay-btn {
   width: 100%;
   padding: 12px 16px;
@@ -487,6 +534,7 @@ h3.section-title {
   color: #fff;
   transition: all 0.15s;
 }
+
 .pay-btn[disabled] {
   opacity: 0.45;
   cursor: not-allowed;
@@ -509,10 +557,12 @@ h3.section-title {
     grid-template-columns: 1fr 320px;
   }
 }
+
 @media (max-width: 900px) {
   .wrap {
     grid-template-columns: 1fr;
   }
+
   .side-card {
     order: 2;
   }
@@ -524,6 +574,13 @@ h3.section-title {
 [data-theme="light"] .booking-details-section {
   background: #c8d0db !important;
   border: 1px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Đảm bảo logo trong method không bị ảnh hưởng bởi các rule khác */
+[data-theme="light"] .method .logo::before,
+[data-theme="light"] .method .logo::after {
+  display: none !important;
+  content: none !important;
 }
 
 /* Ensure all text in boxes is black in light mode */
@@ -540,6 +597,7 @@ h3.section-title {
 [data-theme="light"] .seat-label {
   color: #000 !important;
 }
+
 /* phần footer */
 /* Footer - modern cinematic style */
 .footer {
@@ -580,11 +638,13 @@ h3.section-title {
   display: grid;
   gap: 10px;
 }
+
 .links a {
   color: rgba(233, 238, 243, 0.86);
   text-decoration: none;
   transition: color 0.18s, transform 0.18s;
 }
+
 .links a:hover {
   color: #fff;
   transform: translateX(6px);
@@ -597,6 +657,7 @@ h3.section-title {
   align-items: center;
   margin-bottom: 12px;
 }
+
 .app-badge {
   height: 40px;
   object-fit: contain;
@@ -610,6 +671,7 @@ h3.section-title {
   gap: 10px;
   margin-top: 8px;
 }
+
 .s-ico {
   width: 40px;
   height: 40px;
@@ -623,6 +685,7 @@ h3.section-title {
   text-decoration: none;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
+
 .s-ico:hover {
   transform: translateY(-6px);
   background: linear-gradient(180deg, #ff6a72, #ff3d57);
@@ -635,6 +698,7 @@ h3.section-title {
   margin: 8px 0;
   font-size: 14px;
 }
+
 .contact a {
   color: #fff;
   text-decoration: underline;
@@ -645,12 +709,14 @@ h3.section-title {
   color: rgba(233, 238, 243, 0.72);
   margin-bottom: 10px;
 }
+
 .subscribe-form {
   display: flex;
   gap: 8px;
   align-items: center;
   margin-top: 6px;
 }
+
 .subscribe-form input {
   flex: 1;
   padding: 10px 12px;
@@ -661,10 +727,12 @@ h3.section-title {
   outline: none;
   transition: box-shadow 0.12s;
 }
+
 .subscribe-form input:focus {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 255, 255, 0.12);
 }
+
 .subscribe-form button {
   padding: 10px 14px;
   border-radius: 8px;
@@ -675,6 +743,7 @@ h3.section-title {
   cursor: pointer;
   transition: transform 0.12s;
 }
+
 .subscribe-form button:hover {
   transform: translateY(-4px);
 }
@@ -694,6 +763,7 @@ h3.section-title {
   padding-top: 18px;
   text-align: center;
 }
+
 .footer-bottom .copy {
   color: rgba(233, 238, 243, 0.66);
   margin: 0;
@@ -706,16 +776,20 @@ h3.section-title {
     grid-template-columns: 1fr 1fr;
   }
 }
+
 @media (max-width: 720px) {
   .footer-top {
     grid-template-columns: 1fr;
   }
+
   .badges {
     gap: 8px;
   }
+
   .app-badge {
     height: 34px;
   }
+
   .s-ico {
     width: 36px;
     height: 36px;

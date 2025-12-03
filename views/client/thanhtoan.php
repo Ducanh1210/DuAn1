@@ -103,8 +103,8 @@ function formatPrice($price)
                                     <?php endif; ?>
                                     <?php if ($studentCount > 0): ?>
                                         <?php if ($adultCount > 0): ?>, <?php endif; ?>
-                                        <span class="ticket-type"><?= $studentCount ?> Sinh viên</span>
-                                    <?php endif; ?>
+                                    <span class="ticket-type"><?= $studentCount ?> Sinh viên</span>
+                                <?php endif; ?>
                                 </span>
                             </div>
                         <?php endif; ?>
@@ -240,7 +240,7 @@ function formatPrice($price)
             </label>
 
             <button class="pay-btn" id="payBtn" disabled>Thanh toán</button>
-            <a class="back-link" href="<?= BASE_URL ?>?act=datve&showtime_id=<?= $showtime['id'] ?? '' ?>">Quay lại</a>
+            <a class="back-link" href="#" onclick="goBackToSeatSelection(event)">Quay lại</a>
         </div>
     </aside>
 </div>
@@ -286,7 +286,7 @@ function formatPrice($price)
     updateTotals();
 
     // Voucher code handler
-    document.getElementById('applyVoucherBtn').addEventListener('click', function () {
+    document.getElementById('applyVoucherBtn').addEventListener('click', function() {
         const voucherCode = document.getElementById('voucherCode').value.trim();
         const messageEl = document.getElementById('voucherMessage');
 
@@ -298,7 +298,8 @@ function formatPrice($price)
         messageEl.innerHTML = '<span style="color: #ffc107;">Đang kiểm tra mã voucher...</span>';
 
         // Kiểm tra discount code qua API
-        const url = '<?= BASE_URL ?>?act=check-voucher&code=' + encodeURIComponent(voucherCode) + '&total_amount=' + originalTotal;
+        const movieId = '<?= $movie['id'] ?? '' ?>';
+        const url = '<?= BASE_URL ?>?act=check-voucher&code=' + encodeURIComponent(voucherCode) + '&total_amount=' + originalTotal + '&movie_id=' + movieId;
         fetch(url)
             .then(response => response.json())
             .then(data => {
@@ -378,10 +379,20 @@ function formatPrice($price)
         }
 
         fetch('<?= BASE_URL ?>?act=payment-process', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                // Kiểm tra Content-Type header
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    return response.text().then(text => {
+                        console.error('Expected JSON but got:', contentType, text.substring(0, 200));
+                        throw new Error('Server returned non-JSON response');
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     if (data.payment_method === 'vnpay' && data.payment_url) {
@@ -409,5 +420,51 @@ function formatPrice($price)
     // Preselect first method
     if (methods.length > 0) {
         selectMethod(methods[0]);
+    }
+
+    // Quay lại trang chọn ghế và reset viewport
+    function goBackToSeatSelection(event) {
+        event.preventDefault();
+
+        // Reset tất cả zoom/transform trước khi chuyển trang
+        document.body.style.zoom = '';
+        document.body.style.transform = '';
+        document.documentElement.style.zoom = '';
+
+        // Reset viewport meta tag
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        }
+
+        // Kiểm tra xem đến từ đâu
+        const urlParams = new URLSearchParams(window.location.search);
+        const from = urlParams.get('from');
+        const showtimeId = '<?= $showtime['id'] ?? '' ?>';
+
+        let baseUrl;
+
+        // Nếu đến từ movies.php, quay lại movies.php với showtime đã chọn
+        if (from === 'movies') {
+            const movieId = urlParams.get('movie_id') || '';
+            const cinemaId = urlParams.get('cinema') || '';
+            const date = urlParams.get('date') || '';
+
+            baseUrl = '<?= BASE_URL ?>?act=movies&id=' + movieId;
+            if (date) {
+                baseUrl += '&date=' + date;
+            }
+            if (cinemaId) {
+                baseUrl += '&cinema=' + cinemaId;
+            }
+            // Chỉ thêm showtime_id và _reset_zoom, không thêm _nocache để tránh reload nhiều lần
+            baseUrl += '&showtime_id=' + showtimeId + '&_reset_zoom=1';
+        } else {
+            // Nếu đến từ select_seats.php, quay lại select_seats.php
+            baseUrl = '<?= BASE_URL ?>?act=datve&showtime_id=' + showtimeId + '&_reset_zoom=1';
+        }
+
+        // Chuyển trang ngay, không cần clear cache hay reload
+        window.location.href = baseUrl;
     }
 </script>

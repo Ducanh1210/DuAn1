@@ -52,15 +52,27 @@ if (isLoggedIn()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title><?= $GLOBALS['pageTitle'] ?? 'TicketHub' ?> | TicketHub</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/client_layout.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/notifications.css">
+    <?php 
+    // Thêm version để tránh cache khi quay lại từ trang thanh toán
+    $cssVersion = isset($_GET['_nocache']) ? '?v=' . time() : '?v=1.0';
+    ?>
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/client_layout.css<?= $cssVersion ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css<?= $cssVersion ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/notifications.css<?= $cssVersion ?>">
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'movies.php') !== false): ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/movies.css">
+        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/movies.css<?= $cssVersion ?>">
     <?php endif; ?>
-    <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'thanhtoan.php') !== false): ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/thanhtoan.css">
+    <?php if (isset($GLOBALS['clientViewPath']) && (strpos($GLOBALS['clientViewPath'], 'thanhtoan.php') !== false || strpos($GLOBALS['clientViewPath'], 'select_seats.php') !== false)): ?>
+        <?php if (strpos($GLOBALS['clientViewPath'], 'thanhtoan.php') !== false): ?>
+            <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/thanhtoan.css<?= $cssVersion ?>">
+        <?php endif; ?>
+        <?php if (strpos($GLOBALS['clientViewPath'], 'select_seats.php') !== false): ?>
+            <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/movies.css<?= $cssVersion ?>">
+        <?php endif; ?>
     <?php endif; ?>
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'gioithieu.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/gioithieu.css">
