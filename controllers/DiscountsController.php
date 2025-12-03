@@ -2,10 +2,12 @@
 class DiscountsController
 {
     public $discountCode;
+    public $movie;
 
     public function __construct()
     {
         $this->discountCode = new DiscountCode();
+        $this->movie = new Movie();
     }
 
     /**
@@ -26,9 +28,12 @@ class DiscountsController
     public function create()
     {
         $errors = [];
+        $movies = $this->movie->getBasicList();
 
         // Validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $selectedMovieId = $this->resolveMovieSelection($movies, $_POST['movie_id'] ?? null, $errors);
+
             // Kiểm tra trường rỗng
             if (empty(trim($_POST['code'] ?? ''))) {
                 $errors['code'] = "Bạn vui lòng nhập mã giảm giá";
@@ -98,6 +103,7 @@ class DiscountsController
                     'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],
                     'end_date' => $_POST['end_date'],
+                    'movie_id' => $selectedMovieId,
                     'description' => trim($_POST['description'] ?? ''),
                     'benefits' => $benefits,
                     'status' => $_POST['status'] ?? 'active',
@@ -115,7 +121,10 @@ class DiscountsController
             }
         }
 
-        render('admin/discounts/create.php', ['errors' => $errors]);
+        render('admin/discounts/create.php', [
+            'errors' => $errors,
+            'movies' => $movies
+        ]);
     }
 
     /**
@@ -135,10 +144,20 @@ class DiscountsController
             exit;
         }
 
+        if (!empty($discount['benefits']) && is_string($discount['benefits'])) {
+            $decodedBenefits = json_decode($discount['benefits'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedBenefits)) {
+                $discount['benefits'] = $decodedBenefits;
+            }
+        }
+
         $errors = [];
+        $movies = $this->movie->getBasicList();
 
         // Validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $selectedMovieId = $this->resolveMovieSelection($movies, $_POST['movie_id'] ?? null, $errors);
+
             // Kiểm tra trường rỗng
             if (empty(trim($_POST['code'] ?? ''))) {
                 $errors['code'] = "Bạn vui lòng nhập mã giảm giá";
@@ -208,6 +227,7 @@ class DiscountsController
                     'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],
                     'end_date' => $_POST['end_date'],
+                    'movie_id' => $selectedMovieId,
                     'description' => trim($_POST['description'] ?? ''),
                     'benefits' => $benefits,
                     'status' => $_POST['status'] ?? 'active',
@@ -225,7 +245,11 @@ class DiscountsController
             }
         }
 
-        render('admin/discounts/edit.php', ['discount' => $discount, 'errors' => $errors]);
+        render('admin/discounts/edit.php', [
+            'discount' => $discount,
+            'errors' => $errors,
+            'movies' => $movies
+        ]);
     }
 
     /**
@@ -246,5 +270,30 @@ class DiscountsController
 
         header('Location: ' . BASE_URL . '?act=discounts');
         exit;
+    }
+
+    /**
+     * Xác thực lựa chọn phim và trả về movie_id hợp lệ hoặc null
+     */
+    private function resolveMovieSelection(array $movies, $inputValue, array &$errors)
+    {
+        if ($inputValue === null || $inputValue === '') {
+            return null;
+        }
+
+        $selectedMovieId = (int)$inputValue;
+        if ($selectedMovieId <= 0) {
+            $errors['movie_id'] = "Phim được chọn không hợp lệ.";
+            return null;
+        }
+
+        foreach ($movies as $movie) {
+            if ((int)($movie['id'] ?? 0) === $selectedMovieId) {
+                return $selectedMovieId;
+            }
+        }
+
+        $errors['movie_id'] = "Phim được chọn không hợp lệ.";
+        return null;
     }
 }

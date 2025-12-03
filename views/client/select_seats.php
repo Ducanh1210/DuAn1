@@ -12,14 +12,15 @@ $maxColumns = 12;
 
 <style>
     /* Force reset zoom khi trang load */
-    html, body {
+    html,
+    body {
         zoom: 1 !important;
         -webkit-text-size-adjust: 100% !important;
         -moz-text-size-adjust: 100% !important;
         -ms-text-size-adjust: 100% !important;
         text-size-adjust: 100% !important;
     }
-    
+
     .seat-selection-container {
         background: #2a2a2a;
         min-height: 100vh;
@@ -778,7 +779,16 @@ $maxColumns = 12;
                 }
             }
 
-            const groupSeats = selectAdjacentSeatsSmart(seatElement, seatsToSelect, allowLastSingleSeat);
+            const isPairSelection = seatsToSelect >= 2 && selectedAdjacentCount === 2;
+            let groupSeats = [];
+
+            if (isPairSelection) {
+                groupSeats = selectAdjacentSeatsForCouple(seatElement);
+            }
+
+            if (groupSeats.length === 0) {
+                groupSeats = selectAdjacentSeatsSmart(seatElement, seatsToSelect, allowLastSingleSeat);
+            }
             if (groupSeats.length > 0) {
                 selectedGroups.push({
                     count: seatsToSelect,
@@ -889,6 +899,65 @@ $maxColumns = 12;
         }
 
         return seatsToSelect;
+    }
+
+    function selectAdjacentSeatsForCouple(startSeatElement) {
+        const row = startSeatElement.closest('.seat-row');
+        if (!row) return [];
+
+        const rowLabel = (row.getAttribute('data-row-label') || '').toUpperCase();
+        const startColumn = parseInt(startSeatElement.getAttribute('data-seat-column')) || 0;
+        if (!startColumn) {
+            return [];
+        }
+
+        const seatMap = {};
+        row.querySelectorAll('.seat').forEach(seat => {
+            const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+            if (col > 0) {
+                seatMap[col] = seat;
+            }
+        });
+
+        const isSeatSelectable = seat =>
+            seat &&
+            !seat.classList.contains('booked') &&
+            !seat.classList.contains('maintenance') &&
+            !seat.classList.contains('selected') &&
+            !seat.classList.contains('disabled-column');
+
+        if (!isSeatSelectable(seatMap[startColumn])) {
+            return [];
+        }
+
+        const partnerColumn = (startColumn % 2 === 0) ? startColumn - 1 : startColumn + 1;
+
+        if (partnerColumn < 1 || partnerColumn > maxColumns || !isInSameBlock(startColumn, partnerColumn)) {
+            return [];
+        }
+
+        if (!isSeatSelectable(seatMap[partnerColumn])) {
+            return [];
+        }
+
+        const selectedSeatElements = [seatMap[startColumn], seatMap[partnerColumn]].sort((a, b) => {
+            const colA = parseInt(a.getAttribute('data-seat-column')) || 0;
+            const colB = parseInt(b.getAttribute('data-seat-column')) || 0;
+            return colA - colB;
+        });
+
+        return selectedSeatElements.map(seat => {
+            seat.classList.add('selected');
+            seat.classList.remove('vip', 'available');
+            return {
+                id: seat.getAttribute('data-seat-id'),
+                label: seat.getAttribute('data-seat-label'),
+                type: seat.getAttribute('data-seat-type'),
+                status: seat.getAttribute('data-seat-status'),
+                row: rowLabel,
+                column: parseInt(seat.getAttribute('data-seat-column')) || 0
+            };
+        });
     }
 
     const ALLOWED_SINGLE_COLUMNS = [1, 3, 4, 6, 7, 9, 10, 12];
@@ -1426,10 +1495,10 @@ $maxColumns = 12;
 
     // Gọi reset viewport ngay khi script chạy
     resetViewport();
-    
+
     // Reset lại khi URL có parameter _reset_zoom, _t, _r hoặc _nocache
-    if (window.location.search.includes('_reset_zoom') || 
-        window.location.search.includes('_t=') || 
+    if (window.location.search.includes('_reset_zoom') ||
+        window.location.search.includes('_t=') ||
         window.location.search.includes('_nocache=')) {
         // Force reload tất cả CSS để tránh cache giao diện cũ
         const links = document.querySelectorAll('link[rel="stylesheet"]');
@@ -1444,10 +1513,10 @@ $maxColumns = 12;
                 link.href = url.toString();
             }
         });
-        
+
         // Reset viewport ngay lập tức
         resetViewport();
-        
+
         // Force reload toàn bộ trang nếu có parameter _nocache để đảm bảo load đúng phiên bản mới
         if (window.location.search.includes('_nocache=')) {
             // Đợi một chút để CSS được reload, sau đó reload trang
@@ -1456,7 +1525,7 @@ $maxColumns = 12;
             }, 100);
             return;
         }
-        
+
         // Xóa parameters khỏi URL sau khi reset
         setTimeout(() => {
             const url = new URL(window.location.href);
@@ -1468,7 +1537,7 @@ $maxColumns = 12;
             // Reset lại viewport một lần nữa sau khi xóa parameter
             resetViewport();
         }, 100);
-        
+
         // Reset lại sau 300ms để đảm bảo
         setTimeout(resetViewport, 300);
     }

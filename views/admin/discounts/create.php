@@ -19,6 +19,11 @@
         </div>
       <?php endif; ?>
 
+      <?php
+        $movies = $movies ?? [];
+        $selectedMovieId = $_POST['movie_id'] ?? '';
+      ?>
+
       <form action="" method="post">
         <div class="row">
           <div class="col-md-8">
@@ -50,6 +55,44 @@
               <?php if (!empty($errors['title'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['title'] ?></div>
               <?php endif; ?>
+            </div>
+
+            <div class="mb-3">
+              <label for="movie_id" class="form-label">Áp dụng cho phim (tùy chọn)</label>
+              <select name="movie_id" 
+                      id="movie_id" 
+                      class="form-select <?= !empty($errors['movie_id']) ? 'is-invalid' : '' ?>">
+                <option value=""><?= empty($movies) ? 'Hiện chưa có phim để gắn' : 'Không giới hạn phim (áp dụng toàn bộ)'; ?></option>
+                <?php foreach ($movies as $movie): ?>
+                  <?php
+                    $movieId = (int)($movie['id'] ?? 0);
+                    $isSelected = $selectedMovieId !== '' && (int)$selectedMovieId === $movieId;
+                    $movieStatus = $movie['status'] ?? '';
+                    $statusLabel = $movieStatus === 'active' ? 'Đang chiếu' : ($movieStatus === 'upcoming' ? 'Sắp chiếu' : 'Không hoạt động');
+                  ?>
+                  <option value="<?= $movieId ?>"
+                          data-title="<?= htmlspecialchars($movie['title'] ?? '') ?>"
+                          data-image="<?= htmlspecialchars($movie['image'] ?? '') ?>"
+                          data-status="<?= htmlspecialchars($movieStatus) ?>"
+                          <?= $isSelected ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($movie['title'] ?? 'Tên phim') ?> (<?= $statusLabel ?>)
+                  </option>
+                <?php endforeach; ?>
+              </select>
+              <small class="form-text text-muted">Chọn phim để biến mã giảm giá thành ưu đãi dành riêng cho phim đó.</small>
+              <?php if (!empty($errors['movie_id'])): ?>
+                <div class="text-danger small mt-1"><?= $errors['movie_id'] ?></div>
+              <?php endif; ?>
+            </div>
+
+            <div id="movie-preview-card" class="card border-info mb-3 d-none">
+              <div class="card-body d-flex align-items-center">
+                <img id="movie-preview-image" src="" alt="Poster phim" class="rounded me-3" style="width: 80px; height: 120px; object-fit: cover; display: none;">
+                <div>
+                  <h6 class="mb-1" id="movie-preview-title">Tên phim sẽ hiển thị tại đây</h6>
+                  <p class="mb-0 text-muted small">Poster phim sẽ được gắn vào thẻ mã giảm giá trên trang Khuyến mãi.</p>
+                </div>
+              </div>
             </div>
 
             <div class="row">
@@ -237,6 +280,50 @@
           return false;
         }
       });
+    }
+
+    // Xem trước phim gắn với mã giảm giá
+    const movieSelect = document.getElementById('movie_id');
+    const moviePreviewCard = document.getElementById('movie-preview-card');
+    const moviePreviewImage = document.getElementById('movie-preview-image');
+    const moviePreviewTitle = document.getElementById('movie-preview-title');
+    const baseUrl = '<?= BASE_URL ?>';
+    const fallbackImage = baseUrl + '/image/logo.png';
+
+    function updateMoviePreview() {
+      if (!movieSelect || !moviePreviewCard) {
+        return;
+      }
+
+      const selectedOption = movieSelect.options[movieSelect.selectedIndex];
+      if (!selectedOption || !selectedOption.value) {
+        moviePreviewCard.classList.add('d-none');
+        moviePreviewImage.style.display = 'none';
+        moviePreviewTitle.textContent = 'Tên phim sẽ hiển thị tại đây';
+        return;
+      }
+
+      const movieTitle = selectedOption.dataset.title || selectedOption.text;
+      const movieImagePath = selectedOption.dataset.image || '';
+      moviePreviewTitle.textContent = movieTitle || 'Tên phim sẽ hiển thị tại đây';
+
+      if (movieImagePath) {
+        const normalizedPath = movieImagePath.startsWith('http')
+          ? movieImagePath
+          : baseUrl.replace(/\/+$/, '') + '/' + movieImagePath.replace(/^\/+/, '');
+        moviePreviewImage.src = normalizedPath;
+        moviePreviewImage.style.display = 'block';
+      } else {
+        moviePreviewImage.src = fallbackImage;
+        moviePreviewImage.style.display = 'block';
+      }
+
+      moviePreviewCard.classList.remove('d-none');
+    }
+
+    if (movieSelect) {
+      movieSelect.addEventListener('change', updateMoviePreview);
+      updateMoviePreview();
     }
   });
 </script>
