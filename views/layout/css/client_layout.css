@@ -1095,7 +1095,6 @@
   width: 150px !important;
   max-height: 150px !important;
   object-fit: contain;
-  filter: brightness(0) saturate(0);
 }
 
 [data-theme="light"] .navbar .logo a,
