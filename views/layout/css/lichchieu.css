@@ -109,7 +109,7 @@ body {
 [data-theme="light"] .header .logo::after {
   content: "TicketHub";
   position: absolute;
-  left: 60px;
+  left: 70px;
   /* Vị trí text bên cạnh icon */
   top: 50%;
   transform: translateY(-50%);
@@ -125,9 +125,10 @@ body {
 /* Chỉ áp dụng cho logo trong navbar/header, không áp dụng cho logo trong method buttons */
 [data-theme="light"] .navbar .logo img,
 [data-theme="light"] .header .logo img {
-  clip-path: inset(0 50% 0 0);
+  clip-path: inset(0 55% 0 0);
   /* Chỉ hiển thị nửa trái (icon) */
   width: 60px;
+  max-height: 60px;
   /* Giảm width để chỉ hiển thị icon */
 }
 
