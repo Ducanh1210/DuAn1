@@ -1189,3 +1189,40 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
     height: 36px;
   }
 }
+
+/* ===== LIGHT MODE LOGO RESET (keep same size as dark) ===== */
+[data-theme="light"] .navbar .logo img,
+[data-theme="light"] .header .logo img {
+  clip-path: none !important;
+  width: 120px !important;
+  max-height: 120px !important;
+  object-fit: contain;
+  filter: brightness(0) saturate(0);
+}
+
+[data-theme="light"] .navbar .logo a,
+[data-theme="light"] .header .logo a {
+  color: #000 !important;
+}
+
+/* Add black text overlay in light mode (keep original image intact) */
+[data-theme="light"] .navbar .logo,
+[data-theme="light"] .header .logo {
+  position: relative;
+}
+
+[data-theme="light"] .navbar .logo::after,
+[data-theme="light"] .header .logo::after {
+  content: "TicketHub" !important;
+  position: absolute;
+  left: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #000;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: none;
+}

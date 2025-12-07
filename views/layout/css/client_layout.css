@@ -734,6 +734,7 @@
   display: grid;
   gap: 10px;
 }
+
 .links a {
   color: rgba(233, 238, 243, 0.86);
   text-decoration: none;
@@ -760,6 +761,7 @@
   align-items: center;
   margin-bottom: 12px;
 }
+
 .app-badge {
   height: 40px;
   object-fit: contain;
@@ -773,6 +775,7 @@
   gap: 10px;
   margin-top: 8px;
 }
+
 .s-ico {
   width: 40px;
   height: 40px;
@@ -786,6 +789,7 @@
   text-decoration: none;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
+
 .s-ico:hover {
   transform: translateY(-6px);
   background: linear-gradient(180deg, #ff6a72, #ff3d57);
@@ -828,6 +832,7 @@
   align-items: center;
   margin-top: 6px;
 }
+
 .subscribe-form input {
   flex: 1;
   padding: 10px 12px;
@@ -854,6 +859,7 @@
   box-shadow: 0 6px 18px var(--shadow-lg);
   border-color: var(--border-color);
 }
+
 .subscribe-form button {
   padding: 10px 14px;
   border-radius: 8px;
@@ -864,6 +870,7 @@
   cursor: pointer;
   transition: transform 0.12s;
 }
+
 .subscribe-form button:hover {
   transform: translateY(-4px);
 }
@@ -883,6 +890,7 @@
   padding-top: 18px;
   text-align: center;
 }
+
 .footer-bottom .copy {
   color: rgba(233, 238, 243, 0.66);
   margin: 0;
@@ -899,22 +907,22 @@
     gap: 20px;
     padding: 0 15px;
   }
-  
+
   .header .menu a {
     font-size: 14px;
     padding: 8px 10px;
   }
-  
+
   .header .logo img {
     width: 120px;
     max-height: 50px;
   }
-  
+
   .header .logo {
     min-width: 120px;
     height: 50px;
   }
-  
+
   .header .nav-actions {
     height: 50px;
   }
@@ -925,40 +933,40 @@
     padding: 15px 0;
     min-height: 70px;
   }
-  
+
   .header-container {
     gap: 12px;
     padding: 0 15px;
     min-height: 50px;
   }
-  
+
   .header .logo {
     min-width: 100px;
     height: 45px;
   }
-  
+
   .header .logo img {
     width: 100px;
     max-height: 45px;
   }
-  
+
   .header .menu {
     gap: 12px;
     padding: 0 10px;
     flex-wrap: wrap;
     min-height: 45px;
   }
-  
+
   .header .menu a {
     font-size: 13px;
     padding: 6px 8px;
   }
-  
+
   .header .nav-actions {
     gap: 8px;
     height: 45px;
   }
-  
+
   .header .nav-actions .search-icon,
   .header .nav-actions .notification-icon {
     width: 36px;
@@ -973,23 +981,23 @@
     max-width: calc(100vw - 20px);
     width: auto;
   }
-  
+
   .search-form-horizontal {
     flex-direction: column;
     padding: 10px;
   }
-  
+
   .search-field {
     padding: 8px 10px;
     min-width: auto;
   }
-  
+
   .search-field:first-child {
     border-right: none;
     border-bottom: 1px solid #e0e0e0;
     padding-bottom: 10px;
   }
-  
+
   .search-submit-btn,
   .search-clear-btn {
     width: 100%;
@@ -1004,51 +1012,51 @@
     padding: 12px 0;
     min-height: 60px;
   }
-  
+
   .header-container {
     gap: 8px;
     padding: 0 12px;
     min-height: 40px;
   }
-  
+
   .header .logo {
     min-width: 80px;
     height: 40px;
   }
-  
+
   .header .logo img {
     width: 80px;
     max-height: 40px;
   }
-  
+
   .header .menu {
     gap: 8px;
     padding: 0 8px;
     min-height: 40px;
   }
-  
+
   .header .menu a {
     font-size: 12px;
     padding: 4px 6px;
   }
-  
+
   .header .nav-actions {
     gap: 6px;
     height: 40px;
   }
-  
+
   .header .nav-actions .search-icon,
   .header .nav-actions .notification-icon {
     width: 32px;
     height: 32px;
     font-size: 14px;
   }
-  
+
   .header .user-dropdown-toggle {
     font-size: 12px;
     padding: 4px 8px;
   }
-  
+
   .header .user-dropdown-toggle i.bi-person-circle {
     font-size: 20px;
   }
@@ -1060,19 +1068,59 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
 @media (max-width: 720px) {
   .footer-top {
     grid-template-columns: 1fr;
   }
+
   .badges {
     gap: 8px;
   }
+
   .app-badge {
     height: 34px;
   }
+
   .s-ico {
     width: 36px;
     height: 36px;
   }
 }
 
+/* ===== LIGHT MODE LOGO RESET (keep same size as dark) ===== */
+[data-theme="light"] .navbar .logo img,
+[data-theme="light"] .header .logo img {
+  clip-path: none !important;
+  width: 150px !important;
+  max-height: 150px !important;
+  object-fit: contain;
+  filter: brightness(0) saturate(0);
+}
+
+[data-theme="light"] .navbar .logo a,
+[data-theme="light"] .header .logo a {
+  color: #000 !important;
+}
+
+/* Add black text overlay in light mode (keep original image intact) */
+[data-theme="light"] .navbar .logo,
+[data-theme="light"] .header .logo {
+  position: relative;
+}
+
+[data-theme="light"] .navbar .logo::after,
+[data-theme="light"] .header .logo::after {
+  content: "TicketHub" !important;
+  position: absolute;
+  left: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #000;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: none;
+}
