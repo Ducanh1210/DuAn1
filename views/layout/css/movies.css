@@ -1058,6 +1058,204 @@ h1.title {
   color: #000;
 }
 
+/* ===== LIGHT MODE: SEAT SELECTION (COLORS ONLY) ===== */
+[data-theme="light"] #seatSelectionContainer {
+  background: #fff;
+}
+
+[data-theme="light"] .seat-selection-wrapper {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .seat-selection-header {
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .ticket-panel-content {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .ticket-panel-title,
+[data-theme="light"] .quantity-label,
+[data-theme="light"] .adjacent-header-label,
+[data-theme="light"] .max-seats-note,
+[data-theme="light"] .room-subtitle,
+[data-theme="light"] .room-title {
+  color: #0f172a;
+  text-shadow: none;
+}
+
+[data-theme="light"] .quantity-select {
+  background: #fff;
+  border-color: #d9dee7;
+  color: #111827;
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .adjacent-section {
+  border-top: 1px solid #e5e7eb;
+}
+
+[data-theme="light"] .info-icon {
+  background: #eef2ff;
+  border-color: #cbd5ff;
+  color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="light"] .adjacent-option {
+  background: #dfe3e9;
+  border: 1px solid #c3cad6;
+  color: #1f2937;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .adjacent-option:hover:not(.disabled) {
+  background: #d2d7df;
+  border-color: #b7c0cf;
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(201, 210, 222, 0.9);
+}
+
+[data-theme="light"] .adjacent-option.active {
+  background: #ffe8d6;
+  border-color: #f59e0b;
+  color: #7c2d12;
+  box-shadow:
+    0 12px 26px rgba(245, 158, 11, 0.25),
+    0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+[data-theme="light"] .adjacent-option-radio {
+  border-color: #aab4c5;
+  background: #fff;
+}
+
+[data-theme="light"] .adjacent-option.active .adjacent-option-radio {
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.2);
+}
+
+[data-theme="light"] .adjacent-option-seats .adjacent-seat-box {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+[data-theme="light"] .adjacent-option.active .adjacent-seat-box {
+  background: #f97316;
+  border-color: #f97316;
+  box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);
+}
+
+[data-theme="light"] .screen-container {
+  color: #0f172a;
+}
+
+[data-theme="light"] .row-label {
+  color: #0f172a;
+}
+
+[data-theme="light"] .seat-gap {
+  background: #f8fafc !important;
+  border-left: 3px dashed #e5e7eb !important;
+  border-right: 3px dashed #e5e7eb !important;
+}
+
+[data-theme="light"] .seat-gap::before {
+  background: #e2e8f0 !important;
+}
+
+[data-theme="light"] .seat {
+  background: #fff;
+  color: #111827;
+  border-color: #e5e7eb;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="light"] .seat.available {
+  background: #fff;
+  border-color: #e5e7eb;
+  color: #111827 !important;
+}
+
+[data-theme="light"] .seat.available:hover,
+[data-theme="light"] .seat.vip:hover {
+  background: #ff8c00;
+  color: #fff;
+  border-color: #f97316;
+  transform: scale(1.12) translateY(-2px);
+  box-shadow:
+    0 10px 24px rgba(249, 115, 22, 0.35),
+    0 0 0 2px rgba(249, 115, 22, 0.2);
+}
+
+[data-theme="light"] .seat.selected,
+[data-theme="light"] .seat.vip.selected {
+  color: #fff;
+}
+
+[data-theme="light"] .seat.vip {
+  background: #fffdf6;
+  border-color: #fbbf24;
+  color: #92400e;
+  box-shadow:
+    0 6px 14px rgba(251, 191, 36, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+[data-theme="light"] .seat.booked {
+  background: #fecdd3;
+  color: #7f1d1d;
+  border-color: #f87171;
+  box-shadow: none;
+}
+
+[data-theme="light"] .seat.maintenance {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fcd34d;
+}
+
+[data-theme="light"] .legend-text {
+  color: #0f172a;
+}
+
+[data-theme="light"] .legend-seat.normal {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+[data-theme="light"] .legend-seat.vip {
+  background: #fbbf24;
+}
+
+[data-theme="light"] .legend-seat.booked {
+  background: #f87171;
+}
+
+[data-theme="light"] .selected-seats-summary {
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .summary-seats-label,
+[data-theme="light"] .total-price-label,
+[data-theme="light"] .selected-seats-list {
+  color: #0f172a;
+}
+
+/* ===== LIGHT MODE: SEAT SELECTION ===== */
 /* Seat Badge */
 .seat-badge {
   background: #ff8c00;
@@ -1437,6 +1635,94 @@ h1.title {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+/* ===== LIGHT MODE: COMMENTS (COLORS ONLY) ===== */
+[data-theme="light"] .reviews-section {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .reviews-section h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .review-form-container {
+  background: #fff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .review-form-container .bi-info-circle {
+  color: #f97316 !important;
+}
+
+[data-theme="light"] .review-form-container a {
+  color: #ea580c !important;
+}
+
+[data-theme="light"] .review-form-container label,
+[data-theme="light"] .comments-list h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .review-form-container textarea {
+  background: #fff !important;
+  color: #0f172a !important;
+  border-color: #e5e7eb !important;
+}
+
+[data-theme="light"] #ratingText {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .review-form-container button[type="submit"] {
+  background: #ff8c00 !important;
+  color: #fff !important;
+}
+
+[data-theme="light"] .review-form-container button[type="submit"][disabled] {
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .review-form-container div[style*="background: rgba(255, 193, 7"],
+[data-theme="light"] .review-form-container div[style*="background: rgba(76, 175, 80"] {
+  background: #fff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .comment-item {
+  background: #fff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .comment-item div[style*="color: #fff"],
+[data-theme="light"] .comment-item div[style*="rgba(255, 255, 255"] {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .comment-item span[style*="rgba(255, 255, 255, 0.7"],
+[data-theme="light"] .comment-item span[style*="rgba(255, 255, 255, 0.5"] {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .comment-item div[style*="color: rgba(255, 255, 255, 0.5"],
+[data-theme="light"] .comment-item div[style*="font-size: 11px"] {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .comment-item div[style*="line-height"] {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .review-empty {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .review-empty p {
+  color: #94a3b8 !important;
 }
 
 #seatsGrid .seat-row {
