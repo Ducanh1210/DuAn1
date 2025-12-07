@@ -2,6 +2,7 @@
 // Lấy dữ liệu từ controller
 $success = $success ?? false;
 $error = $error ?? '';
+$formData = $formData ?? [];
 ?>
 <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lienhe.css">
 
@@ -25,7 +26,9 @@ $error = $error ?? '';
                         <i class="bi bi-envelope-paper"></i>
                         Gửi Tin Nhắn
                     </h2>
-                    <p class="section-description">Điền form bên dưới để gửi tin nhắn cho chúng tôi</p>
+                    <p class="section-description">
+                        Điền form bên dưới để gửi tin nhắn cho chúng tôi. Bạn sẽ được yêu cầu đăng nhập khi nhấn nút "Gửi".
+                    </p>
                 </div>
 
                 <?php if ($success): ?>
@@ -55,7 +58,7 @@ $error = $error ?? '';
                                 name="name" 
                                 class="form-control" 
                                 placeholder="Nhập họ và tên của bạn"
-                                value="<?= htmlspecialchars($_POST['name'] ?? '') ?>"
+                                value="<?= htmlspecialchars($formData['name'] ?? ($currentUser['full_name'] ?? '')) ?>"
                                 required
                             >
                         </div>
@@ -71,7 +74,7 @@ $error = $error ?? '';
                                 name="email" 
                                 class="form-control" 
                                 placeholder="your.email@example.com"
-                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                                value="<?= htmlspecialchars($formData['email'] ?? ($currentUser['email'] ?? '')) ?>"
                                 required
                             >
                         </div>
@@ -89,26 +92,48 @@ $error = $error ?? '';
                                 name="phone" 
                                 class="form-control" 
                                 placeholder="0123 456 789"
-                                value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>"
+                                value="<?= htmlspecialchars($formData['phone'] ?? ($currentUser['phone'] ?? '')) ?>"
                                 required
                             >
                         </div>
 
                         <div class="form-group">
-                            <label for="subject">
-                                <i class="bi bi-tag"></i>
-                                Chủ Đề <span class="required">*</span>
+                            <label for="cinema_id">
+                                <i class="bi bi-building"></i>
+                                Chọn Rạp <span class="required">*</span>
                             </label>
-                            <input 
-                                type="text" 
-                                id="subject" 
-                                name="subject" 
+                            <select 
+                                id="cinema_id" 
+                                name="cinema_id" 
                                 class="form-control" 
-                                placeholder="Ví dụ: Hỏi về giá vé, Đặt vé..."
-                                value="<?= htmlspecialchars($_POST['subject'] ?? '') ?>"
                                 required
                             >
+                                <option value="">-- Chọn rạp --</option>
+                                <?php if (!empty($cinemas)): ?>
+                                    <?php foreach ($cinemas as $cinema): ?>
+                                        <option value="<?= $cinema['id'] ?>" <?= (isset($formData['cinema_id']) && $formData['cinema_id'] == $cinema['id']) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($cinema['name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject">
+                            <i class="bi bi-tag"></i>
+                            Chủ Đề <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="subject" 
+                            name="subject" 
+                            class="form-control" 
+                            placeholder="Ví dụ: Hỏi về giá vé, Đặt vé..."
+                            value="<?= htmlspecialchars($formData['subject'] ?? '') ?>"
+                            required
+                        >
                     </div>
 
                     <div class="form-group">
@@ -123,7 +148,7 @@ $error = $error ?? '';
                             rows="6" 
                             placeholder="Nhập nội dung tin nhắn của bạn..."
                             required
-                        ><?= htmlspecialchars($_POST['message'] ?? '') ?></textarea>
+                        ><?= htmlspecialchars($formData['message'] ?? '') ?></textarea>
                     </div>
 
                     <button type="submit" class="btn-submit">

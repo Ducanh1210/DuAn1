@@ -155,8 +155,8 @@
     </a>
     <?php endif; ?>
     
-    <!-- Quản lý Liên hệ - Admin và Manager -->
-    <?php if ($isAdmin || $isManager): ?>
+    <!-- Quản lý Liên hệ - Admin, Manager và Staff -->
+    <?php if ($isAdmin || $isManager || $isStaff): ?>
     <a href="?act=contacts" class="<?= in_array($_GET['act'] ?? '', ['contacts', 'contacts-show', 'contacts-edit', 'contacts-delete', 'contacts-update-status']) ? 'active' : '' ?>">
       <i class="bi bi-envelope"></i><span class="label">Quản lý Liên hệ</span>
     </a>

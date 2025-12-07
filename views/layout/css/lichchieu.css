@@ -103,7 +103,7 @@ body {
   max-width: 100%;
 }
 
-/* Light mode: overlay text TicketHub màu đen lên ảnh và ẩn text trong ảnh */
+/* Light mode: overlay text TicketHub màu đen lên ảnh */
 /* Chỉ áp dụng cho logo trong navbar/header, không áp dụng cho logo trong method buttons */
 [data-theme="light"] .navbar .logo::after,
 [data-theme="light"] .header .logo::after {
@@ -119,9 +119,12 @@ body {
   color: #000;
   white-space: nowrap;
   pointer-events: none;
+  z-index: 2;
+  background: transparent;
+  padding: 0 4px;
 }
 
-/* Light mode: crop ảnh để chỉ hiển thị icon, ẩn text trong ảnh */
+/* Light mode: giữ nguyên logo ảnh, không crop */
 /* Chỉ áp dụng cho logo trong navbar/header, không áp dụng cho logo trong method buttons */
 [data-theme="light"] .navbar .logo img,
 [data-theme="light"] .header .logo img {

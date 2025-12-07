@@ -20,6 +20,140 @@
       <?php endif; ?>
 
       <form action="" method="post" id="contactForm">
+        <?php if (isset($isStaff) && $isStaff): ?>
+        <!-- Staff chỉ có thể cập nhật trạng thái -->
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle"></i> 
+          <strong>Lưu ý:</strong> Bạn chỉ có quyền cập nhật trạng thái phản hồi. Không thể sửa thông tin khác.
+        </div>
+        
+        <div class="card mb-4 border-info">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-gear"></i> Cập nhật trạng thái</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="status" class="form-label fw-bold">
+                <i class="bi bi-gear"></i> Trạng thái <span class="text-danger">*</span>
+              </label>
+              <select name="status" 
+                      id="status" 
+                      class="form-select form-select-lg <?= !empty($errors['status']) ? 'is-invalid' : '' ?>" 
+                      required>
+                <option value="pending" <?= ($_POST['status'] ?? $contact['status'] ?? '') == 'pending' ? 'selected' : '' ?>>⏳ Chờ xử lý</option>
+                <option value="processing" <?= ($_POST['status'] ?? $contact['status'] ?? '') == 'processing' ? 'selected' : '' ?>>🔄 Đang xử lý</option>
+                <option value="resolved" <?= ($_POST['status'] ?? $contact['status'] ?? '') == 'resolved' ? 'selected' : '' ?>>✅ Đã xử lý</option>
+                <option value="closed" <?= ($_POST['status'] ?? $contact['status'] ?? '') == 'closed' ? 'selected' : '' ?>>🔒 Đã đóng</option>
+              </select>
+              <?php if (!empty($errors['status'])): ?>
+                <div class="invalid-feedback"><?= $errors['status'] ?></div>
+              <?php endif; ?>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Hiển thị thông tin (readonly) -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card mb-4 border-primary">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-circle"></i> Thông tin khách hàng</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="bi bi-person"></i> Họ và tên
+                  </label>
+                  <input type="text" 
+                         class="form-control form-control-lg" 
+                         value="<?= htmlspecialchars($contact['name'] ?? '') ?>" 
+                         readonly>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="bi bi-envelope"></i> Email
+                  </label>
+                  <input type="email" 
+                         class="form-control form-control-lg" 
+                         value="<?= htmlspecialchars($contact['email'] ?? '') ?>" 
+                         readonly>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="bi bi-telephone"></i> Số điện thoại
+                  </label>
+                  <input type="tel" 
+                         class="form-control form-control-lg" 
+                         value="<?= htmlspecialchars($contact['phone'] ?? '') ?>"
+                         readonly>
+                </div>
+                
+                <?php if (!empty($contact['cinema_id']) && !empty($contact['cinema_name'])): ?>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="bi bi-building"></i> Rạp
+                  </label>
+                  <input type="text" 
+                         class="form-control form-control-lg" 
+                         value="<?= htmlspecialchars($contact['cinema_name']) ?>"
+                         readonly>
+                </div>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card mb-4 border-info">
+              <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Nội dung</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="bi bi-tag"></i> Chủ đề
+                  </label>
+                  <input type="text" 
+                         class="form-control form-control-lg" 
+                         value="<?= htmlspecialchars($contact['subject'] ?? '') ?>" 
+                         readonly>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card mb-4 border-warning">
+          <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Nội dung tin nhắn</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <textarea class="form-control" 
+                        rows="8" 
+                        readonly><?= htmlspecialchars($contact['message'] ?? '') ?></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action buttons cho Staff -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+          <div>
+            <a href="<?= BASE_URL ?>?act=contacts-show&id=<?= $contact['id'] ?>" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> Hủy
+            </a>
+          </div>
+          <div>
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="bi bi-check-circle"></i> Cập nhật trạng thái
+            </button>
+          </div>
+        </div>
+        
+        <?php else: ?>
+        <!-- Admin và Manager có thể sửa tất cả -->
         <div class="row">
           <!-- Cột trái: Thông tin khách hàng -->
           <div class="col-md-6">
@@ -72,6 +206,40 @@
                          placeholder="0123456789">
                   <small class="text-muted">Không bắt buộc</small>
                 </div>
+                
+                <?php if (isset($isAdmin) && $isAdmin && !empty($cinemas)): ?>
+                <div class="mb-3">
+                  <label for="cinema_id" class="form-label fw-bold">
+                    <i class="bi bi-building"></i> Rạp
+                  </label>
+                  <select name="cinema_id" 
+                          id="cinema_id" 
+                          class="form-select form-select-lg <?= !empty($errors['cinema_id']) ? 'is-invalid' : '' ?>">
+                    <option value="">-- Không chọn rạp --</option>
+                    <?php foreach ($cinemas as $cinema): ?>
+                      <option value="<?= $cinema['id'] ?>" <?= (isset($_POST['cinema_id']) ? $_POST['cinema_id'] : ($contact['cinema_id'] ?? '')) == $cinema['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($cinema['name']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                  <?php if (!empty($errors['cinema_id'])): ?>
+                    <div class="invalid-feedback"><?= $errors['cinema_id'] ?></div>
+                  <?php endif; ?>
+                  <small class="text-muted">Chọn rạp nếu khách hàng liên hệ về rạp cụ thể</small>
+                </div>
+                <?php elseif (!empty($contact['cinema_id']) && !empty($contact['cinema_name'])): ?>
+                <div class="mb-3">
+                  <label class="form-label fw-bold">
+                    <i class="bi bi-building"></i> Rạp
+                  </label>
+                  <input type="text" 
+                         class="form-control form-control-lg" 
+                         value="<?= htmlspecialchars($contact['cinema_name']) ?>"
+                         readonly>
+                  <input type="hidden" name="cinema_id" value="<?= $contact['cinema_id'] ?>">
+                  <small class="text-muted">Manager không thể thay đổi rạp</small>
+                </div>
+                <?php endif; ?>
               </div>
             </div>
           </div>
@@ -142,7 +310,7 @@
           </div>
         </div>
 
-        <!-- Action buttons -->
+        <!-- Action buttons cho Admin/Manager -->
         <div class="d-flex justify-content-between align-items-center pt-3 border-top">
           <div>
             <a href="<?= BASE_URL ?>?act=contacts-show&id=<?= $contact['id'] ?>" class="btn btn-secondary">
@@ -155,6 +323,7 @@
             </button>
           </div>
         </div>
+        <?php endif; ?>
       </form>
     </div>
   </div>
