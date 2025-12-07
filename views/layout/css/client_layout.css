@@ -1111,16 +1111,12 @@
 
 [data-theme="light"] .navbar .logo::after,
 [data-theme="light"] .header .logo::after {
-  content: "TicketHub" !important;
-  position: absolute;
-  left: 60px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: "Montserrat", sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: #000;
-  white-space: nowrap;
-  pointer-events: none;
-  text-shadow: none;
+  content: none !important;
+  display: none !important;
+}
+
+[data-theme="light"] .navbar .logo::before,
+[data-theme="light"] .header .logo::before {
+  content: none !important;
+  display: none !important;
 }

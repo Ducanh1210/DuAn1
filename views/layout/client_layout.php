@@ -58,7 +58,7 @@ if (isLoggedIn()) {
     <title><?= $GLOBALS['pageTitle'] ?? 'TicketHub' ?> | TicketHub</title>
     <?php 
     // Thêm version để tránh cache khi quay lại từ trang thanh toán
-    $cssVersion = isset($_GET['_nocache']) ? '?v=' . time() : '?v=1.0';
+    $cssVersion = isset($_GET['_nocache']) ? '?v=' . time() : '?v=1.2';
     ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/client_layout.css<?= $cssVersion ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css<?= $cssVersion ?>">
