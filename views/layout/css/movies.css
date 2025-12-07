@@ -1837,6 +1837,34 @@ h1.title {
   color: #000 !important;
 }
 
+/* Final overrides: keep seat selection surfaces white in light mode */
+[data-theme="light"] #seatSelectionContainer,
+[data-theme="light"] .seat-selection-wrapper {
+  background: #fff !important;
+}
+
+[data-theme="light"] .seat-selection-wrapper {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+}
+
+[data-theme="light"] .ticket-selection-panel,
+[data-theme="light"] .ticket-panel-content,
+[data-theme="light"] .screen-container,
+[data-theme="light"] .seat-legend {
+  background: #fff;
+}
+
+[data-theme="light"] .ticket-panel-title,
+[data-theme="light"] .quantity-label,
+[data-theme="light"] .adjacent-header-label,
+[data-theme="light"] .max-seats-note,
+[data-theme="light"] .room-subtitle,
+[data-theme="light"] .room-title {
+  color: #0f172a;
+}
+
 /* Responsive */
 @media (max-width: 980px) {
   .hero-row {

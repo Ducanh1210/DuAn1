@@ -177,7 +177,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
 </section>
 
 <!-- Container cho sơ đồ ghế -->
-<div id="seatSelectionContainer" style="display: none; background: #2a2a2a; padding: 20px 0; margin-top: 40px;">
+<div id="seatSelectionContainer">
     <div class="container">
         <div id="seatSelectionContent"></div>
     </div>
