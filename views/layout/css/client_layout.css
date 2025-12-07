@@ -1099,10 +1099,10 @@
 
 [data-theme="light"] .navbar .logo img,
 [data-theme="light"] .header .logo img {
-  /* Giữ icon có màu, ẩn phần chữ trong ảnh */
-  clip-path: inset(0 55% 0 0) !important;
-  width: 60px !important;
-  max-height: 60px !important;
+  /* Hiển thị full logo với kích thước như dark mode */
+  clip-path: none !important;
+  width: 150px !important;
+  max-height: 150px !important;
   object-fit: contain;
 }
 
