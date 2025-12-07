@@ -146,6 +146,7 @@ CREATE TABLE `contacts` (
   `message` text NOT NULL COMMENT 'Nội dung tin nhắn',
   `status` varchar(20) DEFAULT 'pending' COMMENT 'Trạng thái: pending, processing, resolved, closed',
   `user_id` int DEFAULT NULL,
+  `cinema_id` int DEFAULT NULL COMMENT 'ID rạp mà khách hàng muốn gửi phản hồi',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời gian tạo',
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Thời gian cập nhật'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng lưu trữ thông tin liên hệ của khách hàng';

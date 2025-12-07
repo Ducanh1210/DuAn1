@@ -1266,7 +1266,126 @@ class MoviesController
      */
     public function lienhe()
     {
-        renderClient('client/lienhe.php', [], 'Liên Hệ');
+        require_once __DIR__ . '/../commons/auth.php';
+        require_once __DIR__ . '/../models/Contact.php';
+        require_once __DIR__ . '/../models/Cinema.php';
+        
+        startSessionIfNotStarted();
+        
+        $contactModel = new Contact();
+        $cinemaModel = new Cinema();
+        $cinemas = $cinemaModel->all(); // Lấy danh sách rạp để hiển thị trong form
+        
+        // Lấy thông tin user hiện tại (nếu đã đăng nhập)
+        $currentUser = getCurrentUser();
+        
+        // Kiểm tra thông báo thành công từ session (sau redirect)
+        $success = false;
+        if (isset($_SESSION['contact_success'])) {
+            $success = true;
+            unset($_SESSION['contact_success']); // Xóa sau khi đã hiển thị
+        }
+        
+        $error = '';
+        
+        // Kiểm tra nếu có pending contact từ session (sau khi đăng nhập)
+        $pendingContact = $_SESSION['pending_contact'] ?? null;
+        if ($pendingContact && isLoggedIn() && $currentUser) {
+            // Tự động submit lại form sau khi đăng nhập
+            $_POST = $pendingContact;
+            unset($_SESSION['pending_contact']); // Xóa dữ liệu pending
+        }
+        
+        // Xử lý form submit
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $name = trim($_POST['name'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $phone = trim($_POST['phone'] ?? '');
+            $subject = trim($_POST['subject'] ?? '');
+            $message = trim($_POST['message'] ?? '');
+            $cinema_id = !empty($_POST['cinema_id']) ? (int)$_POST['cinema_id'] : null;
+            
+            // Validation
+            if (empty($name)) {
+                $error = "Vui lòng nhập họ và tên";
+            } elseif (empty($email)) {
+                $error = "Vui lòng nhập email";
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $error = "Email không hợp lệ";
+            } elseif (empty($phone)) {
+                $error = "Vui lòng nhập số điện thoại";
+            } elseif (empty($subject)) {
+                $error = "Vui lòng nhập chủ đề";
+            } elseif (empty($message)) {
+                $error = "Vui lòng nhập nội dung tin nhắn";
+            } elseif (empty($cinema_id)) {
+                $error = "Vui lòng chọn rạp";
+            } else {
+                // Kiểm tra đăng nhập
+                if (!isLoggedIn() || !$currentUser) {
+                    // Chưa đăng nhập - lưu dữ liệu form vào session và redirect đến trang đăng nhập
+                    $_SESSION['pending_contact'] = [
+                        'name' => $name,
+                        'email' => $email,
+                        'phone' => $phone,
+                        'subject' => $subject,
+                        'message' => $message,
+                        'cinema_id' => $cinema_id
+                    ];
+                    
+                    // Lưu return_url để quay lại trang liên hệ sau khi đăng nhập
+                    $_SESSION['return_url'] = BASE_URL . '?act=lienhe';
+                    
+                    header('Location: ' . BASE_URL . '?act=dangnhap');
+                    exit;
+                }
+                
+                // Đã đăng nhập - lưu vào database với user_id
+                $data = [
+                    'name' => $name,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'subject' => $subject,
+                    'message' => $message,
+                    'cinema_id' => $cinema_id,
+                    'user_id' => $currentUser['id'],
+                    'status' => 'pending'
+                ];
+                
+                $result = $contactModel->insert($data);
+                
+                if ($result) {
+                    // Xóa dữ liệu form và pending_contact
+                    $_POST = [];
+                    if (isset($_SESSION['pending_contact'])) {
+                        unset($_SESSION['pending_contact']);
+                    }
+                    
+                    // Lưu thông báo thành công vào session và redirect để tránh resubmission
+                    $_SESSION['contact_success'] = true;
+                    header('Location: ' . BASE_URL . '?act=lienhe');
+                    exit;
+                } else {
+                    $error = "Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.";
+                }
+            }
+        }
+        
+        // Lấy dữ liệu từ pending_contact hoặc POST để hiển thị lại form
+        $formData = [];
+        if (!empty($_SESSION['pending_contact'])) {
+            $formData = $_SESSION['pending_contact'];
+        } elseif (!empty($_POST)) {
+            $formData = $_POST;
+        }
+        
+        renderClient('client/lienhe.php', [
+            'success' => $success,
+            'error' => $error,
+            'cinemas' => $cinemas,
+            'currentUser' => $currentUser,
+            'formData' => $formData
+        ], 'Liên Hệ');
     }
 
 
