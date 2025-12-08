@@ -19,7 +19,7 @@
       </div>
       <?php endif; ?>
 
-      <form action="" method="post" id="userForm" onsubmit="return validateUserForm(event)">
+      <form action="" method="post" id="userForm" onsubmit="return validateUserForm(event)" novalidate>
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
@@ -128,22 +128,25 @@
 
     if (togglePassword && passwordInput && eyeIcon) {
       togglePassword.addEventListener('click', function() {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
+        const currentType = passwordInput.getAttribute('type');
+        const newType = currentType === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', newType);
         
-        // Toggle icon
-        if (type === 'password') {
-          eyeIcon.classList.remove('bi-eye-slash');
-          eyeIcon.classList.add('bi-eye');
-        } else {
+        // Toggle icon - khi type là text (hiện) thì icon là eye-slash, khi type là password (ẩn) thì icon là eye
+        if (newType === 'text') {
+          // Hiện mật khẩu - đổi icon thành eye-slash
           eyeIcon.classList.remove('bi-eye');
           eyeIcon.classList.add('bi-eye-slash');
+        } else {
+          // Ẩn mật khẩu - đổi icon thành eye
+          eyeIcon.classList.remove('bi-eye-slash');
+          eyeIcon.classList.add('bi-eye');
         }
       });
     }
   });
 
-    // Validation function
+  // Validation function với alert
   function validateUserForm(event) {
     const fullName = document.getElementById('full_name').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -189,7 +192,7 @@
       }
     }
 
-    // Kiểm tra cinema_id nếu role là manager hoặc staff
+    // Kiểm tra cinema_id nếu role là manager hoặc staff (bắt buộc khi sửa)
     if (role === 'manager' || role === 'staff') {
       const cinemaId = document.getElementById('cinema_id');
       if (cinemaId && (!cinemaId.value || cinemaId.value === '')) {
@@ -202,4 +205,5 @@
     return true;
   }
 </script>
+
 

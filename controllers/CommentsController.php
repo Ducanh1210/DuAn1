@@ -47,7 +47,17 @@ class CommentsController
             $cinemaFilter = !empty($_GET['cinema_id']) ? (int)$_GET['cinema_id'] : null;
         } elseif (isManager() || isStaff()) {
             // Manager/Staff chỉ xem bình luận của rạp được gán
+            // BỎ QUA cinema_id từ URL để tránh bypass
             $cinemaFilter = getCurrentCinemaId();
+            // Nếu Manager/Staff không có rạp được gán, không cho phép xem
+            if (!$cinemaFilter) {
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['error'] = 'Bạn chưa được gán cho rạp nào. Vui lòng liên hệ quản trị viên.';
+                header('Location: ' . BASE_URL . '?act=dashboard');
+                exit;
+            }
         }
         
         // Lấy dữ liệu
@@ -55,28 +65,8 @@ class CommentsController
             $data = $this->comment->search($searchKeyword, $cinemaFilter);
             $pagination = null;
         } elseif (!empty($movieFilter)) {
-            $data = $this->comment->getByMovie($movieFilter);
-            // Nếu có filter theo rạp, lọc lại kết quả
-            if ($cinemaFilter) {
-                // Kiểm tra phim có showtimes thuộc rạp này không
-                require_once __DIR__ . '/../models/Showtime.php';
-                require_once __DIR__ . '/../models/Room.php';
-                $showtimeModel = new Showtime();
-                $roomModel = new Room();
-                $showtimes = $showtimeModel->getByMovie($movieFilter);
-                $hasAccess = false;
-                foreach ($showtimes as $st) {
-                    $room = $roomModel->find($st['room_id']);
-                    if ($room && $room['cinema_id'] == $cinemaFilter) {
-                        $hasAccess = true;
-                        break;
-                    }
-                }
-                // Nếu phim không có showtimes thuộc rạp này, xóa hết data
-                if (!$hasAccess) {
-                    $data = [];
-                }
-            }
+            // Truyền cinemaFilter vào getByMovie để lọc trực tiếp trong SQL
+            $data = $this->comment->getByMovie($movieFilter, $cinemaFilter);
             $pagination = null;
         } else {
             $result = $this->comment->paginate($page, 10, $cinemaFilter);
@@ -143,7 +133,11 @@ class CommentsController
             $cinemaId = getCurrentCinemaId();
             if (!$cinemaId) {
                 // Manager/Staff không có rạp được gán, không cho phép xem
-                header('Location: ' . BASE_URL . '?act=comments');
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['error'] = 'Bạn chưa được gán cho rạp nào. Vui lòng liên hệ quản trị viên.';
+                header('Location: ' . BASE_URL . '?act=dashboard');
                 exit;
             }
             
@@ -201,25 +195,36 @@ class CommentsController
             // Kiểm tra quyền: Manager/Staff chỉ xóa bình luận của rạp mình
             if (isManager() || isStaff()) {
                 $cinemaId = getCurrentCinemaId();
-                if ($cinemaId) {
-                    // Kiểm tra phim có thuộc rạp này không
-                    require_once __DIR__ . '/../models/Showtime.php';
-                    $showtimeModel = new Showtime();
-                    $showtimes = $showtimeModel->getByMovie($comment['movie_id']);
-                    $hasAccess = false;
-                    foreach ($showtimes as $st) {
-                        require_once __DIR__ . '/../models/Room.php';
-                        $roomModel = new Room();
-                        $room = $roomModel->find($st['room_id']);
-                        if ($room && $room['cinema_id'] == $cinemaId) {
-                            $hasAccess = true;
-                            break;
-                        }
+                if (!$cinemaId) {
+                    // Manager/Staff không có rạp được gán, không cho phép xóa
+                    if (session_status() === PHP_SESSION_NONE) {
+                        session_start();
                     }
-                    if (!$hasAccess) {
-                        header('Location: ' . BASE_URL . '?act=comments');
-                        exit;
+                    $_SESSION['error'] = 'Bạn chưa được gán cho rạp nào. Vui lòng liên hệ quản trị viên.';
+                    header('Location: ' . BASE_URL . '?act=dashboard');
+                    exit;
+                }
+                // Kiểm tra phim có thuộc rạp này không
+                require_once __DIR__ . '/../models/Showtime.php';
+                $showtimeModel = new Showtime();
+                $showtimes = $showtimeModel->getByMovie($comment['movie_id']);
+                $hasAccess = false;
+                foreach ($showtimes as $st) {
+                    require_once __DIR__ . '/../models/Room.php';
+                    $roomModel = new Room();
+                    $room = $roomModel->find($st['room_id']);
+                    if ($room && $room['cinema_id'] == $cinemaId) {
+                        $hasAccess = true;
+                        break;
                     }
+                }
+                if (!$hasAccess) {
+                    if (session_status() === PHP_SESSION_NONE) {
+                        session_start();
+                    }
+                    $_SESSION['error'] = 'Bạn không có quyền xóa bình luận này.';
+                    header('Location: ' . BASE_URL . '?act=comments');
+                    exit;
                 }
             }
             

@@ -29,7 +29,17 @@ class ContactsController
             $cinemaFilter = !empty($_GET['cinema_id']) ? (int)$_GET['cinema_id'] : null;
         } elseif (isManager() || isStaff()) {
             // Manager và Staff chỉ xem phản hồi của rạp được gán
+            // BỎ QUA cinema_id từ URL để tránh bypass
             $cinemaFilter = getCurrentCinemaId();
+            // Nếu Manager/Staff không có rạp được gán, không cho phép xem
+            if (!$cinemaFilter) {
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['error'] = 'Bạn chưa được gán cho rạp nào. Vui lòng liên hệ quản trị viên.';
+                header('Location: ' . BASE_URL . '?act=dashboard');
+                exit;
+            }
         }
         
         $result = $this->contact->paginate($page, 10, $status, $cinemaFilter);
@@ -102,7 +112,20 @@ class ContactsController
         // Kiểm tra quyền: Manager và Staff chỉ xem phản hồi của rạp mình
         if (isManager() || isStaff()) {
             $currentCinemaId = getCurrentCinemaId();
+            if (!$currentCinemaId) {
+                // Manager/Staff không có rạp được gán, không cho phép xem
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['error'] = 'Bạn chưa được gán cho rạp nào. Vui lòng liên hệ quản trị viên.';
+                header('Location: ' . BASE_URL . '?act=dashboard');
+                exit;
+            }
             if ($contact['cinema_id'] != $currentCinemaId) {
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['error'] = 'Bạn không có quyền xem liên hệ này.';
                 header('Location: ' . BASE_URL . '?act=contacts');
                 exit;
             }
@@ -139,7 +162,20 @@ class ContactsController
         // Kiểm tra quyền: Manager và Staff chỉ sửa phản hồi của rạp mình
         if (isManager() || isStaff()) {
             $currentCinemaId = getCurrentCinemaId();
+            if (!$currentCinemaId) {
+                // Manager/Staff không có rạp được gán, không cho phép sửa
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['error'] = 'Bạn chưa được gán cho rạp nào. Vui lòng liên hệ quản trị viên.';
+                header('Location: ' . BASE_URL . '?act=dashboard');
+                exit;
+            }
             if ($contact['cinema_id'] != $currentCinemaId) {
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['error'] = 'Bạn không có quyền sửa liên hệ này.';
                 header('Location: ' . BASE_URL . '?act=contacts');
                 exit;
             }
@@ -300,6 +336,15 @@ class ContactsController
         
         if (isManager() || isStaff()) {
             $currentCinemaId = getCurrentCinemaId();
+            if (!$currentCinemaId) {
+                // Manager/Staff không có rạp được gán, không cho phép cập nhật
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $_SESSION['error'] = 'Bạn chưa được gán cho rạp nào. Vui lòng liên hệ quản trị viên.';
+                header('Location: ' . BASE_URL . '?act=dashboard');
+                exit;
+            }
             if ($contact['cinema_id'] != $currentCinemaId) {
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();

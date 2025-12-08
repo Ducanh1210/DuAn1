@@ -142,12 +142,8 @@ class UsersController
                 $errors['role'] = "Quyền không hợp lệ. Chỉ có thể tạo Quản lý hoặc Nhân viên";
             }
             
-            // Nếu là manager hoặc staff, bắt buộc phải chọn rạp
-            if (in_array($_POST['role'], ['manager', 'staff'])) {
-                if (empty(trim($_POST['cinema_id'] ?? ''))) {
-                    $errors['cinema_id'] = "Quản lý/Nhân viên phải được gán cho một rạp";
-                }
-            }
+            // Khi tạo mới: không bắt buộc phải gán rạp (có thể gán sau)
+            // Chỉ cần kiểm tra nếu có nhập thì phải hợp lệ
 
             // Kiểm tra phone nếu có
             if (!empty($_POST['phone'])) {
@@ -177,7 +173,7 @@ class UsersController
                     'role' => trim($_POST['role']),
                     'status' => 'active',
                     'total_spending' => 0.00,
-                    'cinema_id' => ($_POST['role'] === 'staff' && !empty($_POST['cinema_id'])) ? trim($_POST['cinema_id']) : null
+                    'cinema_id' => (!empty($_POST['cinema_id']) && in_array($_POST['role'], ['manager', 'staff'])) ? trim($_POST['cinema_id']) : null
                 ];
                 $this->user->insert($data);
                 header('Location: ' . BASE_URL . '?act=users');

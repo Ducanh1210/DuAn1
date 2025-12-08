@@ -61,6 +61,9 @@
               <th>ID</th>
               <th>Người dùng</th>
               <th>Phim</th>
+              <?php if (isset($isAdmin) && $isAdmin): ?>
+                <th>Rạp</th>
+              <?php endif; ?>
               <th>Đánh giá</th>
               <th>Nội dung</th>
               <th>Ngày tạo</th>
@@ -87,6 +90,15 @@
                     <span class="text-muted">Phim đã xóa</span>
                   <?php endif; ?>
                 </td>
+                <?php if (isset($isAdmin) && $isAdmin): ?>
+                  <td>
+                    <?php if (!empty($item['cinema_name'])): ?>
+                      <span class="badge bg-info"><?= htmlspecialchars($item['cinema_name']) ?></span>
+                    <?php else: ?>
+                      <span class="text-muted">-</span>
+                    <?php endif; ?>
+                  </td>
+                <?php endif; ?>
                 <td>
                   <?php if (!empty($item['rating'])): ?>
                     <div class="d-flex align-items-center">
@@ -128,7 +140,7 @@
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="7" class="text-center text-muted py-4">Chưa có bình luận nào</td>
+                <td colspan="<?= (isset($isAdmin) && $isAdmin) ? '8' : '7' ?>" class="text-center text-muted py-4">Chưa có bình luận nào</td>
               </tr>
             <?php endif; ?>
           </tbody>

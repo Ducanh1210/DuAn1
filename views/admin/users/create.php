@@ -19,12 +19,12 @@
       </div>
       <?php endif; ?>
 
-      <form action="" method="post" id="userForm" onsubmit="return validateUserForm(event)">
+      <form action="" method="post" id="userForm" onsubmit="return validateUserForm(event)" novalidate>
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
               <label for="full_name" class="form-label">Họ tên <span class="text-danger">*</span></label>
-              <input type="text" name="full_name" id="full_name" class="form-control <?= !empty($errors['full_name']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['full_name'] ?? '') ?>" required>
+              <input type="text" name="full_name" id="full_name" class="form-control <?= !empty($errors['full_name']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['full_name'] ?? '') ?>" >
               <?php if (!empty($errors['full_name'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['full_name'] ?></div>
               <?php endif; ?>
@@ -32,7 +32,7 @@
 
             <div class="mb-3">
               <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-              <input type="email" name="email" id="email" class="form-control <?= !empty($errors['email']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+              <input type="email" name="email" id="email" class="form-control <?= !empty($errors['email']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" >
               <?php if (!empty($errors['email'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['email'] ?></div>
               <?php endif; ?>
@@ -41,7 +41,7 @@
             <div class="mb-3">
               <label for="password" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
               <div class="input-group">
-                <input type="password" name="password" id="password" class="form-control <?= !empty($errors['password']) ? 'is-invalid' : '' ?>" required>
+                <input type="password" name="password" id="password" class="form-control <?= !empty($errors['password']) ? 'is-invalid' : '' ?>" >
                 <button class="btn btn-outline-secondary" type="button" id="togglePassword" title="Ẩn/Hiện mật khẩu">
                   <i class="bi bi-eye" id="eyeIcon"></i>
                 </button>
@@ -72,7 +72,7 @@
           <div class="col-md-6">
             <div class="mb-3">
               <label for="role" class="form-label">Quyền <span class="text-danger">*</span></label>
-              <select name="role" id="role" class="form-select <?= !empty($errors['role']) ? 'is-invalid' : '' ?>" required onchange="toggleCinemaField()">
+              <select name="role" id="role" class="form-select <?= !empty($errors['role']) ? 'is-invalid' : '' ?>"  onchange="toggleCinemaField()">
                 <option value="">-- Chọn quyền --</option>
                 <option value="manager" <?= (isset($_POST['role']) && $_POST['role'] == 'manager') ? 'selected' : '' ?>>Quản lý</option>
                 <option value="staff" <?= (isset($_POST['role']) && $_POST['role'] == 'staff') ? 'selected' : '' ?>>Nhân viên</option>
@@ -88,9 +88,9 @@
             </div>
 
             <div class="mb-3" id="cinema_field" style="display: none;">
-              <label for="cinema_id" class="form-label">Rạp quản lý <span class="text-danger">*</span></label>
+              <label for="cinema_id" class="form-label">Rạp quản lý</label>
               <select name="cinema_id" id="cinema_id" class="form-select <?= !empty($errors['cinema_id']) ? 'is-invalid' : '' ?>">
-                <option value="">-- Chọn rạp --</option>
+                <option value="">-- Chọn rạp (tùy chọn) --</option>
                 <?php if (!empty($cinemas)): ?>
                   <?php foreach ($cinemas as $cinema): ?>
                     <option value="<?= $cinema['id'] ?>" <?= (isset($_POST['cinema_id']) && $_POST['cinema_id'] == $cinema['id']) ? 'selected' : '' ?>>
@@ -109,7 +109,7 @@
                   <i class="bi bi-exclamation-triangle"></i> Chưa có rạp nào. Vui lòng <a href="<?= BASE_URL ?>?act=cinemas-create">tạo rạp</a> trước khi tạo nhân viên.
                 </div>
               <?php else: ?>
-                <small class="text-muted">Chọn rạp mà nhân viên này sẽ quản lý</small>
+                <small class="text-muted">Có thể gán rạp sau khi tạo tài khoản (tùy chọn)</small>
               <?php endif; ?>
             </div>
 
@@ -138,22 +138,25 @@
 
     if (togglePassword && passwordInput && eyeIcon) {
       togglePassword.addEventListener('click', function() {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
+        const currentType = passwordInput.getAttribute('type');
+        const newType = currentType === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', newType);
         
-        // Toggle icon
-        if (type === 'password') {
-          eyeIcon.classList.remove('bi-eye-slash');
-          eyeIcon.classList.add('bi-eye');
-        } else {
+        // Toggle icon - khi type là text (hiện) thì icon là eye-slash, khi type là password (ẩn) thì icon là eye
+        if (newType === 'text') {
+          // Hiện mật khẩu - đổi icon thành eye-slash
           eyeIcon.classList.remove('bi-eye');
           eyeIcon.classList.add('bi-eye-slash');
+        } else {
+          // Ẩn mật khẩu - đổi icon thành eye
+          eyeIcon.classList.remove('bi-eye-slash');
+          eyeIcon.classList.add('bi-eye');
         }
       });
     }
   });
 
-  // Validation function
+  // Validation function với alert
   function validateUserForm(event) {
     const fullName = document.getElementById('full_name').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -205,6 +208,12 @@
       return false;
     }
 
+    if (!['manager', 'staff'].includes(role)) {
+      alert('Quyền không hợp lệ. Chỉ có thể tạo Quản lý hoặc Nhân viên!');
+      document.getElementById('role').focus();
+      return false;
+    }
+
     // Validate phone if provided
     if (phone && phone !== '') {
       const phoneRegex = /^[0-9]{10,11}$/;
@@ -215,17 +224,7 @@
       }
     }
 
-    // Kiểm tra cinema_id nếu role là manager hoặc staff
-    const role = document.getElementById('role').value;
-    if (role === 'manager' || role === 'staff') {
-      const cinemaId = document.getElementById('cinema_id').value;
-      if (!cinemaId || cinemaId === '') {
-        alert('Vui lòng chọn rạp quản lý!');
-        document.getElementById('cinema_id').focus();
-        return false;
-      }
-    }
-
+    // Khi tạo mới: không bắt buộc phải chọn rạp (có thể để trống)
     return true;
   }
   
@@ -237,7 +236,8 @@
     
     if (role === 'manager' || role === 'staff') {
       cinemaField.style.display = 'block';
-      cinemaSelect.setAttribute('required', 'required');
+      // Không bắt buộc khi tạo mới
+      cinemaSelect.removeAttribute('required');
     } else {
       cinemaField.style.display = 'none';
       cinemaSelect.removeAttribute('required');
