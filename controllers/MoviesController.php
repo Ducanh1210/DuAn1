@@ -849,6 +849,28 @@ class MoviesController
     }
 
     /**
+     * API lấy danh sách mã khuyến mãi đang available
+     */
+    public function getAvailableVouchers()
+    {
+        header('Content-Type: application/json');
+        
+        $movieId = isset($_GET['movie_id']) && !empty($_GET['movie_id']) ? (int)$_GET['movie_id'] : null;
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
+        $includeMovieSpecific = isset($_GET['include_movie_specific']) && $_GET['include_movie_specific'] === 'true';
+        
+        $discountCodeModel = new DiscountCode();
+        // Nếu không có movie_id hoặc include_movie_specific = true, lấy tất cả mã
+        $codes = $discountCodeModel->getAvailableCodes($movieId, $limit, $includeMovieSpecific || !$movieId);
+        
+        echo json_encode([
+            'success' => true,
+            'codes' => $codes
+        ]);
+        exit;
+    }
+
+    /**
      * Lấy danh sách phim đang chiếu
      */
     private function getNowShowing($searchKeyword = '', $cinemaId = '')

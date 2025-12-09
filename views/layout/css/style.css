@@ -612,6 +612,10 @@ body {
   color: rgba(255, 255, 255, 0.9);
 }
 
+[data-theme="light"] .user-dropdown-toggle i.bi-person-circle {
+  color: #1a1a1a !important;
+}
+
 .user-dropdown-toggle i.bi-chevron-down {
   font-size: 12px;
   transition: transform 0.2s ease;

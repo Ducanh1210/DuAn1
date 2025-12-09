@@ -140,6 +140,7 @@ h3.section-title {
   font-family: Montserrat, sans-serif;
   font-size: 18px;
   color: rgba(255, 255, 255, 0.95);
+  font-weight: 700;
 }
 
 /* left column cards */
@@ -233,7 +234,7 @@ h3.section-title {
 
 .detail-label {
   min-width: 120px;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 14px;
   font-weight: 500;
 }
@@ -299,7 +300,7 @@ h3.section-title {
   padding: 14px 16px;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .payment-table thead th {
@@ -496,7 +497,8 @@ h3.section-title {
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 15px;
 }
 
 .total-row {
@@ -569,11 +571,17 @@ h3.section-title {
 }
 
 /* ===== LIGHT MODE OVERRIDES ===== */
+[data-theme="light"] body {
+  background: #f5f7fa !important;
+  color: #1a1a1a !important;
+}
+
 [data-theme="light"] .card,
 [data-theme="light"] .side-card,
 [data-theme="light"] .booking-details-section {
-  background: #c8d0db !important;
-  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Đảm bảo logo trong method không bị ảnh hưởng bởi các rule khác */
@@ -594,8 +602,137 @@ h3.section-title {
 [data-theme="light"] .total-row,
 [data-theme="light"] .payment-table th,
 [data-theme="light"] .payment-table td,
-[data-theme="light"] .seat-label {
+[data-theme="light"] .seat-label,
+[data-theme="light"] .voucher-section label,
+[data-theme="light"] .voucher-section input,
+[data-theme="light"] .voucher-section #voucherMessage,
+[data-theme="light"] .voucher-section #voucherSuggestions,
+[data-theme="light"] .voucher-suggestion-item,
+[data-theme="light"] h3.section-title,
+[data-theme="light"] .detail-value.highlight-time,
+[data-theme="light"] .detail-value.seats-highlight,
+[data-theme="light"] .seat-info .seat-label,
+[data-theme="light"] .price-cell {
+  color: #1a1a1a !important;
+}
+
+[data-theme="light"] .detail-label {
+  color: #666 !important;
+}
+
+[data-theme="light"] .detail-value.highlight-time {
+  color: #ff4b4b !important;
+}
+
+[data-theme="light"] .detail-value.seats-highlight {
+  color: #1a1a1a !important;
+}
+
+[data-theme="light"] .price-cell {
+  color: #ff4b4b !important;
+}
+
+[data-theme="light"] .payment-table thead {
+  background: #f8f9fa !important;
+}
+
+[data-theme="light"] .payment-table th {
+  color: #1a1a1a !important;
+  border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .payment-table tbody tr {
+  border-bottom-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .payment-table tbody tr:hover {
+  background: #f8f9fa !important;
+}
+
+[data-theme="light"] .method {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .method:hover {
+  background: #f8f9fa !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .method.active {
+  border-color: #ff4b4b !important;
+  background: rgba(255, 75, 75, 0.05) !important;
+}
+
+[data-theme="light"] .method .logo {
+  background: #f8f9fa !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .confirm {
+  color: #666 !important;
+}
+
+[data-theme="light"] .confirm a {
+  color: #4a9eff !important;
+}
+
+[data-theme="light"] .back-link {
+  color: #666 !important;
+}
+
+[data-theme="light"] .back-link:hover {
+  color: #1a1a1a !important;
+}
+
+/* Dark mode - đảm bảo chữ màu trắng/sáng */
+.voucher-section label {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.voucher-section input {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.voucher-section input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.voucher-suggestion-item {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.voucher-section #voucherMessage {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Light mode - màu đen */
+[data-theme="light"] .voucher-section {
+  background: #f8f9fa !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .voucher-section label,
+[data-theme="light"] .voucher-section input,
+[data-theme="light"] .voucher-section #voucherMessage,
+[data-theme="light"] .voucher-section #voucherSuggestions,
+[data-theme="light"] .voucher-suggestion-item {
   color: #000 !important;
+}
+
+[data-theme="light"] .voucher-section input {
+  background: #fff !important;
+  border-color: #ddd !important;
+  color: #000 !important;
+}
+
+[data-theme="light"] .voucher-section input::placeholder {
+  color: #999 !important;
+}
+
+[data-theme="light"] .voucher-suggestion-item {
+  background: rgba(255, 75, 75, 0.08) !important;
+  border-color: rgba(255, 75, 75, 0.2) !important;
 }
 
 /* phần footer */
@@ -793,5 +930,242 @@ h3.section-title {
   .s-ico {
     width: 36px;
     height: 36px;
+  }
+}
+
+/* Modal Khuyến mãi */
+.voucher-modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.voucher-modal-content {
+  background: linear-gradient(180deg, rgba(18, 20, 22, 0.98), rgba(13, 17, 19, 0.98));
+  margin: 5% auto;
+  padding: 0;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.voucher-modal-header {
+  padding: 20px 24px;
+  background: linear-gradient(90deg, rgba(255, 75, 75, 0.15), rgba(255, 75, 75, 0.05));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Tabs */
+.voucher-modal-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.voucher-tab-btn {
+  flex: 1;
+  padding: 14px 20px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-bottom: 3px solid transparent;
+  position: relative;
+  top: 2px;
+}
+
+.voucher-tab-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.voucher-tab-btn.active {
+  color: #ff4b4b;
+  border-bottom-color: #ff4b4b;
+  background: rgba(255, 75, 75, 0.1);
+}
+
+.voucher-tab-content {
+  display: none;
+}
+
+.voucher-tab-content.active {
+  display: block;
+}
+
+.voucher-modal-close {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 32px;
+  font-weight: 300;
+  cursor: pointer;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.voucher-modal-close:hover,
+.voucher-modal-close:focus {
+  color: #fff;
+  transform: rotate(90deg);
+}
+
+.voucher-modal-body {
+  padding: 24px;
+  max-height: calc(85vh - 80px);
+  overflow-y: auto;
+}
+
+.voucher-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.voucher-modal-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.voucher-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 75, 75, 0.5);
+  border-radius: 4px;
+}
+
+.voucher-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 75, 75, 0.7);
+}
+
+.voucher-modal-card:hover .apply-voucher-btn {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(255, 75, 75, 0.4);
+}
+
+.apply-voucher-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(255, 75, 75, 0.4);
+}
+
+.copy-code-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Light mode cho modal */
+[data-theme="light"] .voucher-modal-content {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .voucher-modal-header {
+  background: linear-gradient(90deg, rgba(255, 75, 75, 0.1), rgba(255, 75, 75, 0.05));
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .voucher-modal-tabs {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .voucher-tab-btn {
+  color: #666;
+}
+
+[data-theme="light"] .voucher-tab-btn:hover {
+  color: #000;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .voucher-tab-btn.active {
+  color: #ff4b4b;
+  border-bottom-color: #ff4b4b;
+  background: rgba(255, 75, 75, 0.1);
+}
+
+[data-theme="light"] .voucher-modal-header h2 {
+  color: #000 !important;
+}
+
+[data-theme="light"] .voucher-modal-close {
+  color: #666;
+}
+
+[data-theme="light"] .voucher-modal-close:hover {
+  color: #000;
+}
+
+[data-theme="light"] .voucher-modal-card {
+  background: linear-gradient(135deg, rgba(255, 75, 75, 0.08), rgba(255, 75, 75, 0.03));
+  border-color: rgba(255, 75, 75, 0.2);
+}
+
+[data-theme="light"] .voucher-modal-card > div > div:first-child > div:first-child {
+  color: #000 !important;
+}
+
+[data-theme="light"] .voucher-modal-card > div > div:first-child > div:nth-child(2) {
+  color: #333 !important;
+}
+
+[data-theme="light"] .copy-code-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #000;
+}
+
+[data-theme="light"] .copy-code-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive cho modal */
+@media (max-width: 768px) {
+  .voucher-modal-content {
+    width: 95%;
+    margin: 10% auto;
+    max-height: 90vh;
+  }
+
+  .voucher-modal-header {
+    padding: 16px 20px;
+  }
+
+  .voucher-modal-body {
+    padding: 20px;
   }
 }

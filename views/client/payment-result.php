@@ -14,16 +14,21 @@ $transactionCode = $transactionCode ?? null;
     max-width: 1200px;
     margin: 60px auto;
     padding: 0 20px;
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
 }
 
 .payment-result-card {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.03));
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 60px 80px;
     text-align: center;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
     max-width: 800px;
     margin: 0 auto;
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .payment-result-icon {
@@ -35,6 +40,18 @@ $transactionCode = $transactionCode ?? null;
     align-items: center;
     justify-content: center;
     box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+    animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .payment-result-icon svg {
@@ -46,10 +63,11 @@ $transactionCode = $transactionCode ?? null;
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.95);
 }
 
 .payment-result-message {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.85);
     margin-bottom: 40px;
     font-size: 18px;
     line-height: 1.6;
@@ -62,6 +80,7 @@ $transactionCode = $transactionCode ?? null;
     margin-bottom: 30px;
     text-align: left;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
 }
 
 .payment-info-row {
@@ -95,6 +114,7 @@ $transactionCode = $transactionCode ?? null;
     font-size: 20px;
     color: #4a9eff;
     letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
 }
 
 .payment-info-value.total-price {
@@ -121,6 +141,8 @@ $transactionCode = $transactionCode ?? null;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    min-width: 180px;
+    justify-content: center;
 }
 
 .payment-btn-primary {
@@ -132,6 +154,7 @@ $transactionCode = $transactionCode ?? null;
 .payment-btn-primary:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(255, 61, 87, 0.4);
+    background: linear-gradient(90deg, #ff2d47, #ff5b5b);
 }
 
 .payment-btn-secondary {
@@ -143,6 +166,7 @@ $transactionCode = $transactionCode ?? null;
 .payment-btn-secondary:hover {
     background: rgba(255, 255, 255, 0.15);
     transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .payment-result-icon.error {
@@ -156,6 +180,92 @@ $transactionCode = $transactionCode ?? null;
 
 .payment-info-box.error {
     border-color: rgba(244, 67, 54, 0.3);
+}
+
+/* Light Mode */
+[data-theme="light"] .payment-result-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .payment-result-title {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .payment-result-title[style*="color: #4caf50"] {
+    color: #4caf50 !important;
+}
+
+[data-theme="light"] .payment-result-message {
+    color: #333 !important;
+}
+
+[data-theme="light"] .payment-info-box {
+    background: #f8f9fa !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .payment-info-label {
+    color: #666 !important;
+}
+
+[data-theme="light"] .payment-info-value {
+    color: #1a1a1a !important;
+}
+
+[data-theme="light"] .payment-info-value.booking-code {
+    color: #0066cc !important;
+}
+
+[data-theme="light"] .payment-info-value.total-price {
+    color: #ff4b4b !important;
+}
+
+[data-theme="light"] .payment-info-row {
+    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .payment-btn-secondary {
+    background: #f8f9fa !important;
+    color: #1a1a1a !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .payment-btn-secondary:hover {
+    background: #e9ecef !important;
+    border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .payment-result-card {
+        padding: 40px 30px;
+        border-radius: 16px;
+    }
+    
+    .payment-result-title {
+        font-size: 24px;
+    }
+    
+    .payment-result-message {
+        font-size: 16px;
+    }
+    
+    .payment-info-box {
+        padding: 20px;
+    }
+    
+    .payment-info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .payment-btn {
+        width: 100%;
+        min-width: auto;
+    }
 }
 </style>
 

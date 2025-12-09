@@ -244,4 +244,53 @@ class DiscountCode
             return false;
         }
     }
+
+    /**
+     * Lấy danh sách mã khuyến mãi đang active (có thể áp dụng)
+     * @param int|null $movieId Nếu có, chỉ lấy mã áp dụng cho phim đó hoặc mã tổng quát
+     * @param int $limit Số lượng mã tối đa
+     * @param bool $includeMovieSpecific Nếu true, bao gồm cả mã áp dụng cho phim cụ thể
+     */
+    public function getAvailableCodes($movieId = null, $limit = 5, $includeMovieSpecific = false)
+    {
+        try {
+            $now = date('Y-m-d');
+            $sql = "SELECT dc.*, 
+                    m.id AS movie_id, 
+                    m.title AS movie_title, 
+                    m.image AS movie_image
+                    FROM discount_codes dc
+                    LEFT JOIN movies m ON dc.movie_id = m.id
+                    WHERE dc.status = 'active'
+                    AND (dc.start_date IS NULL OR dc.start_date <= :now)
+                    AND (dc.end_date IS NULL OR dc.end_date >= :now)";
+            
+            $params = [':now' => $now];
+            
+            if ($includeMovieSpecific) {
+                // Lấy tất cả mã (cả tổng quát và phim cụ thể)
+                // Không thêm điều kiện filter
+            } elseif ($movieId) {
+                // Nếu có movie_id, ưu tiên mã áp dụng cho phim đó hoặc mã áp dụng cho tất cả phim
+                $sql .= " AND (dc.movie_id IS NULL OR dc.movie_id = :movie_id)";
+                $params[':movie_id'] = $movieId;
+            } else {
+                // Nếu không có movie_id, chỉ lấy mã áp dụng cho tất cả phim
+                $sql .= " AND dc.movie_id IS NULL";
+            }
+            
+            $sql .= " ORDER BY dc.discount_percent DESC, dc.created_at DESC LIMIT :limit";
+            
+            $stmt = $this->conn->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log('Error in DiscountCode->getAvailableCodes(): ' . $e->getMessage());
+            return [];
+        }
+    }
 }

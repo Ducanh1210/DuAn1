@@ -215,7 +215,7 @@ if (isLoggedIn()) {
                 ?>
                     <div class="user-dropdown-wrapper">
                         <div class="user-dropdown-toggle" id="userDropdownToggle">
-                            <i class="bi bi-person-circle" style="font-size: 24px; color: rgba(255, 255, 255, 0.9);"></i>
+                            <i class="bi bi-person-circle user-icon" style="font-size: 24px;"></i>
                             <span><?= $userName ?></span>
                             <i class="bi bi-chevron-down" style="font-size: 12px; margin-left: 4px;"></i>
                         </div>

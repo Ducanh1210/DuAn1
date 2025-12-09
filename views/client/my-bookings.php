@@ -144,6 +144,7 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .bookings-table {
@@ -228,6 +229,7 @@
   border-radius: 6px;
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .movie-info span {
@@ -251,6 +253,86 @@
   font-size: 15px;
   text-align: right;
   font-weight: 700;
+}
+
+/* Light mode cho my-bookings */
+[data-theme="light"] .table-container {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .bookings-table thead {
+  background: #f8f9fa !important;
+  border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .bookings-table th {
+  color: #1a1a1a !important;
+  border-right-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .bookings-table tbody tr {
+  border-bottom-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .bookings-table tbody tr:hover {
+  background: #f8f9fa !important;
+}
+
+[data-theme="light"] .bookings-table td {
+  color: #1a1a1a !important;
+  border-right-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .booking-code-cell {
+  color: #0066cc !important;
+}
+
+[data-theme="light"] .movie-info span {
+  color: #1a1a1a !important;
+}
+
+[data-theme="light"] .room-code {
+  color: #666 !important;
+}
+
+[data-theme="light"] .seats-cell {
+  color: #d4af37 !important;
+}
+
+[data-theme="light"] .price-cell {
+  color: #ff4b4b !important;
+}
+
+[data-theme="light"] .movie-poster-small {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .page-link {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1a1a1a !important;
+}
+
+[data-theme="light"] .page-link:hover {
+  background: #f8f9fa !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .page-item.active .page-link {
+  background: #ff4b4b !important;
+  border-color: #ff4b4b !important;
+  color: #fff !important;
+}
+
+[data-theme="light"] .empty-state {
+  color: #666 !important;
+}
+
+[data-theme="light"] .empty-state p {
+  color: #1a1a1a !important;
 }
 
 .status-badge {
@@ -392,6 +474,28 @@
     padding: 4px 8px;
     min-width: 70px;
   }
+}
+
+/* Header styling */
+.page-header h2 {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+[data-theme="light"] .page-header h2 {
+  color: #1a1a1a !important;
+}
+
+.page-header .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #ff4b4b;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
 }
 </style>
 

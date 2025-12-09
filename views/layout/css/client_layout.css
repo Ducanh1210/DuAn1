@@ -541,7 +541,11 @@
 }
 
 [data-theme="light"] .user-dropdown-toggle {
-  color: var(--text-secondary);
+  color: #1a1a1a !important;
+}
+
+[data-theme="light"] .user-dropdown-toggle span {
+  color: #1a1a1a !important;
 }
 
 .user-dropdown-toggle:hover {
@@ -558,13 +562,18 @@
 }
 
 [data-theme="light"] .user-dropdown-toggle i.bi-person-circle {
-  color: var(--text-secondary);
+  color: #1a1a1a !important;
 }
 
 .user-dropdown-toggle i.bi-chevron-down {
   font-size: 12px;
   transition: transform 0.2s ease;
   margin-left: 4px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .user-dropdown-toggle i.bi-chevron-down {
+  color: #1a1a1a !important;
 }
 
 .user-dropdown-wrapper.active .user-dropdown-toggle i.bi-chevron-down {

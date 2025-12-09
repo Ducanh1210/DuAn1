@@ -112,7 +112,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Bật hiển thị lỗi để debug (nên tắt khi deploy production)
 // Tắt display_errors cho API endpoints để tránh output trước JSON
-$isApiEndpoint = isset($_GET['act']) && in_array($_GET['act'], ['payment-process', 'api-seats', 'check-voucher', 'update-booking-status']);
+$isApiEndpoint = isset($_GET['act']) && in_array($_GET['act'], ['payment-process', 'api-seats', 'check-voucher', 'update-booking-status', 'get-available-vouchers']);
 if (!$isApiEndpoint) {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
@@ -235,6 +235,7 @@ match ($act) {
     'giave' => (new TicketPriceController)->index(), // Trang giá vé - hiển thị bảng giá vé theo loại
     'lienhe' => (new MoviesController)->lienhe(), // Trang liên hệ
     'check-voucher' => (new MoviesController)->checkVoucher(), // API kiểm tra mã voucher có hợp lệ không
+    'get-available-vouchers' => (new MoviesController)->getAvailableVouchers(), // API lấy danh sách mã khuyến mãi available
     'movies' => (new MoviesController)->movieDetail(), // Trang chi tiết phim - thông tin phim, lịch chiếu, đánh giá
     'datve' => (new BookingController)->selectSeats(), // Trang chọn ghế - chọn ghế để đặt vé
     'api-seats' => (new BookingController)->getSeatsApi(), // API lấy danh sách ghế của suất chiếu (AJAX)
