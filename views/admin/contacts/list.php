@@ -1,7 +1,14 @@
 <div class="container-fluid">
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h4 class="mb-0">Quản lý Liên hệ</h4>
+      <div>
+        <h4 class="mb-0">Quản lý Liên hệ</h4>
+        <?php if ((isset($isStaff) && $isStaff || isset($isManager) && $isManager) && !empty($currentCinemaName)): ?>
+          <small class="text-muted">
+            <i class="bi bi-building"></i> Rạp: <strong><?= htmlspecialchars($currentCinemaName) ?></strong>
+          </small>
+        <?php endif; ?>
+      </div>
     </div>
     <div class="card-body">
       <?php if (isset($_SESSION['error'])): ?>
@@ -21,37 +28,73 @@
       <?php endif; ?>
 
       <!-- Filter by status and cinema -->
-      <div class="mb-4">
-        <form method="GET" action="" class="d-flex flex-wrap gap-2 align-items-center">
-          <input type="hidden" name="act" value="contacts">
-          
-          <?php if ($isAdmin && !empty($cinemas)): ?>
-            <select name="cinema_id" class="form-select" style="max-width: 250px;" onchange="this.form.submit()">
-              <option value="">Tất cả rạp</option>
-              <?php foreach ($cinemas as $cinema): ?>
-                <option value="<?= $cinema['id'] ?>" <?= $selectedCinemaId == $cinema['id'] ? 'selected' : '' ?>>
-                  <?= htmlspecialchars($cinema['name']) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          <?php endif; ?>
-          
-          <a href="?act=contacts<?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>" class="btn btn-sm <?= !$selectedStatus ? 'btn-primary' : 'btn-outline-primary' ?>">
-            Tất cả (<?= array_sum($statusCounts) ?>)
-          </a>
-          <a href="?act=contacts&status=pending<?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>" class="btn btn-sm <?= $selectedStatus == 'pending' ? 'btn-warning' : 'btn-outline-warning' ?>">
-            Chờ xử lý (<?= $statusCounts['pending'] ?>)
-          </a>
-          <a href="?act=contacts&status=processing<?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>" class="btn btn-sm <?= $selectedStatus == 'processing' ? 'btn-info' : 'btn-outline-info' ?>">
-            Đang xử lý (<?= $statusCounts['processing'] ?>)
-          </a>
-          <a href="?act=contacts&status=resolved<?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>" class="btn btn-sm <?= $selectedStatus == 'resolved' ? 'btn-success' : 'btn-outline-success' ?>">
-            Đã xử lý (<?= $statusCounts['resolved'] ?>)
-          </a>
-          <a href="?act=contacts&status=closed<?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>" class="btn btn-sm <?= $selectedStatus == 'closed' ? 'btn-secondary' : 'btn-outline-secondary' ?>">
-            Đã đóng (<?= $statusCounts['closed'] ?>)
-          </a>
-        </form>
+      <div class="card mb-4 shadow-sm border-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+        <div class="card-body p-3">
+          <div class="row g-3 align-items-end">
+            <!-- Status Filter -->
+            <div class="col-12">
+              <label class="form-label fw-bold text-muted mb-2" style="font-size: 0.875rem;">
+                <i class="bi bi-funnel"></i> Lọc theo trạng thái:
+              </label>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="?act=contacts<?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>" 
+                   class="btn btn-sm <?= !$selectedStatus ? 'btn-primary shadow-sm' : 'btn-outline-primary' ?>"
+                   style="border-radius: 20px; padding: 6px 16px; font-weight: 500;">
+                  <i class="bi bi-list-ul"></i> Tất cả (<?= array_sum($statusCounts) ?>)
+                </a>
+                <a href="?act=contacts&status=pending<?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>" 
+                   class="btn btn-sm <?= $selectedStatus == 'pending' ? 'btn-warning shadow-sm' : 'btn-outline-warning' ?>"
+                   style="border-radius: 20px; padding: 6px 16px; font-weight: 500;">
+                  <i class="bi bi-clock"></i> Chờ xử lý (<?= $statusCounts['pending'] ?>)
+                </a>
+                <a href="?act=contacts&status=processing<?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>" 
+                   class="btn btn-sm <?= $selectedStatus == 'processing' ? 'btn-info shadow-sm' : 'btn-outline-info' ?>"
+                   style="border-radius: 20px; padding: 6px 16px; font-weight: 500;">
+                  <i class="bi bi-arrow-repeat"></i> Đang xử lý (<?= $statusCounts['processing'] ?>)
+                </a>
+                <a href="?act=contacts&status=resolved<?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>" 
+                   class="btn btn-sm <?= $selectedStatus == 'resolved' ? 'btn-success shadow-sm' : 'btn-outline-success' ?>"
+                   style="border-radius: 20px; padding: 6px 16px; font-weight: 500;">
+                  <i class="bi bi-check-circle"></i> Đã xử lý (<?= $statusCounts['resolved'] ?>)
+                </a>
+                <a href="?act=contacts&status=closed<?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>" 
+                   class="btn btn-sm <?= $selectedStatus == 'closed' ? 'btn-secondary shadow-sm' : 'btn-outline-secondary' ?>"
+                   style="border-radius: 20px; padding: 6px 16px; font-weight: 500;">
+                  <i class="bi bi-lock"></i> Đã đóng (<?= $statusCounts['closed'] ?>)
+                </a>
+              </div>
+            </div>
+            
+            <!-- Cinema Filter (chỉ admin) -->
+            <?php if (isset($isAdmin) && $isAdmin && !empty($cinemas)): ?>
+            <div class="col-12 col-md-auto">
+              <form method="GET" action="" class="d-flex gap-2 align-items-end">
+                <input type="hidden" name="act" value="contacts">
+                <?php if ($selectedStatus): ?>
+                  <input type="hidden" name="status" value="<?= htmlspecialchars($selectedStatus) ?>">
+                <?php endif; ?>
+                <div class="flex-grow-1" style="min-width: 200px;">
+                  <label for="cinema_filter" class="form-label fw-bold text-muted mb-2" style="font-size: 0.875rem;">
+                    <i class="bi bi-building"></i> Lọc theo rạp:
+                  </label>
+                  <select name="cinema_id" 
+                          id="cinema_filter" 
+                          class="form-select form-select-sm shadow-sm" 
+                          style="border-radius: 8px; border: 1px solid #dee2e6;"
+                          onchange="this.form.submit()">
+                    <option value="">Tất cả rạp</option>
+                    <?php foreach ($cinemas as $cinema): ?>
+                      <option value="<?= $cinema['id'] ?>" <?= ($cinemaFilter ?? null) == $cinema['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($cinema['name']) ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <?php endif; ?>
+          </div>
+        </div>
       </div>
 
       <div class="table-responsive">
@@ -62,10 +105,10 @@
               <th>Họ tên</th>
               <th>Email</th>
               <th>Số điện thoại</th>
-              <th>Chủ đề</th>
-              <?php if ($isAdmin): ?>
-                <th>Rạp</th>
+              <?php if (isset($isAdmin) && $isAdmin): ?>
+              <th>Rạp</th>
               <?php endif; ?>
+              <th>Chủ đề</th>
               <th>Trạng thái</th>
               <th>Ngày gửi</th>
               <th>Thao tác</th>
@@ -79,10 +122,16 @@
                 <td><strong><?= htmlspecialchars($item['name'] ?? 'N/A') ?></strong></td>
                 <td><?= htmlspecialchars($item['email'] ?? 'N/A') ?></td>
                 <td><?= htmlspecialchars($item['phone'] ?? 'N/A') ?></td>
-                <td><?= htmlspecialchars($item['subject'] ?? 'N/A') ?></td>
-                <?php if ($isAdmin): ?>
-                  <td><?= !empty($item['cinema_name']) ? htmlspecialchars($item['cinema_name']) : '<span class="text-muted">N/A</span>' ?></td>
+                <?php if (isset($isAdmin) && $isAdmin): ?>
+                <td>
+                  <?php if (!empty($item['cinema_id']) && !empty($item['cinema_name'])): ?>
+                    <span class="badge bg-secondary"><?= htmlspecialchars($item['cinema_name']) ?></span>
+                  <?php else: ?>
+                    <span class="text-muted">-</span>
+                  <?php endif; ?>
+                </td>
                 <?php endif; ?>
+                <td><?= htmlspecialchars($item['subject'] ?? 'N/A') ?></td>
                 <td>
                   <?php
                   $statusColors = [
@@ -112,19 +161,21 @@
                     <a href="<?= BASE_URL ?>?act=contacts-edit&id=<?= $item['id'] ?>" class="btn btn-sm btn-warning" title="Sửa">
                       <i class="bi bi-pencil"></i>
                     </a>
+                    <?php if (isset($isAdmin) && $isAdmin): ?>
                     <a href="<?= BASE_URL ?>?act=contacts-delete&id=<?= $item['id'] ?>" 
                        class="btn btn-sm btn-danger" 
                        title="Xóa"
                        onclick="return confirm('Bạn có chắc chắn muốn xóa liên hệ này?')">
                       <i class="bi bi-trash"></i>
                     </a>
+                    <?php endif; ?>
                   </div>
                 </td>
               </tr>
               <?php endforeach; ?>
-              <?php else: ?>
+            <?php else: ?>
               <tr>
-                <td colspan="<?= $isAdmin ? '9' : '8' ?>" class="text-center text-muted py-4">Chưa có liên hệ nào</td>
+                <td colspan="<?= (isset($isAdmin) && $isAdmin) ? '9' : '8' ?>" class="text-center text-muted py-4">Chưa có liên hệ nào</td>
               </tr>
             <?php endif; ?>
           </tbody>
@@ -143,7 +194,7 @@
               <!-- Previous -->
               <?php if ($pagination['currentPage'] > 1): ?>
                 <li class="page-item">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=<?= $pagination['currentPage'] - 1 ?><?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>">
+                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=<?= $pagination['currentPage'] - 1 ?><?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>">
                     <i class="bi bi-chevron-left"></i> Trước
                   </a>
                 </li>
@@ -160,7 +211,7 @@
               
               if ($startPage > 1): ?>
                 <li class="page-item">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=1<?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>">1</a>
+                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=1<?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>">1</a>
                 </li>
                 <?php if ($startPage > 2): ?>
                   <li class="page-item disabled">
@@ -171,7 +222,7 @@
               
               <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                 <li class="page-item <?= $i == $pagination['currentPage'] ? 'active' : '' ?>">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=<?= $i ?><?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>"><?= $i ?></a>
+                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=<?= $i ?><?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>"><?= $i ?></a>
                 </li>
               <?php endfor; ?>
               
@@ -182,14 +233,14 @@
                   </li>
                 <?php endif; ?>
                 <li class="page-item">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=<?= $pagination['totalPages'] ?><?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>"><?= $pagination['totalPages'] ?></a>
+                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=<?= $pagination['totalPages'] ?><?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>"><?= $pagination['totalPages'] ?></a>
                 </li>
               <?php endif; ?>
               
               <!-- Next -->
               <?php if ($pagination['currentPage'] < $pagination['totalPages']): ?>
                 <li class="page-item">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=<?= $pagination['currentPage'] + 1 ?><?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>">
+                  <a class="page-link" href="<?= BASE_URL ?>?act=contacts&page=<?= $pagination['currentPage'] + 1 ?><?= $selectedStatus ? '&status=' . $selectedStatus : '' ?><?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>">
                     Sau <i class="bi bi-chevron-right"></i>
                   </a>
                 </li>

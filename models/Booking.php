@@ -515,12 +515,18 @@ class Booking
     /**
      * Lấy danh sách ghế đã đặt cho suất chiếu
      */
-    public function getBookedSeatsByShowtime($showtimeId)
+    public function getBookedSeatsByShowtime($showtimeId, $useLock = false)
     {
         try {
             $sql = "SELECT booked_seats FROM bookings 
                     WHERE showtime_id = :showtime_id 
                     AND status IN ('pending', 'confirmed', 'paid', 'completed')";
+            
+            // Nếu useLock = true, thêm SELECT FOR UPDATE để lock các bản ghi
+            if ($useLock) {
+                $sql .= " FOR UPDATE";
+            }
+            
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':showtime_id' => $showtimeId]);
             $bookings = $stmt->fetchAll();
@@ -532,7 +538,7 @@ class Booking
                     foreach ($seats as $seat) {
                         $seat = trim($seat);
                         if (!empty($seat)) {
-                            $bookedSeats[] = $seat;
+                            $bookedSeats[] = strtoupper($seat);
                         }
                     }
                 }
@@ -569,30 +575,26 @@ class Booking
             return false;
         }
     }
-
+    
     /**
-     * Lấy booking gần nhất của user cho phim này (để lấy cinema_id)
+     * Kiểm tra phim có booking nào không (bất kỳ status nào)
      */
-    public function getLatestBookingByUserAndMovie($userId, $movieId)
+    public function hasBookingsByMovieId($movieId)
     {
         try {
-            $sql = "SELECT bookings.*, bookings.cinema_id
+            $sql = "SELECT COUNT(*) as count 
                     FROM bookings
                     INNER JOIN showtimes ON bookings.showtime_id = showtimes.id
-                    WHERE bookings.user_id = :user_id
-                    AND showtimes.movie_id = :movie_id
-                    AND bookings.status IN ('paid', 'completed')
-                    ORDER BY bookings.booking_date DESC, bookings.id DESC
-                    LIMIT 1";
+                    WHERE showtimes.movie_id = :movie_id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
-                ':user_id' => $userId,
                 ':movie_id' => $movieId
             ]);
-            return $stmt->fetch();
+            $result = $stmt->fetch();
+            return ($result['count'] ?? 0) > 0;
         } catch (Exception $e) {
-            debug($e);
-            return null;
+            error_log('Error in Booking->hasBookingsByMovieId(): ' . $e->getMessage());
+            return false;
         }
     }
 }

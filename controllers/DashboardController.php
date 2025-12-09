@@ -55,12 +55,41 @@ class DashboardController
         require_once __DIR__ . '/../commons/auth.php';
         requireAdminOrStaff();
         
+        // Xử lý AJAX request cho biểu đồ và thống kê
+        if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+            header('Content-Type: application/json');
+            $year = isset($_GET['year']) && $_GET['year'] !== '' ? intval($_GET['year']) : null;
+            $month = isset($_GET['month']) && $_GET['month'] !== '' ? intval($_GET['month']) : null;
+            $period = isset($_GET['period']) ? $_GET['period'] : '7';
+            
+            $monthlyStats = $this->getMonthlyStats($year, $period);
+            $totalRevenue = $this->getTotalRevenue($year, $month);
+            $totalTickets = $this->getTotalTickets($year, $month);
+            $topMovies = $this->getTopMovies(5, $year, $month);
+            
+            echo json_encode([
+                'success' => true,
+                'monthlyStats' => $monthlyStats,
+                'totalRevenue' => $totalRevenue,
+                'totalTickets' => $totalTickets,
+                'topMovies' => $topMovies
+            ]);
+            exit;
+        }
+        
         // ============================================
-        // THỐNG KÊ TỔNG QUAN
+        // LẤY THAM SỐ BỘ LỌC
+        // ============================================
+        $year = isset($_GET['year']) && $_GET['year'] !== '' ? intval($_GET['year']) : null;
+        $month = isset($_GET['month']) && $_GET['month'] !== '' ? intval($_GET['month']) : null;
+        $period = isset($_GET['period']) ? $_GET['period'] : '7';
+        
+        // ============================================
+        // THỐNG KÊ TỔNG QUAN (có bộ lọc)
         // ============================================
         $totalStaff = $this->getTotalStaff(); // Tổng số nhân viên
-        $totalTickets = $this->getTotalTickets(); // Tổng số vé đã bán (status = confirmed hoặc completed)
-        $totalRevenue = $this->getTotalRevenue(); // Tổng doanh thu (từ bookings đã thanh toán)
+        $totalTickets = $this->getTotalTickets($year, $month); // Tổng số vé đã bán (status = paid)
+        $totalRevenue = $this->getTotalRevenue($year, $month); // Tổng doanh thu (từ bookings đã thanh toán)
         $totalRooms = $this->getTotalRooms(); // Tổng số phòng chiếu
         $totalMovies = $this->getTotalMovies(); // Tổng số phim
         $activeMovies = $this->getActiveMovies(); // Số phim đang hoạt động (status = active)
@@ -78,10 +107,10 @@ class DashboardController
         // ============================================
         // THỐNG KÊ CHI TIẾT
         // ============================================
-        $monthlyStats = $this->getMonthlyStats(); // Thống kê theo tháng (7 tháng gần nhất)
-        $topMovies = $this->getTopMovies(); // Top 5 phim bán chạy nhất
+        $monthlyStats = $this->getMonthlyStats($year, $period); // Thống kê theo tháng
+        $topMovies = $this->getTopMovies(5, $year, $month); // Top 5 phim bán chạy nhất
         $recentBookings = $this->getRecentBookings(); // 10 đặt vé gần đây nhất
-        $bookingStatusStats = $this->getBookingStatusStats(); // Thống kê theo trạng thái (pending, confirmed, paid, cancelled)
+        $bookingStatusStats = $this->getBookingStatusStats(); // Thống kê theo trạng thái (pending, paid, cancelled)
 
         // ============================================
         // RENDER VIEW
@@ -102,18 +131,37 @@ class DashboardController
             'monthlyStats' => $monthlyStats,
             'topMovies' => $topMovies,
             'recentBookings' => $recentBookings,
-            'bookingStatusStats' => $bookingStatusStats
+            'bookingStatusStats' => $bookingStatusStats,
+            'filterYear' => $year,
+            'filterMonth' => $month,
+            'filterPeriod' => $period
         ]);
     }
 
     /**
      * Lấy tổng số vé đã bán
      */
-    private function getTotalTickets()
+    private function getTotalTickets($year = null, $month = null)
     {
         try {
-            $sql = "SELECT COUNT(*) as total FROM bookings WHERE status = 'confirmed' OR status = 'completed'";
+            $sql = "SELECT COUNT(*) as total FROM bookings WHERE status = 'paid'";
+            
+            if ($year !== null && $year > 0) {
+                $sql .= " AND YEAR(booking_date) = :year";
+            }
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $sql .= " AND MONTH(booking_date) = :month";
+            }
+            
             $stmt = $this->conn->prepare($sql);
+            
+            if ($year !== null && $year > 0) {
+                $stmt->bindValue(':year', $year, PDO::PARAM_INT);
+            }
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $stmt->bindValue(':month', $month, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             $result = $stmt->fetch();
             return $result['total'] ?? 0;
@@ -125,11 +173,27 @@ class DashboardController
     /**
      * Lấy tổng doanh thu
      */
-    private function getTotalRevenue()
+    private function getTotalRevenue($year = null, $month = null)
     {
         try {
-            $sql = "SELECT SUM(final_amount) as total FROM bookings WHERE status = 'confirmed' OR status = 'completed'";
+            $sql = "SELECT SUM(final_amount) as total FROM bookings WHERE status = 'paid'";
+            
+            if ($year !== null && $year > 0) {
+                $sql .= " AND YEAR(booking_date) = :year";
+            }
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $sql .= " AND MONTH(booking_date) = :month";
+            }
+            
             $stmt = $this->conn->prepare($sql);
+            
+            if ($year !== null && $year > 0) {
+                $stmt->bindValue(':year', $year, PDO::PARAM_INT);
+            }
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $stmt->bindValue(':month', $month, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             $result = $stmt->fetch();
             return $result['total'] ?? 0;
@@ -218,7 +282,7 @@ class DashboardController
     private function getTodayBookings()
     {
         try {
-            $sql = "SELECT COUNT(*) as total FROM bookings WHERE DATE(booking_date) = CURDATE()";
+            $sql = "SELECT COUNT(*) as total FROM bookings WHERE DATE(booking_date) = CURDATE() AND status = 'paid'";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->fetch();
@@ -234,7 +298,7 @@ class DashboardController
     private function getTodayRevenue()
     {
         try {
-            $sql = "SELECT SUM(final_amount) as total FROM bookings WHERE DATE(booking_date) = CURDATE() AND (status = 'confirmed' OR status = 'completed')";
+            $sql = "SELECT SUM(final_amount) as total FROM bookings WHERE DATE(booking_date) = CURDATE() AND status = 'paid'";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->fetch();
@@ -309,23 +373,67 @@ class DashboardController
     }
 
     /**
-     * Lấy thống kê theo tháng (7 tháng gần nhất)
+     * Lấy thống kê theo tháng với bộ lọc
+     * @param int|null $year Năm cần lọc (null = tất cả năm)
+     * @param string $period Khoảng thời gian: '7', '12', '24', 'all'
      */
-    private function getMonthlyStats()
+    private function getMonthlyStats($year = null, $period = '7')
     {
         try {
             $sql = "SELECT 
                         DATE_FORMAT(booking_date, '%Y-%m') as month,
                         COUNT(*) as bookings,
-                        SUM(final_amount) as revenue
+                        COALESCE(SUM(final_amount), 0) as revenue
                     FROM bookings 
-                    WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-                    AND (status = 'confirmed' OR status = 'completed')
-                    GROUP BY DATE_FORMAT(booking_date, '%Y-%m')
+                    WHERE status = 'paid'";
+            
+            // Thêm điều kiện lọc theo năm
+            if ($year !== null && $year > 0) {
+                $sql .= " AND YEAR(booking_date) = :year";
+            }
+            
+            // Thêm điều kiện lọc theo khoảng thời gian
+            if ($period !== 'all') {
+                $months = intval($period);
+                if ($months > 0) {
+                    $sql .= " AND booking_date >= DATE_SUB(CURDATE(), INTERVAL :months MONTH)";
+                }
+            }
+            
+            $sql .= " GROUP BY DATE_FORMAT(booking_date, '%Y-%m')
                     ORDER BY month ASC";
+            
             $stmt = $this->conn->prepare($sql);
+            
+            // Bind parameters
+            if ($year !== null && $year > 0) {
+                $stmt->bindValue(':year', $year, PDO::PARAM_INT);
+            }
+            if ($period !== 'all') {
+                $months = intval($period);
+                if ($months > 0) {
+                    $stmt->bindValue(':months', $months - 1, PDO::PARAM_INT);
+                }
+            }
+            
             $stmt->execute();
-            return $stmt->fetchAll();
+            $results = $stmt->fetchAll();
+            
+            // Đảm bảo có dữ liệu cho tất cả các tháng trong khoảng thời gian
+            if (empty($results) && $period !== 'all') {
+                $months = intval($period);
+                $results = [];
+                for ($i = $months - 1; $i >= 0; $i--) {
+                    $date = date('Y-m', strtotime("-$i months"));
+                    $results[] = [
+                        'month' => $date,
+                        'bookings' => 0,
+                        'revenue' => 0
+                    ];
+                }
+            }
+            
+            return $results;
         } catch (Exception $e) {
             return [];
         }
@@ -334,7 +442,7 @@ class DashboardController
     /**
      * Lấy top phim bán chạy
      */
-    private function getTopMovies($limit = 5)
+    private function getTopMovies($limit = 5, $year = null, $month = null)
     {
         try {
             $sql = "SELECT 
@@ -342,15 +450,33 @@ class DashboardController
                         m.title,
                         m.image,
                         COUNT(b.id) as booking_count,
-                        SUM(b.final_amount) as revenue
+                        COALESCE(SUM(b.final_amount), 0) as revenue
                     FROM movies m
                     LEFT JOIN showtimes st ON m.id = st.movie_id
-                    LEFT JOIN bookings b ON st.id = b.showtime_id
-                    WHERE b.status IN ('confirmed', 'completed') OR b.id IS NULL
-                    GROUP BY m.id, m.title, m.image
+                    LEFT JOIN bookings b ON st.id = b.showtime_id AND b.status = 'paid'";
+            
+            // Thêm điều kiện lọc theo năm/tháng
+            if ($year !== null && $year > 0) {
+                $sql .= " AND YEAR(b.booking_date) = :year";
+            }
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $sql .= " AND MONTH(b.booking_date) = :month";
+            }
+            
+            $sql .= " GROUP BY m.id, m.title, m.image
+                    HAVING booking_count > 0
                     ORDER BY booking_count DESC, revenue DESC
                     LIMIT :limit";
+            
             $stmt = $this->conn->prepare($sql);
+            
+            if ($year !== null && $year > 0) {
+                $stmt->bindValue(':year', $year, PDO::PARAM_INT);
+            }
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $stmt->bindValue(':month', $month, PDO::PARAM_INT);
+            }
+            
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll();

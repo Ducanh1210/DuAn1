@@ -83,7 +83,23 @@
                 </td>
                 <td><?= $item['show_date'] ? date('d/m/Y', strtotime($item['show_date'])) : 'N/A' ?></td>
                 <td><?= $item['start_time'] ? date('H:i', strtotime($item['start_time'])) : 'N/A' ?></td>
-                <td><?= htmlspecialchars($item['booked_seats'] ?? 'N/A') ?></td>
+                <td>
+                  <?php
+                  $bookedSeats = $item['booked_seats'] ?? '';
+                  // Loại bỏ dấu phẩy thừa ở đầu và cuối, và các khoảng trắng
+                  $bookedSeats = trim($bookedSeats, ', ');
+                  // Loại bỏ các dấu phẩy liên tiếp
+                  $bookedSeats = preg_replace('/,+/', ',', $bookedSeats);
+                  // Loại bỏ dấu phẩy ở đầu và cuối sau khi clean
+                  $bookedSeats = trim($bookedSeats, ', ');
+                  // Hiển thị
+                  if (empty($bookedSeats) || $bookedSeats === ',' || $bookedSeats === '') {
+                    echo 'N/A';
+                  } else {
+                    echo htmlspecialchars($bookedSeats);
+                  }
+                  ?>
+                </td>
                 <td><strong><?= $item['final_amount'] ? number_format($item['final_amount'], 0, ',', '.') . ' đ' : 'N/A' ?></strong></td>
                 <td>
                   <?php

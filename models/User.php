@@ -170,7 +170,21 @@ class User
     }
 
     /**
-     * Thêm user mới
+     * THÊM USER MỚI VÀO DATABASE
+     * 
+     * Mục đích: Insert user mới vào bảng users
+     * Cách hoạt động:
+     * 1. Nhận data array từ Controller
+     * 2. Thực hiện SQL INSERT với các trường cần thiết
+     * 3. Trả về ID của user vừa tạo (lastInsertId)
+     * 
+     * Luồng chạy:
+     * Controller -> User->insert(['full_name' => '...', 'email' => '...', ...])
+     * -> SQL INSERT INTO users (...)
+     * -> Trả về user_id mới tạo
+     * 
+     * @param array $data Dữ liệu user (full_name, email, password, role, etc.)
+     * @return int|false ID của user vừa tạo hoặc false nếu lỗi
      */
     public function insert($data)
     {
@@ -218,7 +232,23 @@ class User
     }
 
     /**
-     * Cập nhật user
+     * CẬP NHẬT THÔNG TIN USER
+     * 
+     * Mục đích: Update thông tin user trong database
+     * Cách hoạt động:
+     * 1. Lấy thông tin user hiện tại từ database
+     * 2. Merge dữ liệu mới với dữ liệu cũ (giữ lại dữ liệu cũ nếu không có mới)
+     * 3. Thực hiện SQL UPDATE
+     * 4. Trả về true/false
+     * 
+     * Luồng chạy:
+     * Controller -> User->update($id, ['full_name' => '...', 'email' => '...'])
+     * -> SQL UPDATE users SET ... WHERE id = :id
+     * -> Trả về true nếu thành công
+     * 
+     * @param int $id ID của user cần update
+     * @param array $data Dữ liệu mới (chỉ cần truyền các trường muốn thay đổi)
+     * @return bool true nếu thành công, false nếu lỗi
      */
     public function update($id, $data)
     {

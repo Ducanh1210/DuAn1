@@ -168,11 +168,15 @@ class AuthController
             // VALIDATION - KIỂM TRA DỮ LIỆU ĐẦU VÀO
             // ============================================
             if (empty($email)) {
-                $errors['email'] = "Bạn vui lòng nhập email";
+                $errors['login'] = "Vui lòng nhập email";
             }
 
             if (empty($password)) {
-                $errors['password'] = "Bạn vui lòng nhập mật khẩu";
+                if (empty($errors)) {
+                    $errors['login'] = "Vui lòng nhập mật khẩu";
+                } else {
+                    $errors['login'] = "Vui lòng nhập email và mật khẩu";
+                }
             }
 
             // ============================================
@@ -259,6 +263,100 @@ class AuthController
         // ============================================
         // Render view đăng nhập (client) - hiển thị form và lỗi nếu có
         require_once __DIR__ . '/../views/client/dangnhap.php';
+        exit;
+    }
+
+    /**
+     * QUÊN MẬT KHẨU
+     * 
+     * LUỒNG CHẠY:
+     * 1. Hiển thị form quên mật khẩu (GET request)
+     * 2. Nhận email, password mới, confirm password từ form (POST request)
+     * 3. Validate dữ liệu
+     * 4. Kiểm tra email có tồn tại trong DB không
+     * 5. Cập nhật mật khẩu mới vào database
+     * 6. Redirect về trang đăng nhập
+     * 
+     * DỮ LIỆU LẤY:
+     * - Từ $_POST: email, password, confirm_password
+     * - Từ Model User: kiểm tra email đã tồn tại
+     * - Cập nhật vào database: users table
+     */
+    public function forgotPassword()
+    {
+        $errors = []; // Mảng lưu lỗi validation
+        $success = false;
+
+        // Kiểm tra nếu là POST request (form đã submit)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // ============================================
+            // VALIDATION - KIỂM TRA DỮ LIỆU ĐẦU VÀO
+            // ============================================
+            if (empty(trim($_POST['email'] ?? ''))) {
+                $errors['login'] = "Vui lòng nhập email";
+            } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors['login'] = "Email không hợp lệ";
+            } else {
+                // Kiểm tra email có tồn tại trong DB không
+                $user = $this->user->findByEmail($_POST['email']);
+                if (!$user) {
+                    $errors['login'] = "Email này không tồn tại trong hệ thống";
+                }
+            }
+
+            if (empty(trim($_POST['password'] ?? ''))) {
+                if (empty($errors)) {
+                    $errors['login'] = "Vui lòng nhập mật khẩu mới";
+                } else {
+                    $errors['login'] = "Vui lòng nhập email và mật khẩu mới";
+                }
+            } elseif (isset($errors['login']) && strpos($errors['login'], 'email') === false) {
+                // Nếu đã có lỗi khác, không cần kiểm tra độ dài
+            } elseif (strlen($_POST['password']) < 6) {
+                if (empty($errors)) {
+                    $errors['login'] = "Mật khẩu phải có ít nhất 6 ký tự";
+                }
+            }
+
+            if (empty(trim($_POST['confirm_password'] ?? ''))) {
+                if (empty($errors)) {
+                    $errors['login'] = "Vui lòng xác nhận mật khẩu";
+                }
+            } elseif (isset($_POST['password']) && $_POST['password'] !== $_POST['confirm_password']) {
+                if (empty($errors)) {
+                    $errors['login'] = "Mật khẩu xác nhận không khớp";
+                } else {
+                    $errors['login'] = $errors['login'] . ". Mật khẩu xác nhận không khớp";
+                }
+            }
+
+            // ============================================
+            // CẬP NHẬT MẬT KHẨU - NẾU KHÔNG CÓ LỖI
+            // ============================================
+            if (empty($errors)) {
+                // Tìm user theo email
+                $user = $this->user->findByEmail($_POST['email']);
+                
+                if ($user) {
+                    // Cập nhật mật khẩu mới
+                    $data = [
+                        'password' => password_hash($_POST['password'], PASSWORD_DEFAULT)
+                    ];
+                    $this->user->update($user['id'], $data);
+                    $success = true;
+                    
+                    // Redirect về trang đăng nhập sau 2 giây
+                    header('Location: ' . BASE_URL . '?act=dangnhap&reset=1&email=' . urlencode($_POST['email']));
+                    exit;
+                }
+            }
+        }
+
+        // ============================================
+        // HIỂN THỊ FORM QUÊN MẬT KHẨU (GET REQUEST)
+        // ============================================
+        // Render view quên mật khẩu (client) - hiển thị form và lỗi nếu có
+        require_once __DIR__ . '/../views/client/quenmatkhau.php';
         exit;
     }
 

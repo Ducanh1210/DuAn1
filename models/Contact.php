@@ -27,43 +27,38 @@ class Contact
     /**
      * Lấy liên hệ với phân trang
      */
-    public function paginate($page = 1, $perPage = 10, $status = null, $cinemaId = null)
+    public function paginate($page = 1, $perPage = 10, $status = null, $cinema_id = null)
     {
         try {
             $offset = ($page - 1) * $perPage;
             
-            // Luôn JOIN để lấy thông tin rạp
-            $joinClause = "LEFT JOIN users ON contacts.user_id = users.id 
-                          LEFT JOIN cinemas ON users.cinema_id = cinemas.id";
-            
             // Xây dựng WHERE clause
-            $whereClause = '';
+            $whereConditions = [];
             $params = [];
             
-            if ($cinemaId) {
-                $whereClause = "WHERE users.cinema_id = :cinema_id";
-                $params[':cinema_id'] = $cinemaId;
-            }
-            
             if ($status) {
-                if ($whereClause) {
-                    $whereClause .= " AND contacts.status = :status";
-                } else {
-                    $whereClause = "WHERE contacts.status = :status";
-                }
+                $whereConditions[] = "contacts.status = :status";
                 $params[':status'] = $status;
             }
             
+            if ($cinema_id !== null) {
+                $whereConditions[] = "contacts.cinema_id = :cinema_id";
+                $params[':cinema_id'] = $cinema_id;
+            }
+            
+            $whereClause = !empty($whereConditions) ? "WHERE " . implode(" AND ", $whereConditions) : '';
+            
             // Lấy tổng số bản ghi
-            $countSql = "SELECT COUNT(*) as total FROM contacts {$joinClause} {$whereClause}";
+            $countSql = "SELECT COUNT(*) as total FROM contacts " . $whereClause;
             $countStmt = $this->conn->prepare($countSql);
             $countStmt->execute($params);
             $total = $countStmt->fetch()['total'];
             
-            // Lấy dữ liệu phân trang với thông tin rạp
-            $selectFields = "contacts.*, cinemas.name AS cinema_name, cinemas.id AS cinema_id";
-            
-            $sql = "SELECT {$selectFields} FROM contacts {$joinClause} {$whereClause}
+            // Lấy dữ liệu phân trang với JOIN để lấy tên rạp
+            $sql = "SELECT contacts.*, cinemas.name as cinema_name 
+                    FROM contacts 
+                    LEFT JOIN cinemas ON contacts.cinema_id = cinemas.id
+                    {$whereClause}
                     ORDER BY contacts.created_at DESC
                     LIMIT :limit OFFSET :offset";
             $stmt = $this->conn->prepare($sql);
@@ -101,7 +96,10 @@ class Contact
     public function find($id)
     {
         try {
-            $sql = "SELECT * FROM contacts WHERE id = :id";
+            $sql = "SELECT contacts.*, cinemas.name as cinema_name 
+                    FROM contacts 
+                    LEFT JOIN cinemas ON contacts.cinema_id = cinemas.id
+                    WHERE contacts.id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
             return $stmt->fetch();
@@ -117,8 +115,8 @@ class Contact
     public function insert($data)
     {
         try {
-            $sql = "INSERT INTO contacts (name, email, phone, subject, message, status) 
-                    VALUES (:name, :email, :phone, :subject, :message, :status)";
+            $sql = "INSERT INTO contacts (name, email, phone, subject, message, cinema_id, user_id, status) 
+                    VALUES (:name, :email, :phone, :subject, :message, :cinema_id, :user_id, :status)";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
                 ':name' => $data['name'] ?? null,
@@ -126,6 +124,8 @@ class Contact
                 ':phone' => $data['phone'] ?? null,
                 ':subject' => $data['subject'] ?? null,
                 ':message' => $data['message'] ?? null,
+                ':cinema_id' => $data['cinema_id'] ?? null,
+                ':user_id' => $data['user_id'] ?? null,
                 ':status' => $data['status'] ?? 'pending'
             ]);
             return $this->conn->lastInsertId();
@@ -147,6 +147,7 @@ class Contact
                     phone = :phone,
                     subject = :subject,
                     message = :message,
+                    cinema_id = :cinema_id,
                     status = :status
                     WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
@@ -157,6 +158,7 @@ class Contact
                 ':phone' => $data['phone'] ?? null,
                 ':subject' => $data['subject'] ?? null,
                 ':message' => $data['message'] ?? null,
+                ':cinema_id' => $data['cinema_id'] ?? null,
                 ':status' => $data['status'] ?? 'pending'
             ]);
             return true;
@@ -204,12 +206,21 @@ class Contact
     /**
      * Đếm số liên hệ theo trạng thái
      */
-    public function countByStatus($status)
+    public function countByStatus($status, $cinema_id = null)
     {
         try {
-            $sql = "SELECT COUNT(*) as total FROM contacts WHERE status = :status";
+            $whereConditions = ["status = :status"];
+            $params = [':status' => $status];
+            
+            if ($cinema_id !== null) {
+                $whereConditions[] = "cinema_id = :cinema_id";
+                $params[':cinema_id'] = $cinema_id;
+            }
+            
+            $whereClause = "WHERE " . implode(" AND ", $whereConditions);
+            $sql = "SELECT COUNT(*) as total FROM contacts {$whereClause}";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([':status' => $status]);
+            $stmt->execute($params);
             $result = $stmt->fetch();
             return $result['total'] ?? 0;
         } catch (Exception $e) {

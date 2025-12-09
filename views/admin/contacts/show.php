@@ -51,6 +51,14 @@
                     </a>
                   </td>
                 </tr>
+                <?php if (!empty($contact['cinema_id']) && !empty($contact['cinema_name'])): ?>
+                <tr>
+                  <th>Rạp:</th>
+                  <td>
+                    <span class="badge bg-secondary"><?= htmlspecialchars($contact['cinema_name']) ?></span>
+                  </td>
+                </tr>
+                <?php endif; ?>
                 <tr>
                   <th>Chủ đề:</th>
                   <td><strong><?= htmlspecialchars($contact['subject'] ?? 'N/A') ?></strong></td>
@@ -129,13 +137,15 @@
             <div class="card-body">
               <a href="<?= BASE_URL ?>?act=contacts-edit&id=<?= $contact['id'] ?>" 
                  class="btn btn-warning w-100 mb-2">
-                <i class="bi bi-pencil"></i> Sửa liên hệ
+                <i class="bi bi-pencil"></i> <?= (isset($isStaff) && $isStaff) ? 'Cập nhật trạng thái' : 'Sửa liên hệ' ?>
               </a>
+              <?php if (isset($isAdmin) && $isAdmin): ?>
               <a href="<?= BASE_URL ?>?act=contacts-delete&id=<?= $contact['id'] ?>" 
                  class="btn btn-danger w-100"
                  onclick="return confirm('Bạn có chắc chắn muốn xóa liên hệ này?')">
                 <i class="bi bi-trash"></i> Xóa liên hệ
               </a>
+              <?php endif; ?>
             </div>
           </div>
         </div>

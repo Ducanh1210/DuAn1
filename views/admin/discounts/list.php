@@ -31,23 +31,29 @@
                 $startDate = $item['start_date'] ?? null;
                 $endDate = $item['end_date'] ?? null;
                 $isActive = $item['status'] === 'active';
-                $isValid = true;
                 
-                if ($startDate && $now < $startDate) {
-                  $isValid = false; // Chưa đến ngày
-                }
-                if ($endDate && $now > $endDate) {
-                  $isValid = false; // Đã hết hạn
-                }
-                
+                // Xác định trạng thái
                 $statusClass = 'secondary';
                 $statusText = 'Không hoạt động';
-                if ($isActive && $isValid) {
-                  $statusClass = 'success';
-                  $statusText = 'Đang hoạt động';
-                } elseif (!$isValid) {
-                  $statusClass = 'warning';
-                  $statusText = 'Hết hạn';
+                
+                if ($isActive) {
+                  if ($startDate && $now < $startDate) {
+                    // Chưa đến ngày bắt đầu -> Sắp diễn ra
+                    $statusClass = 'info';
+                    $statusText = 'Sắp diễn ra';
+                  } elseif ($endDate && $now > $endDate) {
+                    // Đã quá ngày kết thúc -> Hết hạn
+                    $statusClass = 'warning';
+                    $statusText = 'Hết hạn';
+                  } else {
+                    // Đang trong thời gian hiệu lực -> Đang hoạt động
+                    $statusClass = 'success';
+                    $statusText = 'Đang hoạt động';
+                  }
+                } else {
+                  // Status = inactive
+                  $statusClass = 'secondary';
+                  $statusText = 'Không hoạt động';
                 }
               ?>
               <tr>

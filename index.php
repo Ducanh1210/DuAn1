@@ -1,18 +1,107 @@
 <?php
+
 /**
- * FILE CHÍNH - ĐIỂM VÀO CỦA ỨNG DỤNG
+ * INDEX.PHP - FILE CHÍNH - ĐIỂM VÀO CỦA TOÀN BỘ ỨNG DỤNG
  * 
- * LUỒNG CHẠY:
- * 1. Khởi động session để quản lý đăng nhập
- * 2. Load các file cấu hình và helper functions
- * 3. Load tất cả Controllers và Models cần thiết
- * 4. Lấy tham số 'act' từ URL để xác định route
- * 5. Gọi method tương ứng trong Controller dựa trên route
+ * ============================================
+ * LUỒNG CHẠY TỔNG THỂ CỦA HỆ THỐNG:
+ * ============================================
  * 
- * CÁCH HOẠT ĐỘNG:
- * - User truy cập: ?act=trangchu -> gọi MoviesController->trangchu()
- * - User truy cập: ?act=dangnhap -> gọi AuthController->login()
- * - Admin truy cập: ?act=dashboard -> gọi DashboardController->index()
+ * 1. KHỞI ĐỘNG (Dòng 20-27):
+ *    - Start session để quản lý đăng nhập
+ *    - Bật error reporting để debug
+ * 
+ * 2. LOAD CẤU HÌNH (Dòng 30-32):
+ *    - env.php: Cấu hình database, BASE_URL
+ *    - function.php: Helper functions (render, connectDB, debug)
+ * 
+ * 3. LOAD CONTROLLERS VÀ MODELS (Dòng 40-106):
+ *    - Controllers: Xử lý logic, nhận request, gọi Models, render View
+ *    - Models: Tương tác với database (SELECT, INSERT, UPDATE, DELETE)
+ * 
+ * 4. ROUTING (Dòng 114-317):
+ *    - Lấy tham số 'act' từ URL (?act=trangchu)
+ *    - Match với routing table để tìm Controller và method tương ứng
+ *    - Gọi method trong Controller
+ * 
+ * 5. CONTROLLER XỬ LÝ (Trong Controller):
+ *    - Kiểm tra quyền truy cập (requireAdmin, requireLogin, etc.)
+ *    - Validate dữ liệu từ form (POST request)
+ *    - Gọi Model để lấy/cập nhật dữ liệu từ database
+ *    - Render View với dữ liệu đã lấy
+ * 
+ * 6. VIEW HIỂN THỊ (Trong View file):
+ *    - Nhận dữ liệu từ Controller (đã được extract thành biến)
+ *    - Hiển thị HTML với dữ liệu
+ * 
+ * ============================================
+ * VÍ DỤ LUỒNG CHẠY CỤ THỂ:
+ * ============================================
+ * 
+ * VÍ DỤ 1: User truy cập trang chủ
+ * URL: http://localhost/DuAn1/?act=trangchu
+ * 
+ * Luồng:
+ * 1. index.php nhận request
+ * 2. Load env.php, function.php, Controllers, Models
+ * 3. Lấy $act = 'trangchu' từ URL
+ * 4. Match routing: 'trangchu' => MoviesController->trangchu()
+ * 5. MoviesController->trangchu():
+ *    - Gọi Movie Model để lấy danh sách phim
+ *    - Render view 'client/trangchu.php' với dữ liệu phim
+ * 6. View hiển thị danh sách phim
+ * 
+ * VÍ DỤ 2: User đăng nhập
+ * URL: http://localhost/DuAn1/?act=dangnhap
+ * Method: POST (form submit)
+ * 
+ * Luồng:
+ * 1. index.php nhận request
+ * 2. Load tất cả files
+ * 3. Lấy $act = 'dangnhap'
+ * 4. Match: 'dangnhap' => AuthController->login()
+ * 5. AuthController->login():
+ *    - Nhận email/password từ $_POST
+ *    - Validate dữ liệu
+ *    - Gọi User Model để tìm user theo email
+ *    - Verify password
+ *    - Tạo session (user_id, user_role, etc.)
+ *    - Redirect theo role (admin->dashboard, customer->trangchu)
+ * 
+ * VÍ DỤ 3: Admin quản lý phim
+ * URL: http://localhost/DuAn1/?act=movies-list
+ * 
+ * Luồng:
+ * 1. index.php nhận request
+ * 2. Load files
+ * 3. Lấy $act = 'movies-list'
+ * 4. Match: 'movies-list' => MoviesController->list()
+ * 5. MoviesController->list():
+ *    - Kiểm tra quyền: requireAdmin() (chỉ admin mới vào được)
+ *    - Gọi Movie Model để lấy danh sách phim (có phân trang)
+ *    - Render view 'admin/movies/list.php' với dữ liệu
+ * 6. View hiển thị bảng danh sách phim
+ * 
+ * ============================================
+ * CẤU TRÚC THƯ MỤC:
+ * ============================================
+ * 
+ * /index.php              -> Entry point, routing
+ * /commons/                -> Helper files
+ *   - env.php             -> Cấu hình database, BASE_URL
+ *   - function.php        -> Helper functions (render, connectDB)
+ *   - auth.php            -> Authentication helpers (isAdmin, requireLogin)
+ * /controllers/            -> Controllers (xử lý logic)
+ *   - AuthController.php  -> Xử lý đăng nhập, đăng ký
+ *   - MoviesController.php -> Xử lý phim
+ *   - BookingController.php -> Xử lý đặt vé
+ * /models/                 -> Models (tương tác database)
+ *   - User.php            -> Model User (query bảng users)
+ *   - Movie.php           -> Model Movie (query bảng movies)
+ * /views/                  -> Views (hiển thị HTML)
+ *   /admin/               -> Views cho admin
+ *   /client/              -> Views cho khách hàng
+ *   /layout/              -> Layout chung (header, footer, sidebar)
  */
 
 // Start session ngay từ đầu, trước mọi output
@@ -22,8 +111,19 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Bật hiển thị lỗi để debug (nên tắt khi deploy production)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Tắt display_errors cho API endpoints để tránh output trước JSON
+$isApiEndpoint = isset($_GET['act']) && in_array($_GET['act'], ['payment-process', 'api-seats', 'check-voucher', 'update-booking-status', 'get-available-vouchers']);
+if (!$isApiEndpoint) {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+} else {
+    // Bắt đầu output buffering ngay từ đầu cho API endpoints
+    // Đảm bảo không có output nào từ các file được require trước khi đến controller
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    ob_start();
+}
 error_reporting(E_ALL);
 
 // Load file cấu hình môi trường (database, base URL, etc.)
@@ -127,7 +227,7 @@ match ($act) {
     // ============================================
     // CLIENT ROUTES - TRANG DÀNH CHO KHÁCH HÀNG
     // ============================================
-    
+
     'trangchu' => (new MoviesController)->trangchu(), // Trang chủ - hiển thị danh sách phim đang chiếu và sắp chiếu
     'gioithieu' => (new MoviesController)->gioithieu(), // Trang giới thiệu về rạp
     'lichchieu' => (new MoviesController)->lichchieu(), // Trang lịch chiếu - xem lịch chiếu theo ngày, rạp, phim
@@ -135,6 +235,7 @@ match ($act) {
     'giave' => (new TicketPriceController)->index(), // Trang giá vé - hiển thị bảng giá vé theo loại
     'lienhe' => (new MoviesController)->lienhe(), // Trang liên hệ
     'check-voucher' => (new MoviesController)->checkVoucher(), // API kiểm tra mã voucher có hợp lệ không
+    'get-available-vouchers' => (new MoviesController)->getAvailableVouchers(), // API lấy danh sách mã khuyến mãi available
     'movies' => (new MoviesController)->movieDetail(), // Trang chi tiết phim - thông tin phim, lịch chiếu, đánh giá
     'datve' => (new BookingController)->selectSeats(), // Trang chọn ghế - chọn ghế để đặt vé
     'api-seats' => (new BookingController)->getSeatsApi(), // API lấy danh sách ghế của suất chiếu (AJAX)
@@ -142,20 +243,21 @@ match ($act) {
     'payment' => (new BookingController)->payment(), // Trang thanh toán - nhập thông tin thanh toán
     'payment-process' => (new BookingController)->processPayment(), // Xử lý thanh toán - tạo booking, gửi đến VNPay
     'vnpay-return' => (new BookingController)->vnpayReturn(), // Callback từ VNPay sau khi thanh toán xong
-    
+
 
     // ============================================
     // AUTH ROUTES - XÁC THỰC NGƯỜI DÙNG
     // ============================================
-    
+
     'dangky' => (new AuthController)->register(), // Trang đăng ký tài khoản mới
     'dangnhap' => (new AuthController)->login(), // Trang đăng nhập - kiểm tra email/password, tạo session
     'dangxuat' => (new AuthController)->logout(), // Đăng xuất - xóa session, chuyển về trang chủ
+    'quenmatkhau' => (new AuthController)->forgotPassword(), // Trang quên mật khẩu - đặt lại mật khẩu mới
 
     // ============================================
     // PROFILE ROUTES - QUẢN LÝ HỒ SƠ
     // ============================================
-    
+
     'profile' => (new ProfileController)->index(), // Trang hồ sơ cá nhân
     'profile-update' => (new ProfileController)->update(), // Cập nhật thông tin cá nhân
     'profile-change-password' => (new ProfileController)->changePassword(), // Đổi mật khẩu
@@ -166,7 +268,7 @@ match ($act) {
     // ============================================
     // ADMIN ROUTES - TRANG QUẢN LÝ
     // ============================================
-    
+
     'dashboard' => (new DashboardController)->index(), // Dashboard - trang chủ admin, hiển thị thống kê
 
     // ============================================
@@ -263,7 +365,7 @@ match ($act) {
     'discounts-create' => (new DiscountsController)->create(), // Tạo khuyến mãi mới
     'discounts-edit' => (new DiscountsController)->edit(), // Sửa khuyến mãi
     'discounts-delete' => (new DiscountsController)->delete(), // Xóa khuyến mãi
-    
+
     // ============================================
     // TICKET PRICES ROUTES - QUẢN LÝ GIÁ VÉ (Admin)
     // ============================================

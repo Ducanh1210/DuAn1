@@ -2,10 +2,29 @@
     Giới thiệu page - Modern & Beautiful Design
     ============================================ */
 
-    /* Override hero section for gioithieu page */
-    body:has(.about-page) .header {
-        background: rgba(3, 6, 12, 0.95);
+    /* Override hero section for gioithieu page - chỉ khi light mode */
+    [data-theme="light"] body:has(.about-page) .header {
+        background: #f5f7fa;
         backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dark mode: giữ nguyên, không override gì cả */
+    /* Light mode: override menu styling để match light theme */
+    [data-theme="light"] body:has(.about-page) .header .menu a {
+        color: #000;
+    }
+
+    [data-theme="light"] body:has(.about-page) .header .menu a:hover {
+        color: #000;
+    }
+
+    [data-theme="light"] body:has(.about-page) .header .menu a.active {
+        color: #ff6978 !important;
+    }
+
+    [data-theme="light"] body:has(.about-page) .header .menu a.active::after {
+        background-color: #ff6978;
     }
 
     body:has(.about-page) main {
@@ -757,4 +776,127 @@
         .lead-text {
             font-size: 18px;
         }
+    }
+
+    /* ===== LIGHT MODE OVERRIDES ===== */
+    [data-theme="light"] .title-sub {
+        color: #000;
+    }
+
+    [data-theme="light"] .about-subtitle {
+        color: #000;
+    }
+
+    [data-theme="light"] .section-title {
+        color: #000;
+    }
+
+    [data-theme="light"] .section-description {
+        color: #000;
+    }
+
+    [data-theme="light"] .content-text p {
+        color: #000;
+    }
+
+    [data-theme="light"] .lead-text {
+        color: #000;
+    }
+
+    [data-theme="light"] .vanban {
+        color: #000;
+    }
+
+    [data-theme="light"] .feature-card h3 {
+        color: #000;
+    }
+
+    [data-theme="light"] .feature-card p {
+        color: #000;
+    }
+
+    [data-theme="light"] .visual-card span {
+        color: #000;
+    }
+
+    [data-theme="light"] .stat-label {
+        color: #000;
+    }
+
+    [data-theme="light"] .cta-content h2 {
+        color: #000;
+    }
+
+    [data-theme="light"] .cta-content p {
+        color: #000;
+    }
+
+    /* Deeper background colors for boxes in light mode - making them more pronounced */
+    [data-theme="light"] .section-content {
+        background: #c8d0db !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    [data-theme="light"] .feature-card {
+        background: #c8d0db !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    }
+
+    [data-theme="light"] .feature-card:hover {
+        background: #bcc4d0 !important;
+        border-color: rgba(255, 105, 120, 0.4) !important;
+    }
+
+    [data-theme="light"] .visual-card {
+        background: #c8d0db !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    }
+
+    [data-theme="light"] .visual-card:hover {
+        background: #bcc4d0 !important;
+    }
+
+    [data-theme="light"] .stat-card {
+        background: #c8d0db !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    }
+
+    [data-theme="light"] .stat-card:hover {
+        background: #bcc4d0 !important;
+    }
+
+    [data-theme="light"] .mission-section {
+        background: #c8d0db !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    }
+
+    [data-theme="light"] .stats-section {
+        background: #c8d0db !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    }
+
+    [data-theme="light"] .cta-section {
+        background: #c8d0db !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Ensure ALL text content in boxes is black in light mode - be specific to avoid affecting icons/gradients */
+    [data-theme="light"] .section-content p,
+    [data-theme="light"] .section-content .lead-text,
+    [data-theme="light"] .section-content .vanban,
+    [data-theme="light"] .section-content div:not(.section-icon):not(.section-icon-wrapper),
+    [data-theme="light"] .feature-card h3,
+    [data-theme="light"] .feature-card p,
+    [data-theme="light"] .visual-card span,
+    [data-theme="light"] .stat-label,
+    [data-theme="light"] .mission-section p,
+    [data-theme="light"] .mission-section .lead-text,
+    [data-theme="light"] .mission-section .vanban,
+    [data-theme="light"] .mission-section h2,
+    [data-theme="light"] .stats-section p,
+    [data-theme="light"] .stats-section h2,
+    [data-theme="light"] .cta-content h2,
+    [data-theme="light"] .cta-content p {
+        color: #000 !important;
     }

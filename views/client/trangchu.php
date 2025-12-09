@@ -3,6 +3,38 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+$homepagePromotions = $homepagePromotions ?? [];
+$promoBannerData = array_map(function ($promo) {
+    $imagePath = $promo['movie_image'] ?? '';
+    if (!empty($imagePath) && !preg_match('#^https?://#', $imagePath)) {
+        $imagePath = BASE_URL . '/' . ltrim($imagePath, '/');
+    } elseif (empty($imagePath)) {
+        $imagePath = BASE_URL . '/image/logo.png';
+    }
+
+    return [
+        'image' => $imagePath,
+        'title' => $promo['title'] ?? '',
+        'code' => strtoupper($promo['code'] ?? ''),
+        'movie_title' => $promo['movie_title'] ?? '',
+        'cta' => $promo['cta'] ?? 'Xem chi tiết',
+        'link' => BASE_URL . '?act=khuyenmai'
+    ];
+}, $homepagePromotions);
+
+if (empty($promoBannerData)) {
+    $promoBannerData = [
+        [
+            'image' => BASE_URL . '/image/banner1.jpg',
+            'title' => 'Khuyến mãi hot',
+            'code' => 'WELCOME20',
+            'movie_title' => 'TicketHub',
+            'cta' => 'Khám phá',
+            'link' => BASE_URL . '?act=khuyenmai'
+        ]
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -335,11 +367,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
                 <!-- Apps & Social -->
                 <div class="col media">
-                    <h4>Ứng dụng & MXH</h4>
+                     <h4>Ứng dụng & MXH</h4>
                     <div class="badges">
-                        <!-- Replace src with official badges for production -->
-                        <img src="./img/badge-googleplay.png" alt="Google Play" class="app-badge">
-                        <img src="./img/badge-appstore.png" alt="App Store" class="app-badge">
+                        <img src="<?= BASE_URL ?>/image/logo.png" alt="Google Play" class="app-badge">
+                        <img src="<?= BASE_URL ?>/image/logo.png" alt="App Store" class="app-badge">
                     </div>
 
                     <div class="socials" aria-label="Mạng xã hội">
@@ -404,6 +435,10 @@ if (session_status() === PHP_SESSION_NONE) {
     </footer>
 </body>
 <script type="text/javascript" src="app.js"></script>
+<script>
+    window.HOMEPAGE_PROMOS = <?= json_encode($promoBannerData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+</script>
+
 <script>
     // Đặt năm hiện tại
     document.getElementById('currentYear').textContent = new Date().getFullYear();
@@ -478,23 +513,30 @@ if (session_status() === PHP_SESSION_NONE) {
     })();
 
     // Promo Carousel - Tự động chạy và hỗ trợ vuốt (mỗi trang 3 ảnh)
-    (function(){
-        // ======= Thay ảnh ở đây =======
-        const imagePaths = [
-            '<?= BASE_URL ?>/image/banner1.jpg',
-            '<?= BASE_URL ?>/image/banner2.jpg',
-            '<?= BASE_URL ?>/image/banner3.jpg',
-            '<?= BASE_URL ?>/image/banner4.jpg',
-            '<?= BASE_URL ?>/image/banner3.jpg',
-            '<?= BASE_URL ?>/image/banner4.jpg'
-        ];
-        // =====================================
+    (function() {
+        const defaultPromoLink = '<?= BASE_URL ?>?act=khuyenmai';
+        const promoBanners = (window.HOMEPAGE_PROMOS || []).map(banner => ({
+            image: banner.image,
+            title: banner.title || 'Ưu đãi phim',
+            code: banner.code || '',
+            movie_title: banner.movie_title || '',
+            cta: banner.cta || 'Xem chi tiết',
+            link: banner.link || defaultPromoLink
+        }));
+
+        if (!promoBanners.length) {
+            return;
+        }
 
         const perPage = 3; // số ảnh trên 1 trang
         const pages = [];
 
-        for(let i=0; i<imagePaths.length; i+=perPage){
-            pages.push(imagePaths.slice(i, i+perPage));
+        for (let i = 0; i < promoBanners.length; i += perPage) {
+            pages.push(promoBanners.slice(i, i + perPage));
+        }
+
+        if (!pages.length) {
+            return;
         }
 
         const track = document.getElementById('track');
@@ -504,17 +546,43 @@ if (session_status() === PHP_SESSION_NONE) {
         if (!track || !dotsContainer || !viewport) return;
 
         // tạo DOM cho các page
-        pages.forEach((pageImgs, pageIndex) => {
+        pages.forEach((pageBanners, pageIndex) => {
             const page = document.createElement('div');
             page.className = 'page';
-            pageImgs.forEach(src => {
+            pageBanners.forEach(banner => {
                 const a = document.createElement('a');
-                a.className = 'card';
-                a.href = '#';
+                a.className = 'card promo-banner-card';
+                a.href = banner.link || defaultPromoLink;
+                const label = banner.title || banner.movie_title || 'Khuyến mãi';
+                a.title = label;
+                a.setAttribute('aria-label', label);
+
                 const img = document.createElement('img');
-                img.src = src;
-                img.alt = '';
+                img.src = banner.image;
+                img.alt = banner.movie_title ? `Khuyến mãi phim ${banner.movie_title}` : 'Khuyến mãi TicketHub';
                 a.appendChild(img);
+
+                const overlay = document.createElement('div');
+                overlay.className = 'card-overlay';
+
+                const movieEl = document.createElement('p');
+                movieEl.className = 'promo-movie';
+                movieEl.textContent = banner.movie_title || label;
+                overlay.appendChild(movieEl);
+
+                if (banner.code) {
+                    const codeEl = document.createElement('span');
+                    codeEl.className = 'promo-code';
+                    codeEl.textContent = `Mã: ${banner.code}`;
+                    overlay.appendChild(codeEl);
+                }
+
+                const ctaEl = document.createElement('span');
+                ctaEl.className = 'promo-cta';
+                ctaEl.textContent = banner.cta || 'Xem ngay';
+                overlay.appendChild(ctaEl);
+
+                a.appendChild(overlay);
                 page.appendChild(a);
             });
             track.appendChild(page);
@@ -532,31 +600,34 @@ if (session_status() === PHP_SESSION_NONE) {
         let pageIndex = 0;
         let autoTimer = null;
 
-        function update(){
+        function update() {
             track.style.transform = `translateX(-${pageIndex * 100}%)`;
             dotElems.forEach(d => d.classList.remove('active'));
-            if(dotElems[pageIndex]) dotElems[pageIndex].classList.add('active');
+            if (dotElems[pageIndex]) dotElems[pageIndex].classList.add('active');
         }
 
-        function goToPage(i){
+        function goToPage(i) {
             pageIndex = ((i % totalPages) + totalPages) % totalPages;
             update();
             restartAuto();
         }
 
         // auto-play (theo page)
-        function startAuto(){
+        function startAuto() {
             stopAuto();
             autoTimer = setInterval(() => {
                 goToPage(pageIndex + 1);
             }, 3500);
         }
 
-        function stopAuto(){
-            if(autoTimer){ clearInterval(autoTimer); autoTimer = null; }
+        function stopAuto() {
+            if (autoTimer) {
+                clearInterval(autoTimer);
+                autoTimer = null;
+            }
         }
 
-        function restartAuto(){
+        function restartAuto() {
             stopAuto();
             startAuto();
         }
@@ -569,10 +640,12 @@ if (session_status() === PHP_SESSION_NONE) {
             stopAuto();
             isDragging = true;
             startX = e.touches[0].clientX;
-        }, {passive:true});
+        }, {
+            passive: true
+        });
 
         viewport.addEventListener('touchend', (e) => {
-            if(!isDragging) return;
+            if (!isDragging) return;
             const endX = e.changedTouches[0].clientX;
             handleSwipe(startX, endX);
             isDragging = false;
@@ -587,19 +660,19 @@ if (session_status() === PHP_SESSION_NONE) {
         });
 
         window.addEventListener('mouseup', (e) => {
-            if(!isDragging) return;
+            if (!isDragging) return;
             const endX = e.clientX;
             handleSwipe(startX, endX);
             isDragging = false;
             restartAuto();
         });
 
-        function handleSwipe(start, end){
+        function handleSwipe(start, end) {
             const diff = end - start;
             const threshold = 40; // px để tính là swipe
-            if(diff < -threshold){
+            if (diff < -threshold) {
                 goToPage(pageIndex + 1);
-            } else if(diff > threshold){
+            } else if (diff > threshold) {
                 goToPage(pageIndex - 1);
             } else {
                 // small movement -> no change
@@ -621,44 +694,44 @@ if (session_status() === PHP_SESSION_NONE) {
 </script>
 
 <?php if (isset($_SESSION['user_id'])): ?>
-<script>
-    // Client-side notifications
-    (function() {
-        const notificationIcon = document.getElementById('clientNotificationIcon');
-        const notificationBadge = document.getElementById('clientNotificationBadge');
-        const notificationDropdown = document.getElementById('clientNotificationDropdown');
-        const notificationList = document.getElementById('clientNotificationList');
-        const markAllReadBtn = document.getElementById('clientMarkAllReadBtn');
+    <script>
+        // Client-side notifications
+        (function() {
+            const notificationIcon = document.getElementById('clientNotificationIcon');
+            const notificationBadge = document.getElementById('clientNotificationBadge');
+            const notificationDropdown = document.getElementById('clientNotificationDropdown');
+            const notificationList = document.getElementById('clientNotificationList');
+            const markAllReadBtn = document.getElementById('clientMarkAllReadBtn');
 
-        function loadNotifications() {
-            fetch('<?= BASE_URL ?>?act=api-client-notifications&unread_only=true')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const notifications = data.notifications || [];
-                        updateNotificationBadge(data.unread_count || 0);
-                        renderNotifications(notifications);
-                    }
-                })
-                .catch(error => console.error('Error loading notifications:', error));
-        }
-
-        function updateNotificationBadge(count) {
-            if (count > 0) {
-                notificationBadge.textContent = count > 99 ? '99+' : count;
-                notificationBadge.style.display = 'block';
-            } else {
-                notificationBadge.style.display = 'none';
-            }
-        }
-
-        function renderNotifications(notifications) {
-            if (notifications.length === 0) {
-                notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
-                return;
+            function loadNotifications() {
+                fetch('<?= BASE_URL ?>?act=api-client-notifications&unread_only=true')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const notifications = data.notifications || [];
+                            updateNotificationBadge(data.unread_count || 0);
+                            renderNotifications(notifications);
+                        }
+                    })
+                    .catch(error => console.error('Error loading notifications:', error));
             }
 
-            notificationList.innerHTML = notifications.map(notif => `
+            function updateNotificationBadge(count) {
+                if (count > 0) {
+                    notificationBadge.textContent = count > 99 ? '99+' : count;
+                    notificationBadge.style.display = 'block';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+            }
+
+            function renderNotifications(notifications) {
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                    return;
+                }
+
+                notificationList.innerHTML = notifications.map(notif => `
                 <div class="notification-item unread" data-id="${notif.id}">
                     <div class="notification-content">
                         <div class="notification-title">${notif.title}</div>
@@ -669,101 +742,101 @@ if (session_status() === PHP_SESSION_NONE) {
                 </div>
             `).join('');
 
-            // Add click event to mark as read
-            notificationList.querySelectorAll('.notification-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    // Don't trigger if clicking the link
-                    if (e.target.tagName === 'A') return;
-                    
-                    const id = this.dataset.id;
-                    if (id) {
-                        markAsRead(id, this);
-                    }
+                // Add click event to mark as read
+                notificationList.querySelectorAll('.notification-item').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        // Don't trigger if clicking the link
+                        if (e.target.tagName === 'A') return;
+
+                        const id = this.dataset.id;
+                        if (id) {
+                            markAsRead(id, this);
+                        }
+                    });
                 });
-            });
-        }
+            }
 
-        function markAsRead(id, element) {
-            const formData = new FormData();
-            formData.append('id', id);
-            
-            fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-read', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateNotificationBadge(data.unread_count || 0);
-                        // Remove the notification item from list
-                        if (element) {
-                            element.remove();
-                        // If no more notifications, show empty message
-                        if (notificationList.children.length === 0) {
-                            notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
-                        }
-                        }
-                    }
-                })
-                .catch(error => console.error('Error marking notification as read:', error));
-        }
+            function markAsRead(id, element) {
+                const formData = new FormData();
+                formData.append('id', id);
 
-        if (markAllReadBtn) {
-            markAllReadBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                
-                fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-all-read', {
-                    method: 'POST'
-                })
+                fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-read', {
+                        method: 'POST',
+                        body: formData
+                    })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Update badge to 0 (will hide it)
-                            updateNotificationBadge(0);
-                            // Clear all notifications from list immediately
-                            notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                            updateNotificationBadge(data.unread_count || 0);
+                            // Remove the notification item from list
+                            if (element) {
+                                element.remove();
+                                // If no more notifications, show empty message
+                                if (notificationList.children.length === 0) {
+                                    notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                                }
+                            }
                         }
                     })
-                    .catch(error => console.error('Error marking all as read:', error));
-            });
-        }
+                    .catch(error => console.error('Error marking notification as read:', error));
+            }
 
-        if (notificationIcon) {
-            notificationIcon.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
-                    notificationDropdown.style.display = 'block';
-                    loadNotifications();
-                } else {
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+
+                    fetch('<?= BASE_URL ?>?act=api-client-notifications-mark-all-read', {
+                            method: 'POST'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update badge to 0 (will hide it)
+                                updateNotificationBadge(0);
+                                // Clear all notifications from list immediately
+                                notificationList.innerHTML = '<div class="notification-empty">Không có thông báo mới</div>';
+                            }
+                        })
+                        .catch(error => console.error('Error marking all as read:', error));
+                });
+            }
+
+            if (notificationIcon) {
+                notificationIcon.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (notificationDropdown.style.display === 'none' || notificationDropdown.style.display === '') {
+                        notificationDropdown.style.display = 'block';
+                        loadNotifications();
+                    } else {
+                        notificationDropdown.style.display = 'none';
+                    }
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                if (notificationDropdown && notificationIcon &&
+                    !notificationDropdown.contains(e.target) &&
+                    !notificationIcon.contains(e.target) &&
+                    !e.target.closest('.notification-wrapper')) {
                     notificationDropdown.style.display = 'none';
                 }
             });
-        }
 
-        document.addEventListener('click', function(e) {
-            if (notificationDropdown && notificationIcon && 
-                !notificationDropdown.contains(e.target) && 
-                !notificationIcon.contains(e.target) &&
-                !e.target.closest('.notification-wrapper')) {
-                notificationDropdown.style.display = 'none';
+            function formatTime(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diff = Math.floor((now - date) / 1000);
+                if (diff < 60) return 'Vừa xong';
+                if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
+                if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
+                return date.toLocaleDateString('vi-VN');
             }
-        });
 
-        function formatTime(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diff = Math.floor((now - date) / 1000);
-            if (diff < 60) return 'Vừa xong';
-            if (diff < 3600) return Math.floor(diff / 60) + ' phút trước';
-            if (diff < 86400) return Math.floor(diff / 3600) + ' giờ trước';
-            return date.toLocaleDateString('vi-VN');
-        }
-
-        // Load notifications on page load and refresh every 30 seconds
-        loadNotifications();
-        setInterval(loadNotifications, 30000);
-    })();
-</script>
+            // Load notifications on page load and refresh every 30 seconds
+            loadNotifications();
+            setInterval(loadNotifications, 30000);
+        })();
+    </script>
 <?php endif; ?>
 
 </html>

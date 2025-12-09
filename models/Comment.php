@@ -44,13 +44,10 @@ class Comment
             $sql = "SELECT comments.*, 
                     users.full_name AS user_name,
                     users.email AS user_email,
-                    movies.title AS movie_title,
-                    cinemas.name AS cinema_name,
-                    cinemas.id AS cinema_id
+                    movies.title AS movie_title
                     FROM comments
                     LEFT JOIN users ON comments.user_id = users.id
                     LEFT JOIN movies ON comments.movie_id = movies.id
-                    LEFT JOIN cinemas ON comments.cinema_id = cinemas.id
                     ORDER BY comments.created_at DESC"; // Sắp xếp mới nhất trước
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
@@ -75,13 +72,10 @@ class Comment
                     users.full_name AS user_name,
                     users.email AS user_email,
                     movies.title AS movie_title,
-                    movies.image AS movie_image,
-                    cinemas.name AS cinema_name,
-                    cinemas.id AS cinema_id
+                    movies.image AS movie_image
                     FROM comments
                     LEFT JOIN users ON comments.user_id = users.id
                     LEFT JOIN movies ON comments.movie_id = movies.id
-                    LEFT JOIN cinemas ON comments.cinema_id = cinemas.id
                     WHERE comments.id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
@@ -97,26 +91,45 @@ class Comment
      * Mục đích: Lấy tất cả bình luận của 1 phim (hiển thị trong trang chi tiết phim)
      * 
      * @param int $movieId ID của phim
+     * @param int|null $cinemaId Lọc theo rạp (null = tất cả)
      * @return array Danh sách bình luận của phim đó
      */
-    public function getByMovie($movieId)
+    public function getByMovie($movieId, $cinemaId = null)
     {
         try {
+            $whereClause = "WHERE comments.movie_id = :movie_id";
+            $params = [':movie_id' => $movieId];
+            
+            // Thêm filter theo rạp nếu có
+            if ($cinemaId) {
+                $whereClause .= " AND EXISTS (
+                    SELECT 1 FROM showtimes 
+                    INNER JOIN rooms ON showtimes.room_id = rooms.id 
+                    WHERE showtimes.movie_id = comments.movie_id 
+                    AND rooms.cinema_id = :cinema_id
+                )";
+                $params[':cinema_id'] = $cinemaId;
+            }
+            
             $sql = "SELECT comments.*, 
                     users.full_name AS user_name,
                     users.email AS user_email,
-                    cinemas.name AS cinema_name,
-                    cinemas.id AS cinema_id
+                    (SELECT cinemas.name 
+                     FROM showtimes 
+                     INNER JOIN rooms ON showtimes.room_id = rooms.id 
+                     INNER JOIN cinemas ON rooms.cinema_id = cinemas.id 
+                     WHERE showtimes.movie_id = comments.movie_id 
+                     LIMIT 1) AS cinema_name
                     FROM comments
                     LEFT JOIN users ON comments.user_id = users.id
-                    LEFT JOIN cinemas ON comments.cinema_id = cinemas.id
-                    WHERE comments.movie_id = :movie_id
+                    " . $whereClause . "
                     ORDER BY comments.created_at DESC"; // Sắp xếp mới nhất trước
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([':movie_id' => $movieId]);
+            $stmt->execute($params);
             return $stmt->fetchAll(); // Trả về mảng bình luận của phim
         } catch (Exception $e) {
             debug($e);
+            return [];
         }
     }
 
@@ -146,32 +159,20 @@ class Comment
     }
 
     /**
-     * LẤY BÌNH LUẬN THEO USER_ID, MOVIE_ID VÀ CINEMA_ID
+     * LẤY BÌNH LUẬN THEO USER_ID VÀ MOVIE_ID
      * 
-     * Mục đích: Kiểm tra user đã đánh giá phim này ở rạp này chưa (mỗi user chỉ đánh giá 1 lần/phim/rạp)
+     * Mục đích: Kiểm tra user đã đánh giá phim này chưa (mỗi user chỉ đánh giá 1 lần/phim)
      * 
      * @param int $userId ID của user
      * @param int $movieId ID của phim
-     * @param int|null $cinemaId ID của rạp (bắt buộc)
-     * @return array|null Bình luận của user cho phim ở rạp đó hoặc null nếu chưa đánh giá
+     * @return array|null Bình luận của user cho phim đó hoặc null nếu chưa đánh giá
      */
-    public function getByUserAndMovie($userId, $movieId, $cinemaId = null)
+    public function getByUserAndMovie($userId, $movieId)
     {
         try {
-            if ($cinemaId) {
-                $sql = "SELECT * FROM comments WHERE user_id = :user_id AND movie_id = :movie_id AND cinema_id = :cinema_id";
-                $stmt = $this->conn->prepare($sql);
-                $stmt->execute([
-                    ':user_id' => $userId, 
-                    ':movie_id' => $movieId,
-                    ':cinema_id' => $cinemaId
-                ]);
-            } else {
-                // Nếu không có cinema_id, tìm theo user và movie (backward compatibility)
-                $sql = "SELECT * FROM comments WHERE user_id = :user_id AND movie_id = :movie_id LIMIT 1";
-                $stmt = $this->conn->prepare($sql);
-                $stmt->execute([':user_id' => $userId, ':movie_id' => $movieId]);
-            }
+            $sql = "SELECT * FROM comments WHERE user_id = :user_id AND movie_id = :movie_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':user_id' => $userId, ':movie_id' => $movieId]);
             return $stmt->fetch();
         } catch (Exception $e) {
             debug($e);
@@ -181,51 +182,85 @@ class Comment
 
     /**
      * Tìm kiếm bình luận
+     * 
+     * @param string $keyword Từ khóa tìm kiếm
+     * @param int|null $cinemaId Lọc theo rạp (null = tất cả)
+     * @return array Danh sách bình luận
      */
-    public function search($keyword)
+    public function search($keyword, $cinemaId = null)
     {
         try {
+            $whereClause = "WHERE (comments.content LIKE :keyword 
+                    OR users.full_name LIKE :keyword
+                    OR movies.title LIKE :keyword)";
+            $params = [':keyword' => '%' . $keyword . '%'];
+            
+            // Thêm filter theo rạp nếu có
+            if ($cinemaId) {
+                $whereClause .= " AND EXISTS (
+                    SELECT 1 FROM showtimes 
+                    INNER JOIN rooms ON showtimes.room_id = rooms.id 
+                    WHERE showtimes.movie_id = comments.movie_id 
+                    AND rooms.cinema_id = :cinema_id
+                )";
+                $params[':cinema_id'] = $cinemaId;
+            }
+            
             $sql = "SELECT comments.*, 
                     users.full_name AS user_name,
                     users.email AS user_email,
                     movies.title AS movie_title,
-                    cinemas.name AS cinema_name,
-                    cinemas.id AS cinema_id
+                    (SELECT cinemas.name 
+                     FROM showtimes 
+                     INNER JOIN rooms ON showtimes.room_id = rooms.id 
+                     INNER JOIN cinemas ON rooms.cinema_id = cinemas.id 
+                     WHERE showtimes.movie_id = comments.movie_id 
+                     LIMIT 1) AS cinema_name
                     FROM comments
                     LEFT JOIN users ON comments.user_id = users.id
                     LEFT JOIN movies ON comments.movie_id = movies.id
-                    LEFT JOIN cinemas ON comments.cinema_id = cinemas.id
-                    WHERE comments.content LIKE :keyword 
-                    OR users.full_name LIKE :keyword
-                    OR movies.title LIKE :keyword
+                    " . $whereClause . "
                     ORDER BY comments.created_at DESC";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([':keyword' => '%' . $keyword . '%']);
+            $stmt->execute($params);
             return $stmt->fetchAll();
         } catch (Exception $e) {
             debug($e);
+            return [];
         }
     }
 
     /**
      * Lấy bình luận với phân trang
+     * 
+     * @param int $page Số trang
+     * @param int $perPage Số bình luận mỗi trang
+     * @param int|null $cinemaId Lọc theo rạp (null = tất cả)
+     * @return array Dữ liệu phân trang
      */
     public function paginate($page = 1, $perPage = 10, $cinemaId = null)
     {
         try {
             $offset = ($page - 1) * $perPage;
             
-            // Xây dựng WHERE clause để lọc theo cinema_id (từ comments.cinema_id)
-            $whereClause = '';
+            // Xây dựng WHERE clause cho cinema filter
+            $whereClause = "";
             $params = [];
             
             if ($cinemaId) {
-                $whereClause = "WHERE comments.cinema_id = :cinema_id";
+                // Lọc theo rạp: JOIN qua showtimes -> rooms -> cinemas
+                // Lấy các movie_id có showtimes thuộc rạp này
+                $whereClause = "WHERE EXISTS (
+                    SELECT 1 FROM showtimes 
+                    INNER JOIN rooms ON showtimes.room_id = rooms.id 
+                    WHERE showtimes.movie_id = comments.movie_id 
+                    AND rooms.cinema_id = :cinema_id
+                )";
                 $params[':cinema_id'] = $cinemaId;
             }
             
             // Đếm tổng số bình luận
-            $countSql = "SELECT COUNT(*) as total FROM comments {$whereClause}";
+            $countSql = "SELECT COUNT(*) as total FROM comments " . $whereClause;
             $countStmt = $this->conn->prepare($countSql);
             $countStmt->execute($params);
             $total = $countStmt->fetch()['total'];
@@ -235,17 +270,19 @@ class Comment
                     users.full_name AS user_name,
                     users.email AS user_email,
                     movies.title AS movie_title,
-                    cinemas.name AS cinema_name,
-                    cinemas.id AS cinema_id
+                    (SELECT cinemas.name 
+                     FROM showtimes 
+                     INNER JOIN rooms ON showtimes.room_id = rooms.id 
+                     INNER JOIN cinemas ON rooms.cinema_id = cinemas.id 
+                     WHERE showtimes.movie_id = comments.movie_id 
+                     LIMIT 1) AS cinema_name
                     FROM comments
                     LEFT JOIN users ON comments.user_id = users.id
                     LEFT JOIN movies ON comments.movie_id = movies.id
-                    LEFT JOIN cinemas ON comments.cinema_id = cinemas.id
-                    {$whereClause}
+                    " . $whereClause . "
                     ORDER BY comments.created_at DESC
                     LIMIT :limit OFFSET :offset";
             $stmt = $this->conn->prepare($sql);
-            
             foreach ($params as $key => $value) {
                 $stmt->bindValue($key, $value);
             }
@@ -265,6 +302,13 @@ class Comment
             ];
         } catch (Exception $e) {
             debug($e);
+            return [
+                'data' => [],
+                'page' => 1,
+                'perPage' => $perPage,
+                'total' => 0,
+                'totalPages' => 0
+            ];
         }
     }
 
@@ -277,13 +321,11 @@ class Comment
             $sql = "INSERT INTO comments (
                 user_id,
                 movie_id,
-                cinema_id,
                 rating,
                 content
             ) VALUES (
                 :user_id,
                 :movie_id,
-                :cinema_id,
                 :rating,
                 :content
             )";
@@ -291,14 +333,12 @@ class Comment
             $stmt->execute([
                 ':user_id' => $data['user_id'] ?? null,
                 ':movie_id' => $data['movie_id'] ?? null,
-                ':cinema_id' => $data['cinema_id'] ?? null,
                 ':rating' => $data['rating'] ?? null,
                 ':content' => $data['content'] ?? null
             ]);
             return $this->conn->lastInsertId();
         } catch (Exception $e) {
             debug($e);
-            return false;
         }
     }
 
@@ -341,13 +381,29 @@ class Comment
 
     /**
      * Đếm số lượng bình luận
+     * 
+     * @param int|null $cinemaId Lọc theo rạp (null = tất cả)
+     * @return int Số lượng bình luận
      */
-    public function count()
+    public function count($cinemaId = null)
     {
         try {
-            $sql = "SELECT COUNT(*) as count FROM comments";
+            $whereClause = "";
+            $params = [];
+            
+            if ($cinemaId) {
+                $whereClause = "WHERE EXISTS (
+                    SELECT 1 FROM showtimes 
+                    INNER JOIN rooms ON showtimes.room_id = rooms.id 
+                    WHERE showtimes.movie_id = comments.movie_id 
+                    AND rooms.cinema_id = :cinema_id
+                )";
+                $params[':cinema_id'] = $cinemaId;
+            }
+            
+            $sql = "SELECT COUNT(*) as count FROM comments " . $whereClause;
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute();
+            $stmt->execute($params);
             $result = $stmt->fetch();
             return $result['count'] ?? 0;
         } catch (Exception $e) {

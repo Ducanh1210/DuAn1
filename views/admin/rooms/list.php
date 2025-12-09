@@ -17,6 +17,48 @@
         <?php unset($_SESSION['error']); ?>
       <?php endif; ?>
 
+      <!-- Filter và Search -->
+      <div class="row mb-3">
+        <div class="col-md-12">
+          <form method="GET" action="" class="d-flex gap-2 flex-wrap align-items-end">
+            <input type="hidden" name="act" value="rooms">
+            <?php 
+            require_once __DIR__ . '/../../../commons/auth.php';
+            $isAdmin = isAdmin();
+            ?>
+            <?php if ($isAdmin && !empty($cinemas)): ?>
+              <div style="min-width: 200px;">
+                <label for="cinema_id" class="form-label small mb-1">Lọc theo rạp:</label>
+                <select name="cinema_id" id="cinema_id" class="form-select form-select-sm">
+                  <option value="">Tất cả rạp</option>
+                  <?php foreach ($cinemas as $cinema): ?>
+                    <option value="<?= $cinema['id'] ?>" <?= ($cinemaFilter ?? null) == $cinema['id'] ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($cinema['name']) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+            <?php endif; ?>
+            <div style="flex: 1; min-width: 250px;">
+              <label for="search" class="form-label small mb-1">Tìm kiếm:</label>
+              <input type="text" name="search" id="search" class="form-control form-control-sm" 
+                     placeholder="Tìm theo tên phòng, mã phòng, tên rạp..." 
+                     value="<?= htmlspecialchars($searchKeyword ?? '') ?>">
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-search"></i> Tìm kiếm
+              </button>
+              <?php if ($searchKeyword || ($cinemaFilter ?? null)): ?>
+                <a href="<?= BASE_URL ?>?act=rooms" class="btn btn-outline-secondary btn-sm">
+                  <i class="bi bi-x-circle"></i> Xóa bộ lọc
+                </a>
+              <?php endif; ?>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <div class="table-responsive">
         <table class="table table-striped table-hover">
           <thead>
@@ -83,6 +125,21 @@
       
       <!-- Pagination -->
       <?php if (isset($pagination) && $pagination['totalPages'] > 1): ?>
+        <?php
+        // Tạo URL với các tham số filter
+        $queryParams = ['act' => 'rooms'];
+        if (!empty($searchKeyword)) {
+            $queryParams['search'] = $searchKeyword;
+        }
+        if (!empty($cinemaFilter)) {
+            $queryParams['cinema_id'] = $cinemaFilter;
+        }
+        
+        function buildPaginationUrl($baseUrl, $queryParams, $page) {
+            $queryParams['page'] = $page;
+            return $baseUrl . '?' . http_build_query($queryParams);
+        }
+        ?>
         <div class="d-flex justify-content-between align-items-center mt-4">
           <div class="text-muted">
             Hiển thị <?= count($data) ?> / <?= $pagination['total'] ?> phòng (Trang <?= $pagination['currentPage'] ?> / <?= $pagination['totalPages'] ?>)
@@ -93,7 +150,7 @@
               <!-- Previous -->
               <?php if ($pagination['currentPage'] > 1): ?>
                 <li class="page-item">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=rooms&page=<?= $pagination['currentPage'] - 1 ?>">
+                  <a class="page-link" href="<?= buildPaginationUrl(BASE_URL, $queryParams, $pagination['currentPage'] - 1) ?>">
                     <i class="bi bi-chevron-left"></i> Trước
                   </a>
                 </li>
@@ -110,7 +167,7 @@
               
               if ($startPage > 1): ?>
                 <li class="page-item">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=rooms&page=1">1</a>
+                  <a class="page-link" href="<?= buildPaginationUrl(BASE_URL, $queryParams, 1) ?>">1</a>
                 </li>
                 <?php if ($startPage > 2): ?>
                   <li class="page-item disabled">
@@ -121,7 +178,7 @@
               
               <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                 <li class="page-item <?= $i == $pagination['currentPage'] ? 'active' : '' ?>">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=rooms&page=<?= $i ?>"><?= $i ?></a>
+                  <a class="page-link" href="<?= buildPaginationUrl(BASE_URL, $queryParams, $i) ?>"><?= $i ?></a>
                 </li>
               <?php endfor; ?>
               
@@ -132,14 +189,14 @@
                   </li>
                 <?php endif; ?>
                 <li class="page-item">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=rooms&page=<?= $pagination['totalPages'] ?>"><?= $pagination['totalPages'] ?></a>
+                  <a class="page-link" href="<?= buildPaginationUrl(BASE_URL, $queryParams, $pagination['totalPages']) ?>"><?= $pagination['totalPages'] ?></a>
                 </li>
               <?php endif; ?>
               
               <!-- Next -->
               <?php if ($pagination['currentPage'] < $pagination['totalPages']): ?>
                 <li class="page-item">
-                  <a class="page-link" href="<?= BASE_URL ?>?act=rooms&page=<?= $pagination['currentPage'] + 1 ?>">
+                  <a class="page-link" href="<?= buildPaginationUrl(BASE_URL, $queryParams, $pagination['currentPage'] + 1) ?>">
                     Sau <i class="bi bi-chevron-right"></i>
                   </a>
                 </li>

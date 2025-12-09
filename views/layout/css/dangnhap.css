@@ -343,6 +343,15 @@ input[type="checkbox"] {
   text-decoration: underline;
   font-weight: 700;
   font-size: 13px;
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 10;
+  display: inline-block;
+}
+.forgot:hover {
+  color: #7ac5ff;
+  text-decoration: underline;
 }
 
 /* error / helper text */

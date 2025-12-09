@@ -11,6 +11,16 @@ $maxColumns = 12;
 ?>
 
 <style>
+    /* Force reset zoom khi trang load */
+    html,
+    body {
+        zoom: 1 !important;
+        -webkit-text-size-adjust: 100% !important;
+        -moz-text-size-adjust: 100% !important;
+        -ms-text-size-adjust: 100% !important;
+        text-size-adjust: 100% !important;
+    }
+
     .seat-selection-container {
         background: #2a2a2a;
         min-height: 100vh;
@@ -118,6 +128,7 @@ $maxColumns = 12;
         position: relative !important;
         margin-left: auto !important;
         margin-right: auto !important;
+        transform: translateX(-30px) !important;
     }
 
     .seat-selection-container .seat-row::after {
@@ -260,9 +271,59 @@ $maxColumns = 12;
     }
 
     .seat-selection-container .seat.disabled-column {
-        opacity: 0.3 !important;
+        background: #4a4a4a !important;
+        color: transparent !important;
+        opacity: 0.5 !important;
         cursor: not-allowed !important;
         pointer-events: none !important;
+        position: relative !important;
+    }
+
+    .seat-selection-container .seat.disabled-column::after {
+        content: '✕' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        color: #fff !important;
+        z-index: 2 !important;
+        line-height: 1 !important;
+    }
+
+    /* Hàng bị disable khi chọn 1 ghế lẻ */
+    .seat-selection-container .seat-row.disabled-row {
+        opacity: 0.4 !important;
+        pointer-events: none !important;
+    }
+
+    .seat-selection-container .seat-row.disabled-row .seat {
+        background: #2a2a2a !important;
+        color: transparent !important;
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+        position: relative !important;
+        border-color: #333 !important;
+    }
+
+    .seat-selection-container .seat-row.disabled-row .seat::after {
+        content: '✕' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: #999 !important;
+        z-index: 2 !important;
+        line-height: 1 !important;
+    }
+
+    .seat-selection-container .seat-row.disabled-row .row-label {
+        color: #666 !important;
+        opacity: 0.5 !important;
     }
 
 
@@ -718,7 +779,16 @@ $maxColumns = 12;
                 }
             }
 
-            const groupSeats = selectAdjacentSeatsSmart(seatElement, seatsToSelect, allowLastSingleSeat);
+            const isPairSelection = seatsToSelect >= 2 && selectedAdjacentCount === 2;
+            let groupSeats = [];
+
+            if (isPairSelection) {
+                groupSeats = selectAdjacentSeatsForCouple(seatElement);
+            }
+
+            if (groupSeats.length === 0) {
+                groupSeats = selectAdjacentSeatsSmart(seatElement, seatsToSelect, allowLastSingleSeat);
+            }
             if (groupSeats.length > 0) {
                 selectedGroups.push({
                     count: seatsToSelect,
@@ -831,6 +901,65 @@ $maxColumns = 12;
         return seatsToSelect;
     }
 
+    function selectAdjacentSeatsForCouple(startSeatElement) {
+        const row = startSeatElement.closest('.seat-row');
+        if (!row) return [];
+
+        const rowLabel = (row.getAttribute('data-row-label') || '').toUpperCase();
+        const startColumn = parseInt(startSeatElement.getAttribute('data-seat-column')) || 0;
+        if (!startColumn) {
+            return [];
+        }
+
+        const seatMap = {};
+        row.querySelectorAll('.seat').forEach(seat => {
+            const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
+            if (col > 0) {
+                seatMap[col] = seat;
+            }
+        });
+
+        const isSeatSelectable = seat =>
+            seat &&
+            !seat.classList.contains('booked') &&
+            !seat.classList.contains('maintenance') &&
+            !seat.classList.contains('selected') &&
+            !seat.classList.contains('disabled-column');
+
+        if (!isSeatSelectable(seatMap[startColumn])) {
+            return [];
+        }
+
+        const partnerColumn = (startColumn % 2 === 0) ? startColumn - 1 : startColumn + 1;
+
+        if (partnerColumn < 1 || partnerColumn > maxColumns || !isInSameBlock(startColumn, partnerColumn)) {
+            return [];
+        }
+
+        if (!isSeatSelectable(seatMap[partnerColumn])) {
+            return [];
+        }
+
+        const selectedSeatElements = [seatMap[startColumn], seatMap[partnerColumn]].sort((a, b) => {
+            const colA = parseInt(a.getAttribute('data-seat-column')) || 0;
+            const colB = parseInt(b.getAttribute('data-seat-column')) || 0;
+            return colA - colB;
+        });
+
+        return selectedSeatElements.map(seat => {
+            seat.classList.add('selected');
+            seat.classList.remove('vip', 'available');
+            return {
+                id: seat.getAttribute('data-seat-id'),
+                label: seat.getAttribute('data-seat-label'),
+                type: seat.getAttribute('data-seat-type'),
+                status: seat.getAttribute('data-seat-status'),
+                row: rowLabel,
+                column: parseInt(seat.getAttribute('data-seat-column')) || 0
+            };
+        });
+    }
+
     const ALLOWED_SINGLE_COLUMNS = [1, 3, 4, 6, 7, 9, 10, 12];
 
     function getBlockForColumn(col) {
@@ -918,7 +1047,10 @@ $maxColumns = 12;
         const candidates = [];
 
         // Tạo các candidate ranges trong cùng block
-        for (let offset = 0; offset < count; offset++) {
+        // Khi chọn 2 ghế, ưu tiên offset lớn hơn (chọn về bên trái) trước
+        const offsetOrder = count === 2 ? [1, 0] : [];
+        for (let i = 0; i < count; i++) {
+            const offset = offsetOrder.length > 0 ? (i < offsetOrder.length ? offsetOrder[i] : i) : i;
             const blockStart = startColumn - offset;
             const blockEnd = blockStart + count - 1;
 
@@ -978,12 +1110,6 @@ $maxColumns = 12;
             const touchesRight = gapRight === 0 ? 0 : 1;
             const touchesBoth = touchesLeft + touchesRight;
 
-            // Logic đặc biệt: nếu click D5 và đã có D1,D2,D3, chọn D5,D4 thay vì D5,D6
-            let preferLeft = false;
-            if (nearestLeft !== null && gapLeft === 1 && gapRight >= 1) {
-                preferLeft = true;
-            }
-
             candidates.push({
                 seats: seatsList,
                 rowLabel,
@@ -991,11 +1117,11 @@ $maxColumns = 12;
                 priority: {
                     isolatedCount, // Số ghế đơn lẻ (ưu tiên thấp hơn = tốt hơn)
                     touchesBoth, // Số ghế đã chọn được ghép (ưu tiên thấp hơn = tốt hơn)
-                    preferLeft: preferLeft ? 0 : 1, // Ưu tiên chọn về bên trái
+                    preferLeft: 0, // Luôn ưu tiên chọn về bên trái
                     gapLeft,
                     gapRight,
                     centerDistance: Math.abs(startColumn - ((blockStart + blockEnd) / 2)),
-                    leanOffset: offset,
+                    leanOffset: offset, // offset lớn hơn = ưu tiên hơn (chọn về bên trái)
                     blockStart
                 }
             });
@@ -1006,14 +1132,19 @@ $maxColumns = 12;
             return [];
         }
 
-        // Sắp xếp: ưu tiên ít ghế đơn lẻ, ghép với ghế đã chọn, chọn về bên trái
+        // Sắp xếp: ưu tiên ít ghế đơn lẻ, ghép với ghế đã chọn, ưu tiên offset lớn (chọn về bên trái)
         candidates.sort((a, b) => {
-            const keys = ['isolatedCount', 'touchesBoth', 'preferLeft', 'gapLeft', 'gapRight', 'centerDistance', 'leanOffset', 'blockStart'];
+            const keys = ['isolatedCount', 'touchesBoth', 'preferLeft', 'gapLeft', 'gapRight', 'centerDistance', 'blockStart'];
             for (const key of keys) {
                 const diff = a.priority[key] - b.priority[key];
                 if (Math.abs(diff) > 0.0001) {
                     return diff;
                 }
+            }
+            // Ưu tiên offset lớn hơn (chọn về bên trái) - sắp xếp ngược lại
+            const offsetDiff = (b.priority.leanOffset || 0) - (a.priority.leanOffset || 0);
+            if (Math.abs(offsetDiff) > 0.0001) {
+                return offsetDiff;
             }
             return 0;
         });
@@ -1296,12 +1427,21 @@ $maxColumns = 12;
     function updateDisabledColumns() {
         const totalPeople = adultCount + studentCount;
 
+        // Danh sách các cột bị disable khi chọn 1 ghế lẻ (cột 2, 5, 8, 11)
+        const DISABLED_COLUMNS_SINGLE = [2, 5, 8, 11];
+
+        // Bỏ disabled hàng (không cần disable hàng nữa)
+        document.querySelectorAll('.seat-row').forEach(row => {
+            row.classList.remove('disabled-row');
+        });
+
         document.querySelectorAll('.seat').forEach(seat => {
             const col = parseInt(seat.getAttribute('data-seat-column')) || 0;
 
             if (totalPeople === 1 && selectedAdjacentCount === 1) {
-                // Khi chọn 1 vé, chỉ cho phép các cột được chỉ định
-                if (col > 0 && !ALLOWED_SINGLE_COLUMNS.includes(col) &&
+                // Khi chọn 1 vé, disable các cột 2, 5, 8, 11 và chỉ cho phép các cột được chỉ định
+                if (col > 0 &&
+                    (DISABLED_COLUMNS_SINGLE.includes(col) || !ALLOWED_SINGLE_COLUMNS.includes(col)) &&
                     !seat.classList.contains('booked') &&
                     !seat.classList.contains('maintenance') &&
                     !seat.classList.contains('selected')) {
@@ -1327,14 +1467,91 @@ $maxColumns = 12;
         });
     }
 
+    // Reset viewport khi trang load để tránh zoom
+    function resetViewport() {
+        // Reset zoom level
+        if (document.body.style.zoom) {
+            document.body.style.zoom = '';
+        }
+        // Reset transform scale nếu có
+        if (document.body.style.transform) {
+            document.body.style.transform = '';
+        }
+        // Reset document zoom
+        if (document.documentElement.style.zoom) {
+            document.documentElement.style.zoom = '';
+        }
+        // Reset viewport meta tag
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        }
+        // Force reset browser zoom
+        if (window.devicePixelRatio && window.devicePixelRatio !== 1) {
+            // Nếu có zoom, reset về 1
+            document.body.style.zoom = '1';
+        }
+    }
+
+    // Gọi reset viewport ngay khi script chạy
+    resetViewport();
+
+    // Reset lại khi URL có parameter _reset_zoom, _t, _r hoặc _nocache
+    if (window.location.search.includes('_reset_zoom') ||
+        window.location.search.includes('_t=') ||
+        window.location.search.includes('_nocache=')) {
+        // Force reload tất cả CSS để tránh cache giao diện cũ
+        const links = document.querySelectorAll('link[rel="stylesheet"]');
+        links.forEach(link => {
+            if (link.href) {
+                const url = new URL(link.href);
+                // Xóa version cũ nếu có
+                url.searchParams.delete('v');
+                url.searchParams.delete('_nocache');
+                // Thêm version mới
+                url.searchParams.set('v', Date.now());
+                link.href = url.toString();
+            }
+        });
+
+        // Reset viewport ngay lập tức
+        resetViewport();
+
+        // Force reload toàn bộ trang nếu có parameter _nocache để đảm bảo load đúng phiên bản mới
+        if (window.location.search.includes('_nocache=')) {
+            // Đợi một chút để CSS được reload, sau đó reload trang
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 100);
+            return;
+        }
+
+        // Xóa parameters khỏi URL sau khi reset
+        setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('_reset_zoom');
+            url.searchParams.delete('_t');
+            url.searchParams.delete('_r');
+            url.searchParams.delete('_nocache');
+            window.history.replaceState({}, '', url.toString());
+            // Reset lại viewport một lần nữa sau khi xóa parameter
+            resetViewport();
+        }, 100);
+
+        // Reset lại sau 300ms để đảm bảo
+        setTimeout(resetViewport, 300);
+    }
+
     // Gọi updateDisabledColumns và hideSeatsOver12 khi trang tải xong
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
+            resetViewport();
             hideSeatsOver12();
             updateDisabledColumns();
         });
     } else {
         // DOM đã tải xong
+        resetViewport();
         hideSeatsOver12();
         updateDisabledColumns();
     }

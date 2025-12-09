@@ -19,6 +19,11 @@
         </div>
       <?php endif; ?>
 
+      <?php
+        $movies = $movies ?? [];
+        $selectedMovieId = $_POST['movie_id'] ?? ($discount['movie_id'] ?? '');
+      ?>
+
       <form action="" method="post">
         <div class="row">
           <div class="col-md-8">
@@ -29,7 +34,7 @@
                      id="code" 
                      class="form-control <?= !empty($errors['code']) ? 'is-invalid' : '' ?>" 
                      value="<?= htmlspecialchars($_POST['code'] ?? $discount['code']) ?>" 
-                     required
+                     
                      placeholder="VD: WEEKEND25, HOLIDAY30..."
                      style="text-transform: uppercase;">
               <small class="form-text text-muted">Mã sẽ được tự động chuyển thành chữ in hoa</small>
@@ -45,11 +50,49 @@
                      id="title" 
                      class="form-control <?= !empty($errors['title']) ? 'is-invalid' : '' ?>" 
                      value="<?= htmlspecialchars($_POST['title'] ?? $discount['title']) ?>" 
-                     required
+                     
                      placeholder="VD: Giảm giá cuối tuần 25%">
               <?php if (!empty($errors['title'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['title'] ?></div>
               <?php endif; ?>
+            </div>
+
+            <div class="mb-3">
+              <label for="movie_id" class="form-label">Áp dụng cho phim (tùy chọn)</label>
+              <select name="movie_id" 
+                      id="movie_id" 
+                      class="form-select <?= !empty($errors['movie_id']) ? 'is-invalid' : '' ?>">
+                <option value=""><?= empty($movies) ? 'Hiện chưa có phim để gắn' : 'Không giới hạn phim (áp dụng toàn bộ)'; ?></option>
+                <?php foreach ($movies as $movie): ?>
+                  <?php
+                    $movieId = (int)($movie['id'] ?? 0);
+                    $isSelected = $selectedMovieId !== '' && (int)$selectedMovieId === $movieId;
+                    $movieStatus = $movie['status'] ?? '';
+                    $statusLabel = $movieStatus === 'active' ? 'Đang chiếu' : ($movieStatus === 'upcoming' ? 'Sắp chiếu' : 'Không hoạt động');
+                  ?>
+                  <option value="<?= $movieId ?>"
+                          data-title="<?= htmlspecialchars($movie['title'] ?? '') ?>"
+                          data-image="<?= htmlspecialchars($movie['image'] ?? '') ?>"
+                          data-status="<?= htmlspecialchars($movieStatus) ?>"
+                          <?= $isSelected ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($movie['title'] ?? 'Tên phim') ?> (<?= $statusLabel ?>)
+                  </option>
+                <?php endforeach; ?>
+              </select>
+              <small class="form-text text-muted">Chọn phim để biến mã giảm giá thành ưu đãi dành riêng cho phim đó.</small>
+              <?php if (!empty($errors['movie_id'])): ?>
+                <div class="text-danger small mt-1"><?= $errors['movie_id'] ?></div>
+              <?php endif; ?>
+            </div>
+
+            <div id="movie-preview-card" class="card border-info mb-3 d-none">
+              <div class="card-body d-flex align-items-center">
+                <img id="movie-preview-image" src="" alt="Poster phim" class="rounded me-3" style="width: 80px; height: 120px; object-fit: cover; display: none;">
+                <div>
+                  <h6 class="mb-1" id="movie-preview-title">Tên phim sẽ hiển thị tại đây</h6>
+                  <p class="mb-0 text-muted small">Poster phim sẽ được gắn vào thẻ mã giảm giá trên trang Khuyến mãi.</p>
+                </div>
+              </div>
             </div>
 
             <div class="row">
@@ -61,10 +104,11 @@
                          id="discount_percent" 
                          class="form-control <?= !empty($errors['discount_percent']) ? 'is-invalid' : '' ?>" 
                          value="<?= htmlspecialchars($_POST['discount_percent'] ?? $discount['discount_percent']) ?>" 
-                         required
+                         
                          min="0"
-                         max="100"
+                         max="85"
                          placeholder="VD: 25">
+                  <small class="form-text text-muted">Tối đa 85% (không được giảm giá 100%)</small>
                   <?php if (!empty($errors['discount_percent'])): ?>
                     <div class="text-danger small mt-1"><?= $errors['discount_percent'] ?></div>
                   <?php endif; ?>
@@ -90,7 +134,7 @@
                          id="start_date" 
                          class="form-control <?= !empty($errors['start_date']) ? 'is-invalid' : '' ?>" 
                          value="<?= htmlspecialchars($_POST['start_date'] ?? $discount['start_date']) ?>" 
-                         required>
+                         >
                   <?php if (!empty($errors['start_date'])): ?>
                     <div class="text-danger small mt-1"><?= $errors['start_date'] ?></div>
                   <?php endif; ?>
@@ -104,7 +148,7 @@
                          id="end_date" 
                          class="form-control <?= !empty($errors['end_date']) ? 'is-invalid' : '' ?>" 
                          value="<?= htmlspecialchars($_POST['end_date'] ?? $discount['end_date']) ?>" 
-                         required>
+                         >
                   <?php if (!empty($errors['end_date'])): ?>
                     <div class="text-danger small mt-1"><?= $errors['end_date'] ?></div>
                   <?php endif; ?>
@@ -160,9 +204,127 @@
 </div>
 
 <script>
-  // Tự động chuyển mã thành chữ in hoa
-  document.getElementById('code').addEventListener('input', function(e) {
-    e.target.value = e.target.value.toUpperCase();
+  // Đợi DOM load xong
+  document.addEventListener('DOMContentLoaded', function() {
+    // Tự động chuyển mã thành chữ in hoa
+    const codeInput = document.getElementById('code');
+    if (codeInput) {
+      codeInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.toUpperCase();
+      });
+    }
+
+    // Validation phần trăm giảm giá
+    const discountPercentInput = document.getElementById('discount_percent');
+    if (discountPercentInput) {
+      // Validation khi đang nhập
+      discountPercentInput.addEventListener('input', function(e) {
+        let value = parseFloat(e.target.value);
+        if (isNaN(value) || e.target.value === '') {
+          return;
+        }
+        if (value < 0) {
+          e.target.value = 0;
+          alert('Phần trăm giảm giá không được nhỏ hơn 0%');
+        } else if (value >= 100) {
+          e.target.value = 85;
+          alert('Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%');
+        } else if (value > 85) {
+          e.target.value = 85;
+          alert('Phần trăm giảm giá không được vượt quá 85%');
+        }
+      });
+
+      // Validation khi blur (rời khỏi input)
+      discountPercentInput.addEventListener('blur', function(e) {
+        let value = parseFloat(e.target.value);
+        if (isNaN(value) || e.target.value === '') {
+          return;
+        }
+        if (value < 0) {
+          e.target.value = 0;
+          alert('Phần trăm giảm giá không được nhỏ hơn 0%');
+        } else if (value >= 100) {
+          e.target.value = 85;
+          alert('Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%');
+        } else if (value > 85) {
+          e.target.value = 85;
+          alert('Phần trăm giảm giá không được vượt quá 85%');
+        }
+      });
+    }
+
+    // Validation khi submit form
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        const discountPercent = parseFloat(document.getElementById('discount_percent').value);
+        if (isNaN(discountPercent) || document.getElementById('discount_percent').value === '') {
+          e.preventDefault();
+          alert('Vui lòng nhập phần trăm giảm giá hợp lệ');
+          return false;
+        }
+        if (discountPercent < 0) {
+          e.preventDefault();
+          alert('Phần trăm giảm giá không được nhỏ hơn 0%');
+          return false;
+        }
+        if (discountPercent >= 100) {
+          e.preventDefault();
+          alert('Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%');
+          return false;
+        }
+        if (discountPercent > 85) {
+          e.preventDefault();
+          alert('Phần trăm giảm giá không được vượt quá 85%');
+          return false;
+        }
+      });
+    }
+
+    // Xem trước phim gắn với mã giảm giá
+    const movieSelect = document.getElementById('movie_id');
+    const moviePreviewCard = document.getElementById('movie-preview-card');
+    const moviePreviewImage = document.getElementById('movie-preview-image');
+    const moviePreviewTitle = document.getElementById('movie-preview-title');
+    const baseUrl = '<?= BASE_URL ?>';
+    const fallbackImage = baseUrl + '/image/logo.png';
+
+    function updateMoviePreview() {
+      if (!movieSelect || !moviePreviewCard) {
+        return;
+      }
+
+      const selectedOption = movieSelect.options[movieSelect.selectedIndex];
+      if (!selectedOption || !selectedOption.value) {
+        moviePreviewCard.classList.add('d-none');
+        moviePreviewImage.style.display = 'none';
+        moviePreviewTitle.textContent = 'Tên phim sẽ hiển thị tại đây';
+        return;
+      }
+
+      const movieTitle = selectedOption.dataset.title || selectedOption.text;
+      const movieImagePath = selectedOption.dataset.image || '';
+      moviePreviewTitle.textContent = movieTitle || 'Tên phim sẽ hiển thị tại đây';
+
+      if (movieImagePath) {
+        const normalizedPath = movieImagePath.startsWith('http')
+          ? movieImagePath
+          : baseUrl.replace(/\/+$/, '') + '/' + movieImagePath.replace(/^\/+/, '');
+        moviePreviewImage.src = normalizedPath;
+        moviePreviewImage.style.display = 'block';
+      } else {
+        moviePreviewImage.src = fallbackImage;
+        moviePreviewImage.style.display = 'block';
+      }
+
+      moviePreviewCard.classList.remove('d-none');
+    }
+
+    if (movieSelect) {
+      movieSelect.addEventListener('change', updateMoviePreview);
+      updateMoviePreview();
+    }
   });
 </script>
 

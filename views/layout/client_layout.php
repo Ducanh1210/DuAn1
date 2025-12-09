@@ -1,5 +1,30 @@
 <?php
+/**
+ * CLIENT_LAYOUT.PHP - LAYOUT CHUNG CHO TRANG CLIENT (KHÁCH HÀNG)
+ * 
+ * CHỨC NĂNG:
+ * - Layout chung cho tất cả trang client (header, footer)
+ * - Include view tương ứng dựa trên $GLOBALS['clientViewPath']
+ * - Kiểm tra và redirect admin/manager/staff về trang quản lý
+ * 
+ * LUỒNG CHẠY RENDER:
+ * 1. Controller gọi renderClient('client/trangchu.php', ['movies' => $movies], 'Trang chủ')
+ * 2. function.php extract data: $movies
+ * 3. function.php set $GLOBALS['clientViewPath'] = 'client/trangchu.php'
+ * 4. function.php include client_layout.php (file này)
+ * 5. client_layout.php kiểm tra quyền (nếu admin/manager/staff -> redirect)
+ * 6. client_layout.php include header
+ * 7. client_layout.php include view từ $GLOBALS['clientViewPath'] (dòng 208)
+ * 8. View sử dụng biến $movies để hiển thị
+ * 
+ * CẤU TRÚC:
+ * - Header: Logo, menu điều hướng, thông báo, đăng nhập/đăng ký
+ * - Content: View được include từ $GLOBALS['clientViewPath']
+ * - Footer: Thông tin footer, links
+ */
+
 // Start session ở đầu file, trước mọi output
+// Session dùng để lưu thông tin đăng nhập (user_id, user_role, etc.)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -27,15 +52,27 @@ if (isLoggedIn()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title><?= $GLOBALS['pageTitle'] ?? 'TicketHub' ?> | TicketHub</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/client_layout.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/notifications.css">
+    <?php 
+    // Thêm version để tránh cache khi quay lại từ trang thanh toán
+    $cssVersion = isset($_GET['_nocache']) ? '?v=' . time() : '?v=1.2';
+    ?>
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/client_layout.css<?= $cssVersion ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css<?= $cssVersion ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/notifications.css<?= $cssVersion ?>">
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'movies.php') !== false): ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/movies.css">
+        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/movies.css<?= $cssVersion ?>">
     <?php endif; ?>
-    <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'thanhtoan.php') !== false): ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/thanhtoan.css">
+    <?php if (isset($GLOBALS['clientViewPath']) && (strpos($GLOBALS['clientViewPath'], 'thanhtoan.php') !== false || strpos($GLOBALS['clientViewPath'], 'select_seats.php') !== false)): ?>
+        <?php if (strpos($GLOBALS['clientViewPath'], 'thanhtoan.php') !== false): ?>
+            <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/thanhtoan.css<?= $cssVersion ?>">
+        <?php endif; ?>
+        <?php if (strpos($GLOBALS['clientViewPath'], 'select_seats.php') !== false): ?>
+            <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/movies.css<?= $cssVersion ?>">
+        <?php endif; ?>
     <?php endif; ?>
     <?php if (isset($GLOBALS['clientViewPath']) && strpos($GLOBALS['clientViewPath'], 'gioithieu.php') !== false): ?>
         <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/gioithieu.css">
@@ -54,7 +91,7 @@ if (isLoggedIn()) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
+<body data-theme="dark">
     <!-- Client Header -->
     <header class="header">
         <div class="header-container">
@@ -86,6 +123,11 @@ if (isLoggedIn()) {
             </nav>
 
             <div class="nav-actions">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Chuyển đổi giao diện">
+                    <i class="bi bi-moon-fill theme-icon" id="themeIcon"></i>
+                </button>
+                
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <!-- Notifications for logged-in users - ĐẶT TRƯỚC SEARCH -->
                     <div class="notification-wrapper">
@@ -173,7 +215,7 @@ if (isLoggedIn()) {
                 ?>
                     <div class="user-dropdown-wrapper">
                         <div class="user-dropdown-toggle" id="userDropdownToggle">
-                            <i class="bi bi-person-circle" style="font-size: 24px; color: rgba(255, 255, 255, 0.9);"></i>
+                            <i class="bi bi-person-circle user-icon" style="font-size: 24px;"></i>
                             <span><?= $userName ?></span>
                             <i class="bi bi-chevron-down" style="font-size: 12px; margin-left: 4px;"></i>
                         </div>
@@ -199,17 +241,46 @@ if (isLoggedIn()) {
         </div>
     </header>
 
+    <!-- 
+      ============================================
+      PHẦN NỘI DUNG CHÍNH - INCLUDE VIEW ĐỘNG
+      ============================================
+      
+      LUỒNG CHẠY:
+      1. Controller gọi renderClient('client/trangchu.php', ['movies' => $movies], 'Trang chủ')
+      2. function.php set $GLOBALS['clientViewPath'] = 'client/trangchu.php'
+      3. function.php extract data: $movies (tạo biến $movies)
+      4. function.php include client_layout.php (file này)
+      5. client_layout.php include header (ở trên)
+      6. client_layout.php đến đây: include view từ $GLOBALS['clientViewPath']
+      7. View (trangchu.php) sử dụng biến $movies để hiển thị danh sách phim
+      
+      VÍ DỤ:
+      - Controller: renderClient('client/trangchu.php', ['movies' => $movies], 'Trang chủ')
+      - View path: 'client/trangchu.php'
+      - Biến trong view: $movies (đã được extract từ data array)
+      - View hiển thị: Danh sách phim đang chiếu và sắp chiếu
+    -->
     <!-- Main Content -->
     <?php
     // Include view động nếu có biến $clientViewPath
+    // $clientViewPath được set trong function.php khi Controller gọi renderClient()
     if (isset($GLOBALS['clientViewPath']) && !empty($GLOBALS['clientViewPath'])) {
+        // Tạo đường dẫn đầy đủ đến file view
+        // Ví dụ: views/client/trangchu.php
         $viewFile = __DIR__ . '/../' . $GLOBALS['clientViewPath'];
+        
+        // Kiểm tra file tồn tại trước khi include
         if (file_exists($viewFile)) {
+            // Include view - tất cả biến đã được extract trong function.php
+            // View có thể sử dụng các biến như $movies, $showtimes, etc.
             include $viewFile;
         } else {
+            // Hiển thị lỗi nếu không tìm thấy view
             echo '<div class="page"><div style="padding: 20px; color: #fff;">Không tìm thấy view: ' . htmlspecialchars($GLOBALS['clientViewPath']) . '</div></div>';
         }
     } else {
+        // Nếu không có view, hiển thị nội dung mặc định
         echo '<div class="page"><p>Nội dung trang</p></div>';
     }
     ?>
@@ -301,6 +372,45 @@ if (isLoggedIn()) {
     <script>
         // Đặt năm hiện tại
         document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Theme Toggle Functionality
+        (function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const html = document.documentElement;
+            const body = document.body;
+            
+            // Get saved theme or default to dark
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            html.setAttribute('data-theme', savedTheme);
+            body.setAttribute('data-theme', savedTheme);
+            
+            // Update icon based on theme
+            function updateIcon(theme) {
+                if (theme === 'light') {
+                    themeIcon.classList.remove('bi-moon-fill');
+                    themeIcon.classList.add('bi-sun-fill');
+                } else {
+                    themeIcon.classList.remove('bi-sun-fill');
+                    themeIcon.classList.add('bi-moon-fill');
+                }
+            }
+            
+            updateIcon(savedTheme);
+            
+            // Toggle theme
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = html.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    
+                    html.setAttribute('data-theme', newTheme);
+                    body.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    updateIcon(newTheme);
+                });
+            }
+        })();
 
         // Search box toggle functionality
         (function () {

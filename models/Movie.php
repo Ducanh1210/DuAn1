@@ -1,4 +1,5 @@
 <?php
+
 /**
  * MOVIE MODEL - TƯƠNG TÁC VỚI BẢNG MOVIES
  * 
@@ -26,63 +27,130 @@ class Movie
         // Kết nối database khi khởi tạo Model
         $this->conn = connectDB();
     }
-    
+
     /**
-     * LẤY TẤT CẢ PHIM VỚI THÔNG TIN THỂ LOẠI
+     * LẤY TẤT CẢ PHIM VỚI THÔNG TIN THỂ LOẠI VÀ RẠP
      * 
      * LUỒNG CHẠY:
-     * 1. Query SQL với LEFT JOIN để lấy tên thể loại
+     * 1. Query SQL với LEFT JOIN để lấy tên thể loại và tên rạp
      * 2. Sắp xếp theo ID và ngày tạo
      * 3. Trả về mảng tất cả phim
      * 
      * DỮ LIỆU TRẢ VỀ:
      * - Tất cả cột từ bảng movies
      * - genre_name từ bảng movie_genres (LEFT JOIN)
+     * - cinema_name từ bảng cinemas (LEFT JOIN)
+     * 
+     * @param int|null $cinemaId Lọc theo rạp (null = tất cả)
+     * @return array Danh sách phim
      */
-    public function all()
+    public function all($cinemaId = null)
     {
         try {
-            // SQL query: SELECT từ movies, JOIN với movie_genres để lấy tên thể loại
+            $whereClause = "";
+            $params = [];
+
+            if ($cinemaId) {
+                // Lọc theo rạp thông qua bảng trung gian movie_cinemas
+                $whereClause = "WHERE movies.id IN (SELECT movie_id FROM movie_cinemas WHERE cinema_id = :cinema_id)";
+                $params[':cinema_id'] = $cinemaId;
+            }
+
+            // SQL query: SELECT từ movies, JOIN với movie_genres
             $sql = "SELECT movies.*, 
                     movie_genres.name AS genre_name
                     FROM movies
                     LEFT JOIN movie_genres ON movies.genre_id = movie_genres.id
+                    " . $whereClause . "
                     ORDER BY movies.id ASC, movies.created_at ASC";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(); // Trả về mảng tất cả phim
+            $stmt->execute($params);
+            $movies = $stmt->fetchAll();
+
+            // Lấy danh sách rạp cho mỗi phim
+            foreach ($movies as &$movie) {
+                $movie['cinemas'] = $this->getCinemasByMovieId($movie['id']);
+                $movie['cinema_names'] = array_column($movie['cinemas'], 'name');
+                $movie['cinema_name'] = implode(', ', $movie['cinema_names']); // Giữ tương thích với code cũ
+            }
+
+            return $movies; // Trả về mảng tất cả phim
         } catch (Exception $e) {
             debug($e); // Hiển thị lỗi nếu có
+            return [];
         }
     }
 
     /**
      * Lấy phim với phân trang
+     * 
+     * @param int $page Số trang
+     * @param int $perPage Số phim mỗi trang
+     * @param int|null $cinemaId Lọc theo rạp (null = tất cả)
+     * @param string|null $status Lọc theo trạng thái (null = tất cả)
+     * @param string|null $searchKeyword Tìm kiếm theo tên phim (null = không tìm)
+     * @return array Dữ liệu phân trang
      */
-    public function paginate($page = 1, $perPage = 5)
+    public function paginate($page = 1, $perPage = 5, $cinemaId = null, $status = null, $searchKeyword = null)
     {
         try {
             $offset = ($page - 1) * $perPage;
-            
+
+            // Xây dựng WHERE clause
+            $whereConditions = [];
+            $params = [];
+
+            if ($cinemaId) {
+                // Lọc theo rạp thông qua bảng trung gian movie_cinemas
+                $whereConditions[] = "movies.id IN (SELECT movie_id FROM movie_cinemas WHERE cinema_id = :cinema_id)";
+                $params[':cinema_id'] = $cinemaId;
+            }
+
+            if ($status) {
+                $whereConditions[] = "movies.status = :status";
+                $params[':status'] = $status;
+            }
+
+            if ($searchKeyword) {
+                $whereConditions[] = "movies.title LIKE :search";
+                $params[':search'] = '%' . $searchKeyword . '%';
+            }
+
+            $whereClause = "";
+            if (!empty($whereConditions)) {
+                $whereClause = "WHERE " . implode(" AND ", $whereConditions);
+            }
+
             // Lấy tổng số bản ghi
-            $countSql = "SELECT COUNT(*) as total FROM movies";
+            $countSql = "SELECT COUNT(*) as total FROM movies " . $whereClause;
             $countStmt = $this->conn->prepare($countSql);
-            $countStmt->execute();
+            $countStmt->execute($params);
             $total = $countStmt->fetch()['total'];
-            
-            // Lấy dữ liệu phân trang (mới nhất lên trên - ID lớn nhất lên đầu)
+
+            // Lấy dữ liệu phân trang
             $sql = "SELECT movies.*, 
                     movie_genres.name AS genre_name
                     FROM movies
                     LEFT JOIN movie_genres ON movies.genre_id = movie_genres.id
+                    " . $whereClause . "
                     ORDER BY movies.id ASC, movies.created_at ASC
                     LIMIT :limit OFFSET :offset";
             $stmt = $this->conn->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
             $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
             $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
             $stmt->execute();
             $data = $stmt->fetchAll();
-            
+
+            // Lấy danh sách rạp cho mỗi phim
+            foreach ($data as &$movie) {
+                $movie['cinemas'] = $this->getCinemasByMovieId($movie['id']);
+                $movie['cinema_names'] = array_column($movie['cinemas'], 'name');
+                $movie['cinema_name'] = implode(', ', $movie['cinema_names']); // Giữ tương thích với code cũ
+            }
+
             return [
                 'data' => $data,
                 'total' => $total,
@@ -115,9 +183,100 @@ class Movie
                     WHERE movies.id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
-            return $stmt->fetch();
+            $movie = $stmt->fetch();
+
+            // Lấy danh sách rạp của phim
+            if ($movie) {
+                $movie['cinemas'] = $this->getCinemasByMovieId($id);
+                $movie['cinema_ids'] = array_column($movie['cinemas'], 'id');
+            }
+
+            return $movie;
         } catch (Exception $e) {
             debug($e);
+        }
+    }
+
+    /**
+     * Lấy danh sách rạp của một phim
+     */
+    public function getCinemasByMovieId($movieId)
+    {
+        try {
+            $sql = "SELECT cinemas.* 
+                    FROM cinemas
+                    INNER JOIN movie_cinemas ON cinemas.id = movie_cinemas.cinema_id
+                    WHERE movie_cinemas.movie_id = :movie_id
+                    ORDER BY cinemas.name ASC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':movie_id' => $movieId]);
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            debug($e);
+            return [];
+        }
+    }
+
+    /**
+     * Lấy danh sách cơ bản để hiển thị trong dropdown
+     *
+     * @param bool $onlyActive Chỉ lấy phim đang hoạt động
+     * @return array
+     */
+    public function getBasicList($onlyActive = false)
+    {
+        try {
+            $sql = "SELECT id, title, image, status FROM movies";
+            if ($onlyActive) {
+                $sql .= " WHERE status = 'active'";
+            }
+            $sql .= " ORDER BY title ASC";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            debug($e);
+            return [];
+        }
+    }
+
+    /**
+     * Lưu danh sách rạp cho một phim
+     * @param int $movieId ID của phim
+     * @param array $cinemaIds Danh sách ID rạp cần lưu
+     * @param bool $replace Nếu true thì xóa rạp cũ và thay thế, nếu false thì chỉ thêm rạp mới
+     */
+    public function saveMovieCinemas($movieId, $cinemaIds, $replace = true)
+    {
+        try {
+            if ($replace) {
+                // Xóa tất cả rạp cũ của phim (dùng khi tạo mới hoặc thay thế toàn bộ)
+                $deleteSql = "DELETE FROM movie_cinemas WHERE movie_id = :movie_id";
+                $deleteStmt = $this->conn->prepare($deleteSql);
+                $deleteStmt->execute([':movie_id' => $movieId]);
+            }
+
+            // Thêm các rạp mới (chỉ thêm nếu chưa tồn tại)
+            if (!empty($cinemaIds)) {
+                $insertSql = "INSERT IGNORE INTO movie_cinemas (movie_id, cinema_id) VALUES (:movie_id, :cinema_id)";
+                $insertStmt = $this->conn->prepare($insertSql);
+
+                foreach ($cinemaIds as $cinemaId) {
+                    $cinemaId = (int)$cinemaId;
+                    if ($cinemaId > 0) {
+                        $insertStmt->execute([
+                            ':movie_id' => $movieId,
+                            ':cinema_id' => $cinemaId
+                        ]);
+                    }
+                }
+            }
+
+            return true;
+        } catch (Exception $e) {
+            debug($e);
+            return false;
         }
     }
 
@@ -217,6 +376,7 @@ class Movie
         try {
             $sql = "INSERT INTO movies (
                 genre_id,
+                cinema_id,
                 title, 
                 description, 
                 image, 
@@ -232,6 +392,7 @@ class Movie
                 status
             ) VALUES (
                 :genre_id,
+                :cinema_id,
                 :title, 
                 :description, 
                 :image, 
@@ -249,6 +410,7 @@ class Movie
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
                 ':genre_id' => $data['genre_id'] ?? null,
+                ':cinema_id' => null, // Không dùng cinema_id nữa, dùng bảng trung gian
                 ':title' => $data['title'],
                 ':description' => $data['description'] ?? null,
                 ':image' => $data['image'] ?? null,
@@ -263,7 +425,14 @@ class Movie
                 ':producer' => $data['producer'] ?? null,
                 ':status' => $data['status'] ?? 'active'
             ]);
-            return $this->conn->lastInsertId();
+            $movieId = $this->conn->lastInsertId();
+
+            // Lưu danh sách rạp vào bảng trung gian
+            if ($movieId && !empty($data['cinema_ids'])) {
+                $this->saveMovieCinemas($movieId, $data['cinema_ids']);
+            }
+
+            return $movieId;
         } catch (Exception $e) {
             debug($e);
         }
@@ -277,6 +446,7 @@ class Movie
         try {
             $sql = "UPDATE movies SET 
                 genre_id = :genre_id,
+                cinema_id = :cinema_id,
                 title = :title, 
                 description = :description, 
                 image = :image, 
@@ -295,6 +465,7 @@ class Movie
             $stmt->execute([
                 ':id' => $id,
                 ':genre_id' => $data['genre_id'] ?? null,
+                ':cinema_id' => null, // Không dùng cinema_id nữa, dùng bảng trung gian
                 ':title' => $data['title'],
                 ':description' => $data['description'] ?? null,
                 ':image' => $data['image'] ?? null,
@@ -309,6 +480,17 @@ class Movie
                 ':producer' => $data['producer'] ?? null,
                 ':status' => $data['status'] ?? 'active'
             ]);
+
+            // Cập nhật danh sách rạp vào bảng trung gian
+            // Kiểm tra xem có flag replace không (mặc định là false để chỉ thêm rạp mới)
+            $replace = $data['replace_cinemas'] ?? false;
+            if (!empty($data['cinema_ids'])) {
+                $this->saveMovieCinemas($id, $data['cinema_ids'], $replace);
+            } elseif ($replace) {
+                // Chỉ xóa tất cả nếu replace = true
+                $this->saveMovieCinemas($id, [], true);
+            }
+
             return true;
         } catch (Exception $e) {
             debug($e);
@@ -321,6 +503,13 @@ class Movie
     public function delete($id)
     {
         try {
+            // Xóa các rạp liên quan (sẽ tự động xóa do CASCADE)
+            // Hoặc xóa thủ công để chắc chắn
+            $deleteCinemasSql = "DELETE FROM movie_cinemas WHERE movie_id = :movie_id";
+            $deleteCinemasStmt = $this->conn->prepare($deleteCinemasSql);
+            $deleteCinemasStmt->execute([':movie_id' => $id]);
+
+            // Xóa phim
             $sql = "DELETE FROM movies WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $id]);
@@ -329,8 +518,4 @@ class Movie
             debug($e);
         }
     }
-
 }
-
-?>
-

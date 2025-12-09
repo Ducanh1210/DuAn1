@@ -1,12 +1,20 @@
 :root {
-  --bg: #0d1113;
-  --card: #0f1417;
-  --muted: rgba(255, 255, 255, 0.72);
-  --muted-2: rgba(255, 255, 255, 0.54);
+  --bg: var(--bg-primary, #0d1113);
+  --card: var(--bg-secondary, #0f1417);
+  --muted: var(--text-muted, rgba(255, 255, 255, 0.72));
+  --muted-2: var(--text-muted-2, rgba(255, 255, 255, 0.54));
   --accent: #ff6978;
   --radius: 12px;
   --maxw: 1200px;
-  --glass: rgba(255, 255, 255, 0.05);
+  --glass: var(--glass, rgba(255, 255, 255, 0.05));
+}
+
+[data-theme="light"] {
+  --bg: var(--bg-primary, #f5f7fa);
+  --card: var(--bg-secondary, #ffffff);
+  --muted: var(--text-muted, #4a5568);
+  --muted-2: var(--text-muted-2, #718096);
+  --glass: var(--glass, rgba(0, 0, 0, 0.03));
 }
 
 * {
@@ -14,6 +22,7 @@
   margin: 0;
   padding: 0;
 }
+
 html,
 body {
   margin: 0;
@@ -23,14 +32,25 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+[data-theme="light"] body {
+  background: linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 60%, #e8ecf1 100%);
+  color: var(--text-primary);
+}
+
 /* PHẦN MENU */
 .header {
   width: 100%;
-  background: #0d1113; /* MÀU NỀN HEADER LIỀN KHỐI */
+  background: #0d1113;
+  /* MÀU NỀN HEADER LIỀN KHỐI */
   padding: 20px 0;
   position: relative;
   z-index: 1000;
   min-height: 80px;
+}
+
+[data-theme="light"] .header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color-2);
 }
 
 .header-container {
@@ -64,6 +84,7 @@ body {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  position: relative;
 }
 
 .logo a {
@@ -80,6 +101,38 @@ body {
   transition: 0.3s ease;
   display: block;
   max-width: 100%;
+}
+
+/* Light mode: overlay text TicketHub màu đen lên ảnh */
+/* Chỉ áp dụng cho logo trong navbar/header, không áp dụng cho logo trong method buttons */
+[data-theme="light"] .navbar .logo::after,
+[data-theme="light"] .header .logo::after {
+  content: "TicketHub";
+  position: absolute;
+  left: 70px;
+  /* Vị trí text bên cạnh icon */
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #000;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+  background: transparent;
+  padding: 0 4px;
+}
+
+/* Light mode: giữ nguyên logo ảnh, không crop */
+/* Chỉ áp dụng cho logo trong navbar/header, không áp dụng cho logo trong method buttons */
+[data-theme="light"] .navbar .logo img,
+[data-theme="light"] .header .logo img {
+  clip-path: inset(0 55% 0 0);
+  /* Chỉ hiển thị nửa trái (icon) */
+  width: 60px;
+  max-height: 60px;
+  /* Giảm width để chỉ hiển thị icon */
 }
 
 /* ===== MENU ===== */
@@ -105,16 +158,28 @@ body {
   line-height: 1.5;
 }
 
+[data-theme="light"] .menu a {
+  color: var(--text-secondary);
+}
+
 .menu a:hover {
   color: #ffffff;
   opacity: 1;
   transform: translateY(-2px);
 }
 
+[data-theme="light"] .menu a:hover {
+  color: var(--text-primary);
+}
+
 .menu a.active {
   color: #ff6978 !important;
   font-weight: 700;
   position: relative;
+}
+
+[data-theme="light"] .menu a.active {
+  color: var(--accent) !important;
 }
 
 .menu a.active::after {
@@ -144,8 +209,8 @@ body {
   flex-shrink: 0;
 }
 
- /* SEARCH WRAPPER */
- .search-wrapper {
+/* SEARCH WRAPPER */
+.search-wrapper {
   position: relative;
   display: flex;
   align-items: center;
@@ -342,23 +407,23 @@ body {
     max-width: calc(100vw - 20px);
     width: auto;
   }
-  
+
   .search-form-horizontal {
     flex-direction: column;
     padding: 10px;
   }
-  
+
   .search-field {
     padding: 8px 10px;
     min-width: auto;
   }
-  
+
   .search-field:first-child {
     border-right: none;
     border-bottom: 1px solid #e0e0e0;
     padding-bottom: 10px;
   }
-  
+
   .search-submit-btn,
   .search-clear-btn {
     width: 100%;
@@ -393,9 +458,11 @@ body {
 
 @media (max-width: 900px) {
   .menu {
-    display: none; /* Ẩn menu nếu cần responsive mobile */
+    display: none;
+    /* Ẩn menu nếu cần responsive mobile */
   }
 }
+
 /* PHẦN NỘI DUNG */
 .page {
   max-width: 1200px;
@@ -414,7 +481,7 @@ body {
 }
 
 /* Đảm bảo nội dung có cùng padding với header */
-.page > * {
+.page>* {
   max-width: 100%;
 }
 
@@ -427,6 +494,7 @@ body {
   padding: 0 0;
   box-sizing: border-box;
 }
+
 .page-header h2 {
   display: inline-flex;
   align-items: center;
@@ -437,6 +505,11 @@ body {
   font-weight: 700;
   color: #fff;
 }
+
+[data-theme="light"] .page-header h2 {
+  color: var(--text-primary);
+}
+
 .dot {
   width: 10px;
   height: 10px;
@@ -457,6 +530,7 @@ body {
   max-width: 100%;
   box-sizing: border-box;
 }
+
 .pill {
   padding: 8px 14px;
   border-radius: 10px;
@@ -468,10 +542,21 @@ body {
   font-weight: 600;
   display: inline-block;
 }
+
 .pill:hover {
   transform: translateY(-3px);
   border-color: rgba(255, 255, 255, 0.12);
 }
+
+[data-theme="light"] .pill {
+  border: 1px solid var(--border-color-2);
+}
+
+[data-theme="light"] .pill:hover {
+  border-color: var(--border-color);
+  background: var(--glass);
+}
+
 .pill.active {
   background: var(--accent);
   color: #fff;
@@ -504,11 +589,9 @@ body {
 .movie-card {
   display: flex !important;
   gap: 18px !important;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    rgba(0, 0, 0, 0.03)
-  ) !important;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.01),
+      rgba(0, 0, 0, 0.03)) !important;
   padding: 18px !important;
   border-radius: 12px !important;
   border: 1px solid rgba(255, 255, 255, 0.03) !important;
@@ -520,6 +603,22 @@ body {
   position: relative !important;
   flex: none !important;
   max-width: 100% !important;
+}
+
+[data-theme="light"] .movie-card {
+  background: #c8d0db !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Ensure all text in movie cards is black in light mode */
+[data-theme="light"] .movie-card .title,
+[data-theme="light"] .movie-card .meta-lines,
+[data-theme="light"] .movie-card .censor,
+[data-theme="light"] .movie-card .info-line,
+[data-theme="light"] .movie-card p,
+[data-theme="light"] .movie-card span {
+  color: #000 !important;
 }
 
 .poster {
@@ -540,14 +639,17 @@ body {
   border: none !important;
   outline: none !important;
 }
+
 .poster:hover {
   transform: translateY(-4px) !important;
   box-shadow: 0 16px 40px rgba(255, 105, 120, 0.3) !important;
 }
+
 .poster:focus {
   outline: none !important;
   border: none !important;
 }
+
 .poster img {
   width: 100% !important;
   height: 100% !important;
@@ -597,6 +699,7 @@ body {
   flex-wrap: wrap !important;
   margin-bottom: 2px !important;
 }
+
 .tags {
   font-size: 13px !important;
   line-height: 1.4 !important;
@@ -605,6 +708,7 @@ body {
   min-width: 0 !important;
   margin: 0 !important;
 }
+
 .badge-2d {
   position: absolute !important;
   top: 0 !important;
@@ -628,6 +732,13 @@ body {
   margin-top: 4px !important;
   margin-bottom: 6px !important;
   color: #fff !important;
+}
+
+[data-theme="light"] .title {
+  color: var(--text-primary) !important;
+}
+
+.title {
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
   display: -webkit-box !important;
@@ -637,8 +748,6 @@ body {
   text-overflow: ellipsis !important;
   text-transform: none !important;
   max-width: 100% !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
 }
 
 .meta-lines {
@@ -651,7 +760,7 @@ body {
   text-decoration: none !important;
 }
 
-.meta-lines > div {
+.meta-lines>div {
   margin-bottom: 2px !important;
   display: block !important;
   text-decoration: none !important;
@@ -678,14 +787,15 @@ body {
 /* SHOWTIMES */
 .showtimes {
   margin-top: auto !important;
-  display: flex !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
   gap: 8px !important;
-  flex-wrap: wrap !important;
   align-items: center !important;
   padding-top: 4px !important;
 }
+
 .time-btn {
-  padding: 8px 16px !important;
+  padding: 8px 12px !important;
   border-radius: 8px !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   background: rgba(255, 255, 255, 0.1) !important;
@@ -694,15 +804,22 @@ body {
   font-weight: 700 !important;
   font-size: 14px !important;
   text-decoration: none !important;
-  display: inline-block !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transition: all 0.14s !important;
   white-space: nowrap !important;
   outline: none !important;
+  text-align: center !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
+
 .time-btn:hover {
   transform: translateY(-4px);
   border-color: rgba(255, 255, 255, 0.12);
 }
+
 .time-btn:focus {
   outline: none !important;
 }
@@ -712,11 +829,11 @@ body {
   .header-container {
     padding: 0 20px;
   }
-  
+
   .logo img {
     width: 100px;
   }
-  
+
   .menu {
     gap: 18px;
   }
@@ -727,18 +844,18 @@ body {
     flex-wrap: wrap;
     gap: 12px;
   }
-  
+
   .logo {
     order: 1;
   }
-  
+
   .menu {
     order: 3;
     width: 100%;
     justify-content: center;
     gap: 12px;
   }
-  
+
   .nav-actions {
     order: 2;
     margin-left: auto;
@@ -749,13 +866,14 @@ body {
   .header-container {
     padding: 0 16px;
   }
-  
+
   .logo img {
     width: 90px;
   }
-  
+
   .menu {
-    display: none; /* Ẩn menu nếu cần responsive mobile */
+    display: none;
+    /* Ẩn menu nếu cần responsive mobile */
   }
 }
 
@@ -765,15 +883,18 @@ body {
     padding: 40px 16px;
     max-width: 100%;
   }
+
   .movies-grid {
     grid-template-columns: 1fr !important;
     gap: 18px !important;
     max-width: 100% !important;
   }
+
   .movie-card {
     flex-direction: column !important;
     align-items: center !important;
   }
+
   .poster {
     width: 100% !important;
     max-width: 300px !important;
@@ -784,18 +905,22 @@ body {
     max-width: 300px !important;
     margin-bottom: 16px !important;
   }
+
   .info {
     width: 100% !important;
     text-align: center !important;
   }
+
   .badge-2d {
     top: 0 !important;
     right: 0 !important;
   }
+
   .date-pills {
     gap: 8px;
     padding: 0 10px;
   }
+
   .pill {
     padding: 6px 12px;
     font-size: 13px;
@@ -811,7 +936,7 @@ body {
     padding-left: 20px;
     padding-right: 20px;
   }
-  
+
   .movies-grid {
     max-width: 100%;
     margin-left: auto;
@@ -825,6 +950,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   outline-offset: 3px;
   border-radius: 6px;
 }
+
 /* phần footer */
 /* Footer - modern cinematic style */
 .footer {
@@ -833,6 +959,12 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   padding: 48px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.03);
   font-family: "Roboto", sans-serif;
+}
+
+[data-theme="light"] .footer {
+  background: linear-gradient(180deg, #e8ecf1 0%, #f5f7fa 100%);
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color-2);
 }
 
 .footer-inner {
@@ -857,6 +989,10 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   letter-spacing: 0.2px;
 }
 
+[data-theme="light"] .footer .col h4 {
+  color: var(--text-primary);
+}
+
 /* Links column */
 .links ul {
   list-style: none;
@@ -865,14 +1001,24 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   display: grid;
   gap: 10px;
 }
+
 .links a {
   color: rgba(233, 238, 243, 0.86);
   text-decoration: none;
   transition: color 0.18s, transform 0.18s;
 }
+
+[data-theme="light"] .links a {
+  color: var(--text-muted);
+}
+
 .links a:hover {
   color: #fff;
   transform: translateX(6px);
+}
+
+[data-theme="light"] .links a:hover {
+  color: var(--text-primary);
 }
 
 /* Media (badges + socials) */
@@ -882,6 +1028,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   align-items: center;
   margin-bottom: 12px;
 }
+
 .app-badge {
   height: 40px;
   object-fit: contain;
@@ -895,6 +1042,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   gap: 10px;
   margin-top: 8px;
 }
+
 .s-ico {
   width: 40px;
   height: 40px;
@@ -908,6 +1056,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   text-decoration: none;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
+
 .s-ico:hover {
   transform: translateY(-6px);
   background: linear-gradient(180deg, #ff6a72, #ff3d57);
@@ -920,9 +1069,18 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   margin: 8px 0;
   font-size: 14px;
 }
+
+[data-theme="light"] .contact .muted {
+  color: var(--text-muted);
+}
+
 .contact a {
   color: #fff;
   text-decoration: underline;
+}
+
+[data-theme="light"] .contact a {
+  color: var(--text-primary);
 }
 
 /* subscribe */
@@ -930,12 +1088,18 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   color: rgba(233, 238, 243, 0.72);
   margin-bottom: 10px;
 }
+
+[data-theme="light"] .subscribe .muted {
+  color: var(--text-muted);
+}
+
 .subscribe-form {
   display: flex;
   gap: 8px;
   align-items: center;
   margin-top: 6px;
 }
+
 .subscribe-form input {
   flex: 1;
   padding: 10px 12px;
@@ -946,10 +1110,23 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   outline: none;
   transition: box-shadow 0.12s;
 }
+
+[data-theme="light"] .subscribe-form input {
+  border: 1px solid var(--border-color-2);
+  background: var(--glass);
+  color: var(--text-primary);
+}
+
 .subscribe-form input:focus {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 255, 255, 0.12);
 }
+
+[data-theme="light"] .subscribe-form input:focus {
+  box-shadow: 0 6px 18px var(--shadow-lg);
+  border-color: var(--border-color);
+}
+
 .subscribe-form button {
   padding: 10px 14px;
   border-radius: 8px;
@@ -960,6 +1137,7 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   cursor: pointer;
   transition: transform 0.12s;
 }
+
 .subscribe-form button:hover {
   transform: translateY(-4px);
 }
@@ -979,10 +1157,15 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
   padding-top: 18px;
   text-align: center;
 }
+
 .footer-bottom .copy {
   color: rgba(233, 238, 243, 0.66);
   margin: 0;
   font-size: 14px;
+}
+
+[data-theme="light"] .footer-bottom .copy {
+  color: var(--text-muted-2);
 }
 
 /* responsive */
@@ -991,18 +1174,62 @@ a:not(.poster):not(.info-link):not(.time-btn):focus {
     grid-template-columns: 1fr 1fr;
   }
 }
+
 @media (max-width: 720px) {
   .footer-top {
     grid-template-columns: 1fr;
   }
+
   .badges {
     gap: 8px;
   }
+
   .app-badge {
     height: 34px;
   }
+
   .s-ico {
     width: 36px;
     height: 36px;
   }
-} 
+}
+
+/* ===== LIGHT MODE LOGO RESET (keep same size as dark) ===== */
+[data-theme="light"] .navbar .logo,
+[data-theme="light"] .header .logo {
+  position: relative;
+  min-width: 150px;
+  height: 60px;
+  align-items: center;
+}
+
+[data-theme="light"] .navbar .logo img,
+[data-theme="light"] .header .logo img {
+  /* Hiển thị full logo với kích thước như dark mode */
+  clip-path: none !important;
+  width: 150px !important;
+  max-height: 150px !important;
+  object-fit: contain;
+}
+
+[data-theme="light"] .navbar .logo a,
+[data-theme="light"] .header .logo a {
+  color: #000 !important;
+}
+
+/* Thêm chữ đen riêng, tránh chồng */
+[data-theme="light"] .navbar .logo::after,
+[data-theme="light"] .header .logo::after {
+  content: "TicketHub";
+  position: absolute;
+  left: 70px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: #000;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: none;
+}

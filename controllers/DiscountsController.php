@@ -2,10 +2,12 @@
 class DiscountsController
 {
     public $discountCode;
+    public $movie;
 
     public function __construct()
     {
         $this->discountCode = new DiscountCode();
+        $this->movie = new Movie();
     }
 
     /**
@@ -26,9 +28,12 @@ class DiscountsController
     public function create()
     {
         $errors = [];
+        $movies = $this->movie->getBasicList();
 
         // Validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $selectedMovieId = $this->resolveMovieSelection($movies, $_POST['movie_id'] ?? null, $errors);
+
             // Kiểm tra trường rỗng
             if (empty(trim($_POST['code'] ?? ''))) {
                 $errors['code'] = "Bạn vui lòng nhập mã giảm giá";
@@ -45,8 +50,17 @@ class DiscountsController
 
             if (empty(trim($_POST['discount_percent'] ?? ''))) {
                 $errors['discount_percent'] = "Bạn vui lòng nhập phần trăm giảm giá";
-            } elseif (!is_numeric($_POST['discount_percent']) || $_POST['discount_percent'] < 0 || $_POST['discount_percent'] > 100) {
-                $errors['discount_percent'] = "Phần trăm giảm giá phải là số từ 0 đến 100";
+            } elseif (!is_numeric($_POST['discount_percent'])) {
+                $errors['discount_percent'] = "Phần trăm giảm giá phải là số";
+            } else {
+                $discountPercent = (float)$_POST['discount_percent'];
+                if ($discountPercent < 0) {
+                    $errors['discount_percent'] = "Phần trăm giảm giá không được nhỏ hơn 0%";
+                } elseif ($discountPercent >= 100) {
+                    $errors['discount_percent'] = "Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%";
+                } elseif ($discountPercent > 85) {
+                    $errors['discount_percent'] = "Phần trăm giảm giá không được vượt quá 85%";
+                }
             }
 
             if (!empty($_POST['max_discount']) && !is_numeric($_POST['max_discount'])) {
@@ -89,6 +103,7 @@ class DiscountsController
                     'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],
                     'end_date' => $_POST['end_date'],
+                    'movie_id' => $selectedMovieId,
                     'description' => trim($_POST['description'] ?? ''),
                     'benefits' => $benefits,
                     'status' => $_POST['status'] ?? 'active',
@@ -106,7 +121,10 @@ class DiscountsController
             }
         }
 
-        render('admin/discounts/create.php', ['errors' => $errors]);
+        render('admin/discounts/create.php', [
+            'errors' => $errors,
+            'movies' => $movies
+        ]);
     }
 
     /**
@@ -126,10 +144,20 @@ class DiscountsController
             exit;
         }
 
+        if (!empty($discount['benefits']) && is_string($discount['benefits'])) {
+            $decodedBenefits = json_decode($discount['benefits'], true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedBenefits)) {
+                $discount['benefits'] = $decodedBenefits;
+            }
+        }
+
         $errors = [];
+        $movies = $this->movie->getBasicList();
 
         // Validate form
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $selectedMovieId = $this->resolveMovieSelection($movies, $_POST['movie_id'] ?? null, $errors);
+
             // Kiểm tra trường rỗng
             if (empty(trim($_POST['code'] ?? ''))) {
                 $errors['code'] = "Bạn vui lòng nhập mã giảm giá";
@@ -146,8 +174,17 @@ class DiscountsController
 
             if (empty(trim($_POST['discount_percent'] ?? ''))) {
                 $errors['discount_percent'] = "Bạn vui lòng nhập phần trăm giảm giá";
-            } elseif (!is_numeric($_POST['discount_percent']) || $_POST['discount_percent'] < 0 || $_POST['discount_percent'] > 100) {
-                $errors['discount_percent'] = "Phần trăm giảm giá phải là số từ 0 đến 100";
+            } elseif (!is_numeric($_POST['discount_percent'])) {
+                $errors['discount_percent'] = "Phần trăm giảm giá phải là số";
+            } else {
+                $discountPercent = (float)$_POST['discount_percent'];
+                if ($discountPercent < 0) {
+                    $errors['discount_percent'] = "Phần trăm giảm giá không được nhỏ hơn 0%";
+                } elseif ($discountPercent >= 100) {
+                    $errors['discount_percent'] = "Không được giảm giá 100% hoặc lớn hơn. Tối đa chỉ được 85%";
+                } elseif ($discountPercent > 85) {
+                    $errors['discount_percent'] = "Phần trăm giảm giá không được vượt quá 85%";
+                }
             }
 
             if (!empty($_POST['max_discount']) && !is_numeric($_POST['max_discount'])) {
@@ -190,6 +227,7 @@ class DiscountsController
                     'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],
                     'end_date' => $_POST['end_date'],
+                    'movie_id' => $selectedMovieId,
                     'description' => trim($_POST['description'] ?? ''),
                     'benefits' => $benefits,
                     'status' => $_POST['status'] ?? 'active',
@@ -207,7 +245,11 @@ class DiscountsController
             }
         }
 
-        render('admin/discounts/edit.php', ['discount' => $discount, 'errors' => $errors]);
+        render('admin/discounts/edit.php', [
+            'discount' => $discount,
+            'errors' => $errors,
+            'movies' => $movies
+        ]);
     }
 
     /**
@@ -228,5 +270,30 @@ class DiscountsController
 
         header('Location: ' . BASE_URL . '?act=discounts');
         exit;
+    }
+
+    /**
+     * Xác thực lựa chọn phim và trả về movie_id hợp lệ hoặc null
+     */
+    private function resolveMovieSelection(array $movies, $inputValue, array &$errors)
+    {
+        if ($inputValue === null || $inputValue === '') {
+            return null;
+        }
+
+        $selectedMovieId = (int)$inputValue;
+        if ($selectedMovieId <= 0) {
+            $errors['movie_id'] = "Phim được chọn không hợp lệ.";
+            return null;
+        }
+
+        foreach ($movies as $movie) {
+            if ((int)($movie['id'] ?? 0) === $selectedMovieId) {
+                return $selectedMovieId;
+            }
+        }
+
+        $errors['movie_id'] = "Phim được chọn không hợp lệ.";
+        return null;
     }
 }

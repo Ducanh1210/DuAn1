@@ -19,20 +19,18 @@
       <!-- Filter và Search -->
       <div class="row mb-3">
         <div class="col-md-12">
-          <form method="GET" action="" class="d-flex gap-2">
+          <form method="GET" action="" class="d-flex gap-2 flex-wrap">
             <input type="hidden" name="act" value="comments">
-            
-            <?php if ($isAdmin && !empty($cinemas)): ?>
-              <select name="cinema_id" class="form-select" style="max-width: 200px;" onchange="this.form.submit()">
+            <?php if (isset($isAdmin) && $isAdmin && !empty($cinemas)): ?>
+              <select name="cinema_id" class="form-select" style="max-width: 200px;">
                 <option value="">Tất cả rạp</option>
                 <?php foreach ($cinemas as $cinema): ?>
-                  <option value="<?= $cinema['id'] ?>" <?= $selectedCinemaId == $cinema['id'] ? 'selected' : '' ?>>
+                  <option value="<?= $cinema['id'] ?>" <?= ($cinemaFilter ?? null) == $cinema['id'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($cinema['name']) ?>
                   </option>
                 <?php endforeach; ?>
               </select>
             <?php endif; ?>
-            
             <select name="movie_id" class="form-select" style="max-width: 250px;">
               <option value="">Tất cả phim</option>
               <?php if (!empty($movies)): ?>
@@ -47,7 +45,7 @@
             <button type="submit" class="btn btn-outline-primary">
               <i class="bi bi-search"></i> Tìm
             </button>
-            <?php if ($movieFilter || $searchKeyword || ($selectedCinemaId && $isAdmin)): ?>
+            <?php if ($movieFilter || $searchKeyword || ($cinemaFilter ?? null)): ?>
               <a href="<?= BASE_URL ?>?act=comments" class="btn btn-outline-secondary">
                 <i class="bi bi-x-circle"></i> Xóa bộ lọc
               </a>
@@ -63,7 +61,7 @@
               <th>ID</th>
               <th>Người dùng</th>
               <th>Phim</th>
-              <?php if ($isAdmin): ?>
+              <?php if (isset($isAdmin) && $isAdmin): ?>
                 <th>Rạp</th>
               <?php endif; ?>
               <th>Đánh giá</th>
@@ -92,8 +90,14 @@
                     <span class="text-muted">Phim đã xóa</span>
                   <?php endif; ?>
                 </td>
-                <?php if ($isAdmin): ?>
-                  <td><?= !empty($item['cinema_name']) ? htmlspecialchars($item['cinema_name']) : '<span class="text-muted">N/A</span>' ?></td>
+                <?php if (isset($isAdmin) && $isAdmin): ?>
+                  <td>
+                    <?php if (!empty($item['cinema_name'])): ?>
+                      <span class="badge bg-info"><?= htmlspecialchars($item['cinema_name']) ?></span>
+                    <?php else: ?>
+                      <span class="text-muted">-</span>
+                    <?php endif; ?>
+                  </td>
                 <?php endif; ?>
                 <td>
                   <?php if (!empty($item['rating'])): ?>
@@ -136,7 +140,7 @@
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="<?= $isAdmin ? '8' : '7' ?>" class="text-center text-muted py-4">Chưa có bình luận nào</td>
+                <td colspan="<?= (isset($isAdmin) && $isAdmin) ? '8' : '7' ?>" class="text-center text-muted py-4">Chưa có bình luận nào</td>
               </tr>
             <?php endif; ?>
           </tbody>
@@ -156,7 +160,7 @@
                 <!-- Previous -->
                 <?php if ($pagination['currentPage'] > 1): ?>
                   <li class="page-item">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=<?= $pagination['currentPage'] - 1 ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>">
+                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=<?= $pagination['currentPage'] - 1 ?>">
                       <i class="bi bi-chevron-left"></i> Trước
                     </a>
                   </li>
@@ -173,7 +177,7 @@
                 
                 if ($startPage > 1): ?>
                   <li class="page-item">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=1<?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>">1</a>
+                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=1">1</a>
                   </li>
                   <?php if ($startPage > 2): ?>
                     <li class="page-item disabled">
@@ -184,7 +188,7 @@
                 
                 <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                   <li class="page-item <?= $i == $pagination['currentPage'] ? 'active' : '' ?>">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=<?= $i ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>"><?= $i ?></a>
+                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=<?= $i ?>"><?= $i ?></a>
                   </li>
                 <?php endfor; ?>
                 
@@ -195,14 +199,14 @@
                     </li>
                   <?php endif; ?>
                   <li class="page-item">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=<?= $pagination['totalPages'] ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>"><?= $pagination['totalPages'] ?></a>
+                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=<?= $pagination['totalPages'] ?>"><?= $pagination['totalPages'] ?></a>
                   </li>
                 <?php endif; ?>
                 
                 <!-- Next -->
                 <?php if ($pagination['currentPage'] < $pagination['totalPages']): ?>
                   <li class="page-item">
-                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=<?= $pagination['currentPage'] + 1 ?><?= $selectedCinemaId ? '&cinema_id=' . $selectedCinemaId : '' ?>">
+                    <a class="page-link" href="<?= BASE_URL ?>?act=comments&page=<?= $pagination['currentPage'] + 1 ?>">
                       Sau <i class="bi bi-chevron-right"></i>
                     </a>
                   </li>

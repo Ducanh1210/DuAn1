@@ -11,22 +11,30 @@
     .cinema-sidebar {
         width: 280px;
         flex-shrink: 0;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.05));
+        background: var(--bg-card, linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.05)));
         border-radius: 12px;
         padding: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color-2, rgba(255, 255, 255, 0.05));
         max-height: calc(100vh - 200px);
         overflow-y: auto;
+        transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    [data-theme="light"] .cinema-sidebar {
+        background: var(--bg-secondary);
+        box-shadow: 0 2px 8px var(--shadow, rgba(0, 0, 0, 0.1));
     }
     
     .cinema-sidebar h3 {
         font-family: "Montserrat", sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        color: #fff;
-        margin: 0 0 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0 0 20px;
+        padding-bottom: 14px;
+        border-bottom: 2px solid rgba(255, 105, 120, 0.3);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
     }
     
     .cinema-list {
@@ -36,38 +44,79 @@
     }
     
     .cinema-item {
-        padding: 12px 16px;
-        margin-bottom: 8px;
-        border-radius: 8px;
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        border-radius: 10px;
         cursor: pointer;
-        transition: all 0.2s;
-        border: 1px solid transparent;
-        background: rgba(255, 255, 255, 0.02);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        background: var(--glass, rgba(255, 255, 255, 0.03));
+        font-family: "Montserrat", sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        letter-spacing: 0.3px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-theme="light"] .cinema-item {
+        background: var(--glass, rgba(0, 0, 0, 0.03));
+    }
+    
+    .cinema-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, var(--glass, rgba(255, 255, 255, 0.1)), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .cinema-item:hover::before {
+        left: 100%;
     }
     
     .cinema-item:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 105, 120, 0.15);
+        border-color: rgba(255, 105, 120, 0.4);
+        color: var(--text-primary);
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(255, 105, 120, 0.2);
+    }
+
+    [data-theme="light"] .cinema-item:hover {
+        background: rgba(255, 105, 120, 0.1);
     }
     
     .cinema-item.active {
-        background: var(--accent);
+        background: linear-gradient(135deg, #ff6978 0%, #ff5067 50%, #ff3d57 100%);
         color: #fff;
-        border-color: var(--accent);
-        font-weight: 600;
+        border-color: #ff6978;
+        font-weight: 700;
+        font-size: 16px;
+        box-shadow: 0 6px 20px rgba(255, 105, 120, 0.4), 0 0 0 2px rgba(255, 105, 120, 0.2);
+        transform: translateX(0);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .cinema-item.active::before {
+        display: none;
     }
     
     .cinema-item.disabled {
         opacity: 0.3;
         cursor: not-allowed;
         pointer-events: none;
-        background: rgba(255, 255, 255, 0.02) !important;
+        background: var(--glass-2, rgba(255, 255, 255, 0.02)) !important;
         border-color: transparent !important;
-        color: rgba(255, 255, 255, 0.5) !important;
+        color: var(--text-muted-2, rgba(255, 255, 255, 0.5)) !important;
     }
     
     .cinema-item.disabled:hover {
-        background: rgba(255, 255, 255, 0.02) !important;
+        background: var(--glass-2, rgba(255, 255, 255, 0.02)) !important;
         border-color: transparent !important;
     }
     
@@ -84,7 +133,7 @@
         font-family: "Montserrat", sans-serif;
         font-size: 20px;
         font-weight: 700;
-        color: #fff;
+        color: var(--text-primary);
         margin: 0 0 16px;
         display: inline-flex;
         align-items: center;
@@ -96,9 +145,18 @@
         position: relative;
     }
     
-    .movie-disabled a {
+    /* Chỉ disable poster và info-link, KHÔNG disable time-btn */
+    .movie-disabled a.poster,
+    .movie-disabled a.info-link {
         cursor: not-allowed !important;
         pointer-events: none;
+    }
+    
+    /* Đảm bảo time-btn vẫn có thể click được */
+    .movie-disabled a.time-btn {
+        cursor: pointer !important;
+        pointer-events: auto !important;
+        opacity: 1 !important;
     }
     
     .movie-disabled::after {
@@ -258,12 +316,14 @@
                                     $showtimeId = $movie['showtime_ids'][$index] ?? null;
                                     if (!$showtimeId) continue;
                                     // Link đến trang chi tiết phim với ngày và rạp đã chọn
-                                    $movieDetailUrl = $canClick ? BASE_URL . '?act=movies&id=' . $movie['id'] . '&date=' . $selectedDate . '&cinema=' . $cinemaId : 'javascript:void(0);';
+                                    // Luôn cho phép click vào giờ chiếu để đi đến trang chi tiết phim
+                                    $movieDetailUrl = BASE_URL . '?act=movies&id=' . $movie['id'] . '&date=' . $selectedDate;
+                                    if (!empty($cinemaId)) {
+                                        $movieDetailUrl .= '&cinema=' . $cinemaId;
+                                    }
                                     ?>
                                     <a class="time-btn" href="<?= $movieDetailUrl ?>"
-                                        title="<?= $canClick ? 'Xem chi tiết phim và chọn ghế cho suất chiếu ' . date('H:i', strtotime($time)) : 'Vui lòng chọn rạp trước' ?>"
-                                        <?= !$canClick ? 'onclick="event.preventDefault(); alert(\'Vui lòng chọn rạp trước khi xem chi tiết phim\'); return false;"' : '' ?>
-                                        style="<?= !$canClick ? 'opacity: 0.5; cursor: not-allowed;' : '' ?>">
+                                        title="Xem chi tiết phim và chọn ghế cho suất chiếu <?= date('H:i', strtotime($time)) ?>">
                                         <?= date('H:i', strtotime($time)) ?>
                                     </a>
                                 <?php endforeach; ?>
@@ -302,15 +362,34 @@
             const movieCards = document.querySelectorAll('.movie-card');
             movieCards.forEach(card => {
                 if (card.classList.contains('movie-disabled')) {
-                    const links = card.querySelectorAll('a');
-                    links.forEach(link => {
-                        // Đảm bảo tất cả các link đều bị disable
+                    // Chỉ disable poster và info-link, KHÔNG disable time-btn
+                    const posterLinks = card.querySelectorAll('a.poster');
+                    const infoLinks = card.querySelectorAll('a.info-link');
+                    
+                    posterLinks.forEach(link => {
                         link.addEventListener('click', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
                             alert('Vui lòng chọn rạp trước khi xem chi tiết phim');
                             return false;
-                        }, true); // Use capture phase để chắc chắn
+                        }, true);
+                    });
+                    
+                    infoLinks.forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            alert('Vui lòng chọn rạp trước khi xem chi tiết phim');
+                            return false;
+                        }, true);
+                    });
+                    
+                    // Đảm bảo time-btn vẫn có thể click được
+                    const timeBtns = card.querySelectorAll('a.time-btn');
+                    timeBtns.forEach(btn => {
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.cursor = 'pointer';
+                        btn.style.opacity = '1';
                     });
                 }
             });

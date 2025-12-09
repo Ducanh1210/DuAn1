@@ -74,6 +74,7 @@ class UsersController
         $stats = [
             'total' => $this->user->countByRole(), // Tổng số user
             'admin' => $this->user->countByRole('admin'), // Số admin
+            'manager' => $this->user->countByRole('manager'), // Số manager
             'staff' => $this->user->countByRole('staff'), // Số staff
             'customer' => $this->user->countByRole('customer') // Số customer
         ];
@@ -135,12 +136,14 @@ class UsersController
                 $errors['role'] = "Bạn vui lòng chọn quyền";
             } elseif ($_POST['role'] === 'admin') {
                 $errors['role'] = "Không thể tạo tài khoản Admin. Chỉ có 1 Admin duy nhất trong hệ thống";
-            } elseif (!in_array($_POST['role'], ['manager', 'staff', 'customer'])) {
-                $errors['role'] = "Quyền không hợp lệ. Chỉ có thể tạo Manager, Staff hoặc Customer";
+            } elseif ($_POST['role'] === 'customer') {
+                $errors['role'] = "Không thể tạo tài khoản Khách hàng. Khách hàng tự đăng ký tài khoản.";
+            } elseif (!in_array($_POST['role'], ['manager', 'staff'])) {
+                $errors['role'] = "Quyền không hợp lệ. Chỉ có thể tạo Quản lý hoặc Nhân viên";
             }
             
-            // Khi THÊM user, không bắt buộc phải chọn rạp (có thể thêm sau khi sửa)
-            // Validation rạp chỉ áp dụng khi SỬA user
+            // Khi tạo mới: không bắt buộc phải gán rạp (có thể gán sau)
+            // Chỉ cần kiểm tra nếu có nhập thì phải hợp lệ
 
             // Kiểm tra phone nếu có
             if (!empty($_POST['phone'])) {
@@ -170,7 +173,7 @@ class UsersController
                     'role' => trim($_POST['role']),
                     'status' => 'active',
                     'total_spending' => 0.00,
-                    'cinema_id' => (in_array($_POST['role'], ['manager', 'staff']) && !empty($_POST['cinema_id'])) ? trim($_POST['cinema_id']) : null
+                    'cinema_id' => (!empty($_POST['cinema_id']) && in_array($_POST['role'], ['manager', 'staff'])) ? trim($_POST['cinema_id']) : null
                 ];
                 $this->user->insert($data);
                 header('Location: ' . BASE_URL . '?act=users');
@@ -236,29 +239,11 @@ class UsersController
                 }
             }
 
-            if (empty(trim($_POST['role'] ?? ''))) {
-                $errors['role'] = "Bạn vui lòng chọn quyền";
-            } else {
-                // Kiểm tra quyền thay đổi
-                $newRole = trim($_POST['role']);
-                $currentRole = $user['role'] ?? '';
-                
-                // Không cho phép chuyển sang admin
-                if ($newRole === 'admin') {
-                    $errors['role'] = "Không thể chuyển tài khoản sang Admin. Chỉ có 1 Admin duy nhất trong hệ thống";
-                }
-                // Không cho phép thay đổi role của admin
-                elseif ($currentRole === 'admin' && $newRole !== 'admin') {
-                    $errors['role'] = "Không thể thay đổi quyền của Admin";
-                }
-                // Chỉ cho phép chuyển giữa manager, staff và customer
-                elseif (!in_array($newRole, ['manager', 'staff', 'customer'])) {
-                    $errors['role'] = "Quyền không hợp lệ. Chỉ có thể chuyển giữa Manager, Staff và Customer";
-                }
-            }
+            // Giữ nguyên role hiện tại, không cho phép thay đổi
+            $currentRole = $user['role'] ?? '';
             
-            // Khi SỬA user, nếu là manager hoặc staff thì bắt buộc phải chọn rạp
-            if (in_array(trim($_POST['role'] ?? ''), ['manager', 'staff'])) {
+            // Nếu là manager hoặc staff, kiểm tra cinema_id
+            if (in_array($currentRole, ['manager', 'staff'])) {
                 if (empty(trim($_POST['cinema_id'] ?? ''))) {
                     $errors['cinema_id'] = "Quản lý/Nhân viên phải được gán cho một rạp";
                 }
@@ -282,15 +267,16 @@ class UsersController
 
             // Nếu không có lỗi, cập nhật user trong database
             if (empty($errors)) {
+                $currentRole = $user['role'] ?? '';
                 $data = [
                     'full_name' => trim($_POST['full_name']),
                     'email' => trim($_POST['email']),
                     'phone' => trim($_POST['phone'] ?? ''),
                     'birth_date' => trim($_POST['birth_date'] ?? ''),
                     'tier_id' => !empty($_POST['tier_id']) ? trim($_POST['tier_id']) : null,
-                    'role' => trim($_POST['role']),
+                    'role' => $currentRole, // Giữ nguyên role hiện tại
                     'total_spending' => floatval($_POST['total_spending'] ?? $user['total_spending']),
-                    'cinema_id' => (in_array($_POST['role'], ['manager', 'staff']) && !empty($_POST['cinema_id'])) ? trim($_POST['cinema_id']) : null
+                    'cinema_id' => (in_array($currentRole, ['manager', 'staff']) && !empty($_POST['cinema_id'])) ? trim($_POST['cinema_id']) : null
                 ];
 
                 // Chỉ cập nhật password nếu có thay đổi

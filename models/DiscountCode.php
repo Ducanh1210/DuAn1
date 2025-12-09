@@ -9,12 +9,18 @@ class DiscountCode
     }
 
     /**
-     * Lấy tất cả discount codes
+     * Lấy tất cả discount codes (có thông tin phim nếu có)
      */
     public function all()
     {
         try {
-            $sql = "SELECT * FROM discount_codes ORDER BY created_at DESC";
+            $sql = "SELECT dc.*, 
+                    m.id AS movie_id, 
+                    m.title AS movie_title, 
+                    m.image AS movie_image
+                    FROM discount_codes dc
+                    LEFT JOIN movies m ON dc.movie_id = m.id
+                    ORDER BY dc.created_at DESC";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -41,28 +47,15 @@ class DiscountCode
     }
 
     /**
-     * Lấy discount code theo code
+     * Lấy discount code theo code (không filter status, để validateDiscountCode xử lý)
      */
     public function findByCode($code)
     {
         try {
-            $sql = "SELECT * FROM discount_codes WHERE code = :code AND status = 'active'";
+            $sql = "SELECT * FROM discount_codes WHERE code = :code";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([':code' => $code]);
-            $discount = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if ($discount) {
-                // Kiểm tra thời gian hiệu lực
-                $now = date('Y-m-d');
-                if ($discount['start_date'] && $now < $discount['start_date']) {
-                    return null;
-                }
-                if ($discount['end_date'] && $now > $discount['end_date']) {
-                    return null;
-                }
-            }
-            
-            return $discount;
+            $stmt->execute([':code' => strtoupper(trim($code))]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             error_log('Error in DiscountCode->findByCode(): ' . $e->getMessage());
             return null;
@@ -70,42 +63,67 @@ class DiscountCode
     }
 
     /**
-     * Validate discount code với total amount
+     * Validate discount code với total amount và movie_id (nếu có)
+     * Trả về null nếu không hợp lệ, hoặc array với thông tin discount nếu hợp lệ
+     * Có thể trả về error message trong trường hợp đặc biệt
      */
-    public function validateDiscountCode($code, $totalAmount = 0)
+    public function validateDiscountCode($code, $totalAmount = 0, $movieId = null)
     {
         try {
-            $discount = $this->findByCode($code);
+            // Tìm mã giảm giá (không cần status = 'active' ở đây vì sẽ check riêng)
+            $sql = "SELECT * FROM discount_codes WHERE code = :code";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':code' => strtoupper(trim($code))]);
+            $discount = $stmt->fetch(PDO::FETCH_ASSOC);
+
             if (!$discount) {
-                return null;
+                return ['error' => 'Mã giảm giá không tồn tại'];
             }
-            
+
+            // Kiểm tra status
+            if ($discount['status'] !== 'active') {
+                return ['error' => 'Mã giảm giá không hoạt động'];
+            }
+
             // Kiểm tra thời gian hiệu lực
             $now = date('Y-m-d');
             if ($discount['start_date'] && $now < $discount['start_date']) {
-                return null; // Chưa đến thời gian
+                return ['error' => 'Mã giảm giá chưa đến thời gian áp dụng'];
             }
             if ($discount['end_date'] && $now > $discount['end_date']) {
-                return null; // Đã hết hạn
+                return ['error' => 'Mã giảm giá đã hết hạn'];
             }
-            
+
+            // Kiểm tra nếu mã giảm giá chỉ áp dụng cho phim cụ thể
+            if (!empty($discount['movie_id'])) {
+                $discountMovieId = (int)$discount['movie_id'];
+                $providedMovieId = $movieId ? (int)$movieId : null;
+                if (empty($providedMovieId)) {
+                    return ['error' => 'Mã giảm giá này chỉ áp dụng cho phim cụ thể. Vui lòng chọn phim phù hợp.'];
+                }
+                if ($discountMovieId !== $providedMovieId) {
+                    return ['error' => 'Mã giảm giá này chỉ áp dụng cho phim cụ thể. Vui lòng kiểm tra lại phim bạn đang đặt vé.'];
+                }
+            }
+
             // Tính toán discount amount
             $discountAmount = 0;
             if ($discount['discount_percent'] > 0 && $totalAmount > 0) {
                 $discountAmount = ($totalAmount * $discount['discount_percent']) / 100;
             }
-            
+
             return [
                 'id' => $discount['id'],
                 'code' => $discount['code'],
                 'discount_percent' => $discount['discount_percent'],
                 'discount_amount' => $discountAmount,
                 'start_date' => $discount['start_date'],
-                'end_date' => $discount['end_date']
+                'end_date' => $discount['end_date'],
+                'movie_id' => $discount['movie_id'] ?? null
             ];
         } catch (Exception $e) {
             error_log('Error in DiscountCode->validateDiscountCode(): ' . $e->getMessage());
-            return null;
+            return ['error' => 'Có lỗi xảy ra khi kiểm tra mã giảm giá'];
         }
     }
 
@@ -115,10 +133,10 @@ class DiscountCode
     public function insert($data)
     {
         try {
-            $sql = "INSERT INTO discount_codes (code, title, discount_percent, start_date, end_date, description, benefits, status, cta) 
-                    VALUES (:code, :title, :discount_percent, :start_date, :end_date, :description, :benefits, :status, :cta)";
+            $sql = "INSERT INTO discount_codes (code, title, discount_percent, start_date, end_date, movie_id, description, benefits, status, cta) 
+                    VALUES (:code, :title, :discount_percent, :start_date, :end_date, :movie_id, :description, :benefits, :status, :cta)";
             $stmt = $this->conn->prepare($sql);
-            
+
             // Xử lý benefits JSON
             $benefits = null;
             if (!empty($data['benefits'])) {
@@ -128,13 +146,14 @@ class DiscountCode
                     $benefits = $data['benefits'];
                 }
             }
-            
+
             return $stmt->execute([
                 ':code' => strtoupper(trim($data['code'])),
                 ':title' => trim($data['title']),
                 ':discount_percent' => (int)($data['discount_percent'] ?? 0),
                 ':start_date' => $data['start_date'] ?? null,
                 ':end_date' => $data['end_date'] ?? null,
+                ':movie_id' => !empty($data['movie_id']) ? (int)$data['movie_id'] : null,
                 ':description' => $data['description'] ?? null,
                 ':benefits' => $benefits,
                 ':status' => $data['status'] ?? 'active',
@@ -154,11 +173,11 @@ class DiscountCode
         try {
             $sql = "UPDATE discount_codes 
                     SET code = :code, title = :title, discount_percent = :discount_percent, 
-                        start_date = :start_date, end_date = :end_date, description = :description, 
-                        benefits = :benefits, status = :status, cta = :cta, updated_at = NOW()
+                        start_date = :start_date, end_date = :end_date, movie_id = :movie_id, 
+                        description = :description, benefits = :benefits, status = :status, cta = :cta, updated_at = NOW()
                     WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
-            
+
             // Xử lý benefits JSON
             $benefits = null;
             if (!empty($data['benefits'])) {
@@ -168,7 +187,7 @@ class DiscountCode
                     $benefits = $data['benefits'];
                 }
             }
-            
+
             return $stmt->execute([
                 ':id' => $id,
                 ':code' => strtoupper(trim($data['code'])),
@@ -176,6 +195,7 @@ class DiscountCode
                 ':discount_percent' => (int)($data['discount_percent'] ?? 0),
                 ':start_date' => $data['start_date'] ?? null,
                 ':end_date' => $data['end_date'] ?? null,
+                ':movie_id' => !empty($data['movie_id']) ? (int)$data['movie_id'] : null,
                 ':description' => $data['description'] ?? null,
                 ':benefits' => $benefits,
                 ':status' => $data['status'] ?? 'active',
@@ -210,12 +230,12 @@ class DiscountCode
         try {
             $sql = "SELECT COUNT(*) FROM discount_codes WHERE code = :code";
             $params = [':code' => strtoupper(trim($code))];
-            
+
             if ($excludeId) {
                 $sql .= " AND id != :exclude_id";
                 $params[':exclude_id'] = $excludeId;
             }
-            
+
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchColumn() > 0;
@@ -224,5 +244,53 @@ class DiscountCode
             return false;
         }
     }
-}
 
+    /**
+     * Lấy danh sách mã khuyến mãi đang active (có thể áp dụng)
+     * @param int|null $movieId Nếu có, chỉ lấy mã áp dụng cho phim đó hoặc mã tổng quát
+     * @param int $limit Số lượng mã tối đa
+     * @param bool $includeMovieSpecific Nếu true, bao gồm cả mã áp dụng cho phim cụ thể
+     */
+    public function getAvailableCodes($movieId = null, $limit = 5, $includeMovieSpecific = false)
+    {
+        try {
+            $now = date('Y-m-d');
+            $sql = "SELECT dc.*, 
+                    m.id AS movie_id, 
+                    m.title AS movie_title, 
+                    m.image AS movie_image
+                    FROM discount_codes dc
+                    LEFT JOIN movies m ON dc.movie_id = m.id
+                    WHERE dc.status = 'active'
+                    AND (dc.start_date IS NULL OR dc.start_date <= :now)
+                    AND (dc.end_date IS NULL OR dc.end_date >= :now)";
+            
+            $params = [':now' => $now];
+            
+            if ($includeMovieSpecific) {
+                // Lấy tất cả mã (cả tổng quát và phim cụ thể)
+                // Không thêm điều kiện filter
+            } elseif ($movieId) {
+                // Nếu có movie_id, ưu tiên mã áp dụng cho phim đó hoặc mã áp dụng cho tất cả phim
+                $sql .= " AND (dc.movie_id IS NULL OR dc.movie_id = :movie_id)";
+                $params[':movie_id'] = $movieId;
+            } else {
+                // Nếu không có movie_id, chỉ lấy mã áp dụng cho tất cả phim
+                $sql .= " AND dc.movie_id IS NULL";
+            }
+            
+            $sql .= " ORDER BY dc.discount_percent DESC, dc.created_at DESC LIMIT :limit";
+            
+            $stmt = $this->conn->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log('Error in DiscountCode->getAvailableCodes(): ' . $e->getMessage());
+            return [];
+        }
+    }
+}

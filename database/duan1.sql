@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 27, 2025 at 12:11 PM
+-- Generation Time: Dec 08, 2025 at 06:33 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -51,21 +51,30 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `user_id`, `showtime_id`, `discount_id`, `booking_date`, `booked_seats`, `seat_type`, `customer_type`, `total_amount`, `discount_amount`, `final_amount`, `status`, `qr_code`, `booking_code`, `cinema_id`, `room_id`) VALUES
-(4, 3, 9, NULL, '2025-11-19 10:21:08', 'C12,C11', 'normal', NULL, 160000.00, 0.00, 160000.00, 'paid', NULL, 'BK2025111943C218', 1, 18),
-(5, 3, 9, NULL, '2025-11-19 10:32:15', 'B7,B6,B5', 'normal', NULL, 240000.00, 0.00, 240000.00, 'paid', NULL, 'BK20251119F0FF11', 1, 18),
-(6, 3, 9, NULL, '2025-11-19 12:53:17', 'C8,C7', 'normal', NULL, 160000.00, 0.00, 160000.00, 'cancelled', NULL, 'BK20251119D29273', 1, 18),
-(7, 3, 9, NULL, '2025-11-19 13:23:29', 'A11', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635334097649', 1, 18),
-(8, 3, 9, NULL, '2025-11-19 13:38:21', 'D11', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635343016235', 1, 18),
-(10, 3, 9, NULL, '2025-11-19 23:29:59', 'A4,A5,A6,A7', NULL, NULL, 320000.00, 0.00, 320000.00, 'paid', NULL, 'BK17635697994209', 1, 18),
-(11, 3, 9, NULL, '2025-11-19 23:34:04', 'B3,B4', NULL, NULL, 160000.00, 0.00, 160000.00, 'paid', NULL, 'BK17635700449534', 1, 18),
-(12, 3, 9, NULL, '2025-11-19 23:41:37', 'B9', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635704977283', 1, 18),
+(4, 3, NULL, NULL, '2025-11-19 10:21:08', 'C12,C11', 'normal', NULL, 160000.00, 0.00, 160000.00, 'paid', NULL, 'BK2025111943C218', 1, 18),
+(5, 3, NULL, NULL, '2025-11-19 10:32:15', 'B7,B6,B5', 'normal', NULL, 240000.00, 0.00, 240000.00, 'paid', NULL, 'BK20251119F0FF11', 1, 18),
+(6, 3, NULL, NULL, '2025-11-19 12:53:17', 'C8,C7', 'normal', NULL, 160000.00, 0.00, 160000.00, 'cancelled', NULL, 'BK20251119D29273', 1, 18),
+(7, 3, NULL, NULL, '2025-11-19 13:23:29', 'A11', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635334097649', 1, 18),
+(8, 3, NULL, NULL, '2025-11-19 13:38:21', 'D11', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635343016235', 1, 18),
+(10, 3, NULL, NULL, '2025-11-19 23:29:59', 'A4,A5,A6,A7', NULL, NULL, 320000.00, 0.00, 320000.00, 'paid', NULL, 'BK17635697994209', 1, 18),
+(11, 3, NULL, NULL, '2025-11-19 23:34:04', 'B3,B4', NULL, NULL, 160000.00, 0.00, 160000.00, 'paid', NULL, 'BK17635700449534', 1, 18),
+(12, 3, NULL, NULL, '2025-11-19 23:41:37', 'B9', NULL, NULL, 80000.00, 0.00, 80000.00, 'paid', NULL, 'BK17635704977283', 1, 18),
 (13, 3, 7, NULL, '2025-11-19 23:54:26', 'B8,B9', NULL, NULL, 180000.00, 0.00, 180000.00, 'pending', NULL, 'BK17635712663434', 1, 17),
 (14, 3, 2, NULL, '2025-11-20 09:43:19', 'A5,A6,A7,A8,A9', NULL, NULL, 400000.00, 0.00, 400000.00, 'paid', NULL, 'BK17636065992196', 1, 18),
 (15, 3, 4, NULL, '2025-11-20 19:46:25', 'A3,A4', NULL, NULL, 180000.00, 0.00, 180000.00, 'paid', NULL, 'BK17636427856547', 1, 17),
 (17, 3, 2, NULL, '2025-11-20 21:32:21', 'B6', NULL, NULL, 55000.00, 0.00, 55000.00, 'paid', NULL, 'BK17636491412783', 1, 18),
 (18, 3, 5, 3, '2025-11-24 10:53:16', 'A4,A5,A6,A7,A8', NULL, NULL, 375000.00, 75000.00, 300000.00, 'pending', NULL, 'BK17639563965750', 1, 18),
 (19, 3, 10, 3, '2025-11-24 10:59:50', 'A4,A5,A6,A7,A8', NULL, NULL, 325000.00, 65000.00, 260000.00, 'cancelled', NULL, 'BK17639567904155', 2, 21),
-(20, 3, 3, 6, '2025-11-26 10:48:58', 'A4', NULL, NULL, 85000.00, 85000.00, 0.00, 'pending', NULL, 'BK17641289388833', 1, 17);
+(20, 3, 3, 6, '2025-11-26 10:48:58', 'A4', NULL, NULL, 85000.00, 85000.00, 0.00, 'pending', NULL, 'BK17641289388833', 1, 17),
+(21, 3, NULL, NULL, '2025-11-27 20:05:22', 'A3', NULL, NULL, 75000.00, 0.00, 75000.00, 'paid', NULL, 'BK17642487225080', 3, 23),
+(22, 3, 11, NULL, '2025-11-27 21:16:22', 'A1,A2,A3,A4,A5', NULL, NULL, 355000.00, 0.00, 355000.00, 'paid', NULL, 'BK17642529829933', 1, 17),
+(23, 3, 15, 6, '2025-11-28 10:02:48', 'A3', NULL, NULL, 75000.00, 63750.00, 11250.00, 'paid', NULL, 'BK17642989681601', 3, 23),
+(24, 3, 15, 6, '2025-11-28 10:58:43', 'B6', NULL, NULL, 75000.00, 63750.00, 11250.00, 'paid', NULL, 'BK17643023239903', 3, 23),
+(25, 3, 218, NULL, '2025-12-03 10:05:12', 'C4', NULL, NULL, 85000.00, 0.00, 85000.00, 'pending', NULL, 'BK17647311124144', 1, 17),
+(26, 3, 218, NULL, '2025-12-03 10:05:27', 'C4', NULL, NULL, 85000.00, 0.00, 85000.00, 'paid', NULL, 'BK17647311272996', 1, 17),
+(28, 3, 199, NULL, '2025-12-03 10:31:36', 'B1,B2,B3', NULL, NULL, 225000.00, 0.00, 225000.00, 'paid', NULL, 'BK17647326964828', 2, 21),
+(29, 3, 199, NULL, '2025-12-03 11:02:50', 'A3', NULL, NULL, 75000.00, 0.00, 75000.00, 'paid', NULL, 'BK17647345706049', 2, 21),
+(30, 9, 199, NULL, '2025-12-03 11:02:51', 'A3', NULL, NULL, 75000.00, 0.00, 75000.00, 'paid', NULL, 'BK17647345715822', 2, 21);
 
 -- --------------------------------------------------------
 
@@ -124,7 +133,8 @@ CREATE TABLE `comments` (
 --
 
 INSERT INTO `comments` (`id`, `user_id`, `movie_id`, `rating`, `content`, `created_at`) VALUES
-(1, 3, 7, 5, 'hay lắm cần tốt hơn', '2025-11-23 21:54:50');
+(2, 3, 6, 5, 'cũng hay nhm bn cần làm j đó cho khách hàng bt đến nhiều hơn', '2025-11-27 20:44:25'),
+(3, 3, 7, 5, 'bổ rẻ hay nữa', '2025-11-27 21:10:59');
 
 -- --------------------------------------------------------
 
@@ -141,6 +151,7 @@ CREATE TABLE `contacts` (
   `message` text NOT NULL COMMENT 'Nội dung tin nhắn',
   `status` varchar(20) DEFAULT 'pending' COMMENT 'Trạng thái: pending, processing, resolved, closed',
   `user_id` int DEFAULT NULL,
+  `cinema_id` int DEFAULT NULL COMMENT 'ID rạp mà khách hàng muốn gửi phản hồi',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời gian tạo',
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Thời gian cập nhật'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng lưu trữ thông tin liên hệ của khách hàng';
@@ -149,9 +160,9 @@ CREATE TABLE `contacts` (
 -- Dumping data for table `contacts`
 --
 
-INSERT INTO `contacts` (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `user_id`, `created_at`, `updated_at`) VALUES
-(1, 'Duc anh', 'anp93005@gmail.com', '0386036692', 'Đặt vé', 'tôi muốn đặt vé mà ko đc', 'resolved', NULL, '2025-11-25 23:05:53', '2025-11-25 23:14:00'),
-(2, 'Duc anh', 'anp93005@gmail.com', '0386036692', 'Đặt vé', 'tôi ko đặt vé đc admin ơi', 'processing', NULL, '2025-11-26 10:42:57', '2025-11-26 10:44:00');
+INSERT INTO `contacts` (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `user_id`, `cinema_id`, `created_at`, `updated_at`) VALUES
+(3, 'Duc anh', 'anh123@gmail.com', '0386036692', 'Đặt vé', 'fnbfdbdfd', 'resolved', 3, 2, '2025-12-06 20:04:41', '2025-12-06 20:18:10'),
+(7, 'nguyễn văn A', 'anh123@gmail.com', '0386036636', 'Đặt vé', 'bcsxvdszd', 'pending', 3, 1, '2025-12-06 20:11:50', '2025-12-06 20:11:50');
 
 -- --------------------------------------------------------
 
@@ -183,25 +194,28 @@ CREATE TABLE `discount_codes` (
   `discount_percent` int DEFAULT '0',
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
+  `movie_id` int DEFAULT NULL,
   `description` text,
   `benefits` json DEFAULT NULL,
   `status` varchar(20) DEFAULT 'active',
   `cta` varchar(100) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng mã giảm giá';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng mã giảm giá (movie_id = NULL: áp dụng cho tất cả phim, movie_id != NULL: chỉ áp dụng cho phim cụ thể)';
 
 --
 -- Dumping data for table `discount_codes`
 --
 
-INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_date`, `end_date`, `description`, `benefits`, `status`, `cta`, `created_at`, `updated_at`) VALUES
-(1, 'WEEKEND25', 'Giảm giá cuối tuần 25%', 25, '2025-11-01', '2025-12-31', 'Ưu đãi đặc biệt cho các suất chiếu cuối tuần (Thứ 6, Thứ 7, Chủ nhật). Áp dụng cho tất cả phim và tất cả rạp.', '[\"Áp dụng cho suất chiếu cuối tuần\", \"Giảm 25% cho mọi vé\", \"Không giới hạn số lượng vé\", \"Áp dụng cho tất cả phim\"]', 'active', 'Đặt vé cuối tuần', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', '2025-11-20 15:00:00', '2025-11-24 09:19:57'),
-(3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(6, 'FASHION209', '100%', 100, '2025-11-26', '2025-11-27', '', NULL, 'active', '', '2025-11-26 10:47:51', '2025-11-26 10:47:51');
+INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_date`, `end_date`, `movie_id`, `description`, `benefits`, `status`, `cta`, `created_at`, `updated_at`) VALUES
+(1, 'WEEKEND25', 'Giảm giá cuối tuần 25%', 25, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho các suất chiếu cuối tuần (Thứ 6, Thứ 7, Chủ nhật). Áp dụng cho tất cả phim và tất cả rạp.', '[\"Áp dụng cho suất chiếu cuối tuần\", \"Giảm 25% cho mọi vé\", \"Không giới hạn số lượng vé\", \"Áp dụng cho tất cả phim\"]', 'active', 'Đặt vé cuối tuần', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', NULL, 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', '2025-11-20 15:00:00', '2025-11-24 09:19:57'),
+(3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', NULL, 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(6, 'FASHION209', '85%', 85, '2025-11-28', '2025-11-30', NULL, '', NULL, 'active', '', '2025-11-26 10:47:51', '2025-11-28 10:02:17'),
+(7, 'TRONCHAY30', 'Giảm giá TRỐN CHẠY TỬ THẦN 30%', 30, '2025-11-28', '2025-12-12', 9, 'Ưu đãi đặc biệt dành riêng cho phim TRỐN CHẠY TỬ THẦN-T18. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 30% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim TRỐN CHẠY TỬ THẦN-T18\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', '2025-11-28 10:00:00', '2025-11-28 10:00:00'),
+(8, 'CHINGA25', 'Giảm giá Chị Ngã Em Nâng 25%', 25, '2025-11-28', '2025-12-11', 12, 'Ưu đãi đặc biệt dành riêng cho phim Chị Ngã Em Nâng. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 25% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim Chị Ngã Em Nâng\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', '2025-11-28 10:00:00', '2025-11-28 10:00:00');
 
 -- --------------------------------------------------------
 
@@ -222,32 +236,13 @@ CREATE TABLE `food_drinks` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `invoices`
---
-
-CREATE TABLE `invoices` (
-  `id` int NOT NULL,
-  `payment_id` int DEFAULT NULL,
-  `user_id` int DEFAULT NULL,
-  `invoice_code` varchar(50) DEFAULT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `total_amount` decimal(12,2) DEFAULT NULL,
-  `discount_amount` decimal(10,2) DEFAULT NULL,
-  `extra_fee` decimal(10,2) DEFAULT NULL,
-  `final_amount` decimal(12,2) DEFAULT NULL,
-  `type` varchar(30) DEFAULT NULL,
-  `notes` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `movies`
 --
 
 CREATE TABLE `movies` (
   `id` int NOT NULL,
   `genre_id` int DEFAULT NULL,
+  `cinema_id` int DEFAULT NULL,
   `title` varchar(255) NOT NULL,
   `description` text,
   `duration` int DEFAULT NULL,
@@ -269,14 +264,46 @@ CREATE TABLE `movies` (
 -- Dumping data for table `movies`
 --
 
-INSERT INTO `movies` (`id`, `genre_id`, `title`, `description`, `duration`, `image`, `trailer`, `release_date`, `end_date`, `format`, `original_language`, `subtitle_or_dub`, `age_rating`, `producer`, `status`, `created_at`, `updated_at`) VALUES
-(6, 7, 'Quán kỳ nma', 'ko hay lắm đâu', 120, 'image/phim 4.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-27', '2025-11-28', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-14 19:38:50', '2025-11-27 16:07:09'),
-(7, 3, 'Phòng trọ ma bầu', 'kinh dị ko nên xem', 120, 'image/phim 5.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-27', '2025-11-29', '3D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-14 20:27:20', '2025-11-27 16:07:22'),
-(8, 1, 'Truy tìm long diên hương', 'cx hay lắm nha', 122, 'image/phim5.jpg', 'https://youtu.be/XjhAFebnNkM?si=vKFX_9ElyDAoSMMX', '2025-11-27', '2025-11-29', '2D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-15 11:43:43', '2025-11-27 16:07:44'),
-(9, 1, 'TRỐN CHẠY TỬ THẦN-T18', 'Trong bối cảnh xã hội tương lai gần, Trốn Chạy Tử Thần là chương trình truyền hình ăn khách nhất, một cuộc thi sinh tồn khốc liệt nơi các thí sinh, được gọi là “Runners”, phải trốn chạy suốt 30 ngày khỏi sự truy đuổi của các sát thủ chuyên nghiệp. Mọi bước đi của họ đều được phát sóng công khai cho khán giả theo dõi và phần thưởng tiền mặt sẽ tăng lên sau mỗi ngày sống sót. Vì cần tiền cứu chữa cho cô con gái bệnh nặng, Ben...', 133, 'image/phim 3.jpg', 'https://youtu.be/NuOl156fv_c?si=98qM39lvGn18VcdI', '2025-11-19', '2025-11-20', '2D', 'Tiếng Anh', 'Phụ Đề', 'C16', 'Mỹ', 'active', '2025-11-15 22:40:20', '2025-11-19 07:29:12'),
-(10, 6, 'MỘ ĐOM ĐÓM', 'Hai anh em Seita và Setsuko mất mẹ sau cuộc thả bom dữ dội của không quân Mỹ. Cả hai phải vật lộn để tồn tại ở Nhật Bản hậu Thế chiến II. Nhưng xã hội khắc nghiệt và chúng vật lộn tìm kiếm thức ăn cũng như thoát khỏi những khó khăn giữa chiến tranh.', 120, 'image/phim 6.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-11-17', '2025-11-19', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-17 09:58:57', '2025-11-17 19:38:42'),
-(11, 2, 'Tay Anh Giữ Một Vì Sao', 'Tay Anh Giữ Một Vì Sao” mang đến một làn gió mới trong dòng phim chiếu rạp hay khi kết hợp khéo léo giữa yếu tố hài hước và cảm xúc chân thành. Câu chuyện xoay quanh siêu sao Kang Jun Woo bỗng rơi vào chuỗi sự cố trớ trêu khiến anh vô tình “mắc kẹt” tại Việt Nam. Tại đây, anh gặp Thảo - cô gái bán cà phê giản dị nhưng mang trong mình khát vọng lớn lao. Những va chạm và hiểu lầm dần trở thành sợi dây gắn kết, giúp cả hai tìm thấy niềm tin, ước mơ và định nghĩa mới về tình yêu. Bộ phim không chỉ khiến khán giả bật cười bởi những tình huống duyên dáng mà còn chạm đến trái tim bằng câu chuyện nhân văn về sự đồng cảm và thay đổi.', 117, 'image/phim7.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-24', '2025-11-27', '2D', 'Tiếng Anh', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-19 09:35:10', '2025-11-24 09:01:43'),
-(12, 2, 'Chị Ngã Em Nâng', 'Giữa muôn vàn phim chiếu rạp hay tháng 10, “Chị Ngã Em Nâng” nổi bật như một bản giao hòa đầy cảm xúc về tình thân và nghị lực con người. Bộ phim khắc họa hành trình của hai chị em Thương và Lực là những người lớn lên trong gia đình gắn bó với nghề làm nhang truyền thống. Với tuổi thơ nhiều mất mát, Thương trở thành điểm tựa duy nhất cho em trai, mang trong mình khát vọng đổi đời và niềm tin mãnh liệt vào tương lai. Thế nhưng, khi thành công đến, sự kỳ vọng và áp lực vô tình khiến tình chị em rạn nứt, đẩy họ đến những lựa chọn đau lòng. “Chị Ngã Em Nâng” chạm đến trái tim người xem bằng những giá trị nhân văn sâu sắc, về tình thương, sự bao dung và ý nghĩa của hai chữ “gia đình”.', 122, 'image/hh.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-11-20', '2025-11-22', '3D', 'Tiếng Việt', 'Phụ Đề', 'C13', 'Việt Nam', 'active', '2025-11-19 09:40:28', '2025-11-19 09:40:28');
+INSERT INTO `movies` (`id`, `genre_id`, `cinema_id`, `title`, `description`, `duration`, `image`, `trailer`, `release_date`, `end_date`, `format`, `original_language`, `subtitle_or_dub`, `age_rating`, `producer`, `status`, `created_at`, `updated_at`) VALUES
+(6, 7, NULL, 'Quán kỳ nma', 'ko hay lắm đâu', 120, 'image/phim 4.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-27', '2025-12-20', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-14 19:38:50', '2025-11-28 08:17:48'),
+(7, 3, NULL, 'Phòng trọ ma bầu', 'kinh dị ko nên xem', 120, 'image/phim 5.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-27', '2025-12-20', '3D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-14 20:27:20', '2025-11-28 08:18:00'),
+(8, 1, NULL, 'Truy tìm long diên hương', 'cx hay lắm nha', 122, 'image/phim5.jpg', 'https://youtu.be/XjhAFebnNkM?si=vKFX_9ElyDAoSMMX', '2025-11-27', '2025-12-20', '2D', 'Tiếng Việt', 'Phụ Đề', 'C18', 'Việt Nam', 'active', '2025-11-15 11:43:43', '2025-11-28 08:18:07'),
+(9, 1, NULL, 'TRỐN CHẠY TỬ THẦN-T18', 'Trong bối cảnh xã hội tương lai gần, Trốn Chạy Tử Thần là chương trình truyền hình ăn khách nhất, một cuộc thi sinh tồn khốc liệt nơi các thí sinh, được gọi là \"Runners\", phải trốn chạy suốt 30 ngày khỏi sự truy đuổi của các sát thủ chuyên nghiệp. Mọi bước đi của họ đều được phát sóng công khai cho khán giả theo dõi và phần thưởng tiền mặt sẽ tăng lên sau mỗi ngày sống sót. Vì cần tiền cứu chữa cho cô con gái bệnh nặng, Ben...', 133, 'image/phim 3.jpg', 'https://youtu.be/NuOl156fv_c?si=98qM39lvGn18VcdI', '2025-11-28', '2025-12-20', '2D', 'Tiếng Anh', 'Phụ Đề', 'C16', 'Mỹ', 'active', '2025-11-15 22:40:20', '2025-11-28 08:24:59'),
+(10, 6, NULL, 'MỘ ĐOM ĐÓM', 'Hai anh em Seita và Setsuko mất mẹ sau cuộc thả bom dữ dội của không quân Mỹ. Cả hai phải vật lộn để tồn tại ở Nhật Bản hậu Thế chiến II. Nhưng xã hội khắc nghiệt và chúng vật lộn tìm kiếm thức ăn cũng như thoát khỏi những khó khăn giữa chiến tranh.', 120, 'image/phim 6.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-11-28', '2025-12-20', '3D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-17 09:58:57', '2025-11-28 08:22:16'),
+(11, 2, NULL, 'Tay Anh Giữ Một Vì Sao', 'Tay Anh Giữ Một Vì Sao\" mang đến một làn gió mới trong dòng phim chiếu rạp hay khi kết hợp khéo léo giữa yếu tố hài hước và cảm xúc chân thành. Câu chuyện xoay quanh siêu sao Kang Jun Woo bỗng rơi vào chuỗi sự cố trớ trêu khiến anh vô tình \"mắc kẹt\" tại Việt Nam. Tại đây, anh gặp Thảo - cô gái bán cà phê giản dị nhưng mang trong mình khát vọng lớn lao. Những va chạm và hiểu lầm dần trở thành sợi dây gắn kết, giúp cả hai tìm thấy niềm tin, ước mơ và định nghĩa mới về tình yêu. Bộ phim không chỉ khiến khán giả bật cười bởi những tình huống duyên dáng mà còn chạm đến trái tim bằng câu chuyện nhân văn về sự đồng cảm và thay đổi.', 117, 'image/phim7.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-11-28', '2025-12-20', '2D', 'Tiếng Anh', 'Phụ Đề', 'P', 'Việt Nam', 'active', '2025-11-19 09:35:10', '2025-11-28 10:31:05'),
+(12, 2, NULL, 'Chị Ngã Em Nâng', 'Giữa muôn vàn phim chiếu rạp hay tháng 10, \"Chị Ngã Em Nâng\" nổi bật như một bản giao hòa đầy cảm xúc về tình thân và nghị lực con người. Bộ phim khắc họa hành trình của hai chị em Thương và Lực là những người lớn lên trong gia đình gắn bó với nghề làm nhang truyền thống. Với tuổi thơ nhiều mất mát, Thương trở thành điểm tựa duy nhất cho em trai, mang trong mình khát vọng đổi đời và niềm tin mãnh liệt vào tương lai. Thế nhưng, khi thành công đến, sự kỳ vọng và áp lực vô tình khiến tình chị em rạn nứt, đẩy họ đến những lựa chọn đau lòng. \"Chị Ngã Em Nâng\" chạm đến trái tim người xem bằng những giá trị nhân văn sâu sắc, về tình thương, sự bao dung và ý nghĩa của hai chữ \"gia đình\".', 122, 'image/hh.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-11-28', '2025-12-20', '3D', 'Tiếng Việt', 'Phụ Đề', 'C13', 'Việt Nam', 'active', '2025-11-19 09:40:28', '2025-11-28 08:18:28');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `movie_cinemas`
+--
+
+CREATE TABLE `movie_cinemas` (
+  `id` int NOT NULL,
+  `movie_id` int NOT NULL,
+  `cinema_id` int NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `movie_cinemas`
+--
+
+INSERT INTO `movie_cinemas` (`id`, `movie_id`, `cinema_id`, `created_at`) VALUES
+(4, 7, 1, '2025-11-28 01:18:00'),
+(5, 7, 2, '2025-11-28 01:18:00'),
+(6, 7, 3, '2025-11-28 01:18:00'),
+(7, 8, 1, '2025-11-28 01:18:07'),
+(8, 8, 3, '2025-11-28 01:18:07'),
+(12, 12, 2, '2025-11-28 01:18:28'),
+(16, 10, 3, '2025-11-28 01:22:16'),
+(17, 9, 2, '2025-11-28 01:24:59'),
+(18, 9, 3, '2025-11-28 01:24:59'),
+(20, 6, 1, '2025-11-28 03:10:02'),
+(21, 11, 1, '2025-11-28 03:31:05'),
+(22, 11, 2, '2025-11-28 03:31:05'),
+(23, 11, 3, '2025-11-28 03:31:05');
 
 -- --------------------------------------------------------
 
@@ -333,7 +360,16 @@ INSERT INTO `payments` (`id`, `booking_id`, `method`, `transaction_code`, `payme
 (6, 12, 'vnpay', '15271325', '2025-11-19 16:42:48', 80000.00, 0.00, 80000.00, 'paid'),
 (7, 14, 'vnpay', '15271629', '2025-11-20 02:44:19', 400000.00, 0.00, 400000.00, 'paid'),
 (8, 15, 'vnpay', '15273280', '2025-11-20 12:47:13', 180000.00, 0.00, 180000.00, 'paid'),
-(9, 17, 'vnpay', '15273478', '2025-11-20 14:33:33', 55000.00, 0.00, 55000.00, 'paid');
+(9, 17, 'vnpay', '15273478', '2025-11-20 14:33:33', 55000.00, 0.00, 55000.00, 'paid'),
+(10, 21, 'vnpay', '15306159', '2025-11-27 13:06:51', 75000.00, 0.00, 75000.00, 'paid'),
+(11, 22, 'vnpay', '15306311', '2025-11-27 14:16:54', 355000.00, 0.00, 355000.00, 'paid'),
+(12, 23, 'vnpay', '15307770', '2025-11-28 03:03:26', 11250.00, 63750.00, 11250.00, 'paid'),
+(13, 24, 'vnpay', '15307936', '2025-11-28 03:59:37', 11250.00, 63750.00, 11250.00, 'paid'),
+(14, 26, 'vnpay', '15316533', '2025-12-03 03:05:47', 85000.00, 0.00, 85000.00, 'paid'),
+(15, NULL, 'vnpay', '15316592', '2025-12-03 03:25:30', 112500.00, 37500.00, 112500.00, 'paid'),
+(16, 28, 'vnpay', '15316605', '2025-12-03 03:31:48', 225000.00, 0.00, 225000.00, 'paid'),
+(17, 29, 'vnpay', '15316675', '2025-12-03 04:03:14', 75000.00, 0.00, 75000.00, 'paid'),
+(18, 30, 'vnpay', '15316674', '2025-12-03 04:03:15', 75000.00, 0.00, 75000.00, 'paid');
 
 -- --------------------------------------------------------
 
@@ -471,10 +507,11 @@ INSERT INTO `rooms` (`id`, `cinema_id`, `room_code`, `name`, `seat_count`) VALUE
 (17, 1, 'R1', 'Phòng Chiếu 1', 120),
 (18, 1, 'R2', 'Phòng Chiếu 2', 150),
 (19, 1, 'R3', 'Phòng Chiếu 3', 200),
-(21, 2, 'R1', 'Phòng Chiếu 1', 130),
-(22, 2, 'R2', 'Phòng Chiếu 2', 150),
-(23, 3, 'S1', 'Phòng S1', 150),
-(24, 3, 'S2', 'Phòng S2', 170);
+(21, 2, 'R1', 'PC1', 130),
+(22, 2, 'R2', 'PC2', 150),
+(23, 3, 'S1', 'PL1', 150),
+(24, 3, 'S2', 'PL2', 170),
+(25, 2, 'R3', 'PC3', 120);
 
 -- --------------------------------------------------------
 
@@ -1567,6 +1604,127 @@ INSERT INTO `seats` (`id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `
 (4238, 24, 'N', 12, 'normal', 0.00, 'available'),
 (4239, 24, 'O', 1, 'normal', 0.00, 'available'),
 (4240, 24, 'O', 2, 'normal', 0.00, 'available');
+INSERT INTO `seats` (`id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `extra_price`, `status`) VALUES
+(4241, 25, 'A', 1, 'normal', 0.00, 'available'),
+(4242, 25, 'A', 2, 'normal', 0.00, 'available'),
+(4243, 25, 'A', 3, 'normal', 0.00, 'available'),
+(4244, 25, 'A', 4, 'normal', 0.00, 'available'),
+(4245, 25, 'A', 5, 'normal', 0.00, 'available'),
+(4246, 25, 'A', 6, 'normal', 0.00, 'available'),
+(4247, 25, 'A', 7, 'normal', 0.00, 'available'),
+(4248, 25, 'A', 8, 'normal', 0.00, 'available'),
+(4249, 25, 'A', 9, 'normal', 0.00, 'available'),
+(4250, 25, 'A', 10, 'normal', 0.00, 'available'),
+(4251, 25, 'A', 11, 'normal', 0.00, 'available'),
+(4252, 25, 'A', 12, 'normal', 0.00, 'available'),
+(4253, 25, 'B', 1, 'normal', 0.00, 'available'),
+(4254, 25, 'B', 2, 'normal', 0.00, 'available'),
+(4255, 25, 'B', 3, 'normal', 0.00, 'available'),
+(4256, 25, 'B', 4, 'normal', 0.00, 'available'),
+(4257, 25, 'B', 5, 'normal', 0.00, 'available'),
+(4258, 25, 'B', 6, 'normal', 0.00, 'available'),
+(4259, 25, 'B', 7, 'normal', 0.00, 'available'),
+(4260, 25, 'B', 8, 'normal', 0.00, 'available'),
+(4261, 25, 'B', 9, 'normal', 0.00, 'available'),
+(4262, 25, 'B', 10, 'normal', 0.00, 'available'),
+(4263, 25, 'B', 11, 'normal', 0.00, 'available'),
+(4264, 25, 'B', 12, 'normal', 0.00, 'available'),
+(4265, 25, 'C', 1, 'normal', 0.00, 'available'),
+(4266, 25, 'C', 2, 'normal', 0.00, 'available'),
+(4267, 25, 'C', 3, 'normal', 0.00, 'available'),
+(4268, 25, 'C', 4, 'normal', 0.00, 'available'),
+(4269, 25, 'C', 5, 'normal', 0.00, 'available'),
+(4270, 25, 'C', 6, 'normal', 0.00, 'available'),
+(4271, 25, 'C', 7, 'normal', 0.00, 'available'),
+(4272, 25, 'C', 8, 'normal', 0.00, 'available'),
+(4273, 25, 'C', 9, 'normal', 0.00, 'available'),
+(4274, 25, 'C', 10, 'normal', 0.00, 'available'),
+(4275, 25, 'C', 11, 'normal', 0.00, 'available'),
+(4276, 25, 'C', 12, 'normal', 0.00, 'available'),
+(4277, 25, 'D', 1, 'normal', 0.00, 'available'),
+(4278, 25, 'D', 2, 'normal', 0.00, 'available'),
+(4279, 25, 'D', 3, 'normal', 0.00, 'available'),
+(4280, 25, 'D', 4, 'normal', 0.00, 'available'),
+(4281, 25, 'D', 5, 'normal', 0.00, 'available'),
+(4282, 25, 'D', 6, 'normal', 0.00, 'available'),
+(4283, 25, 'D', 7, 'normal', 0.00, 'available'),
+(4284, 25, 'D', 8, 'normal', 0.00, 'available'),
+(4285, 25, 'D', 9, 'normal', 0.00, 'available'),
+(4286, 25, 'D', 10, 'normal', 0.00, 'available'),
+(4287, 25, 'D', 11, 'normal', 0.00, 'available'),
+(4288, 25, 'D', 12, 'normal', 0.00, 'available'),
+(4289, 25, 'E', 1, 'normal', 0.00, 'available'),
+(4290, 25, 'E', 2, 'normal', 0.00, 'available'),
+(4291, 25, 'E', 3, 'normal', 0.00, 'available'),
+(4292, 25, 'E', 4, 'normal', 0.00, 'available'),
+(4293, 25, 'E', 5, 'normal', 0.00, 'available'),
+(4294, 25, 'E', 6, 'normal', 0.00, 'available'),
+(4295, 25, 'E', 7, 'normal', 0.00, 'available'),
+(4296, 25, 'E', 8, 'normal', 0.00, 'available'),
+(4297, 25, 'E', 9, 'normal', 0.00, 'available'),
+(4298, 25, 'E', 10, 'normal', 0.00, 'available'),
+(4299, 25, 'E', 11, 'normal', 0.00, 'available'),
+(4300, 25, 'E', 12, 'normal', 0.00, 'available'),
+(4301, 25, 'F', 1, 'normal', 0.00, 'available'),
+(4302, 25, 'F', 2, 'normal', 0.00, 'available'),
+(4303, 25, 'F', 3, 'normal', 0.00, 'available'),
+(4304, 25, 'F', 4, 'normal', 0.00, 'available'),
+(4305, 25, 'F', 5, 'normal', 0.00, 'available'),
+(4306, 25, 'F', 6, 'normal', 0.00, 'available'),
+(4307, 25, 'F', 7, 'normal', 0.00, 'available'),
+(4308, 25, 'F', 8, 'normal', 0.00, 'available'),
+(4309, 25, 'F', 9, 'normal', 0.00, 'available'),
+(4310, 25, 'F', 10, 'normal', 0.00, 'available'),
+(4311, 25, 'F', 11, 'normal', 0.00, 'available'),
+(4312, 25, 'F', 12, 'normal', 0.00, 'available'),
+(4313, 25, 'G', 1, 'normal', 0.00, 'available'),
+(4314, 25, 'G', 2, 'normal', 0.00, 'available'),
+(4315, 25, 'G', 3, 'normal', 0.00, 'available'),
+(4316, 25, 'G', 4, 'normal', 0.00, 'available'),
+(4317, 25, 'G', 5, 'normal', 0.00, 'available'),
+(4318, 25, 'G', 6, 'normal', 0.00, 'available'),
+(4319, 25, 'G', 7, 'normal', 0.00, 'available'),
+(4320, 25, 'G', 8, 'normal', 0.00, 'available'),
+(4321, 25, 'G', 9, 'normal', 0.00, 'available'),
+(4322, 25, 'G', 10, 'normal', 0.00, 'available'),
+(4323, 25, 'G', 11, 'normal', 0.00, 'available'),
+(4324, 25, 'G', 12, 'normal', 0.00, 'available'),
+(4325, 25, 'H', 1, 'normal', 0.00, 'available'),
+(4326, 25, 'H', 2, 'normal', 0.00, 'available'),
+(4327, 25, 'H', 3, 'normal', 0.00, 'available'),
+(4328, 25, 'H', 4, 'normal', 0.00, 'available'),
+(4329, 25, 'H', 5, 'normal', 0.00, 'available'),
+(4330, 25, 'H', 6, 'normal', 0.00, 'available'),
+(4331, 25, 'H', 7, 'normal', 0.00, 'available'),
+(4332, 25, 'H', 8, 'normal', 0.00, 'available'),
+(4333, 25, 'H', 9, 'normal', 0.00, 'available'),
+(4334, 25, 'H', 10, 'normal', 0.00, 'available'),
+(4335, 25, 'H', 11, 'normal', 0.00, 'available'),
+(4336, 25, 'H', 12, 'normal', 0.00, 'available'),
+(4337, 25, 'I', 1, 'normal', 0.00, 'available'),
+(4338, 25, 'I', 2, 'normal', 0.00, 'available'),
+(4339, 25, 'I', 3, 'normal', 0.00, 'available'),
+(4340, 25, 'I', 4, 'normal', 0.00, 'available'),
+(4341, 25, 'I', 5, 'normal', 0.00, 'available'),
+(4342, 25, 'I', 6, 'normal', 0.00, 'available'),
+(4343, 25, 'I', 7, 'normal', 0.00, 'available'),
+(4344, 25, 'I', 8, 'normal', 0.00, 'available'),
+(4345, 25, 'I', 9, 'normal', 0.00, 'available'),
+(4346, 25, 'I', 10, 'normal', 0.00, 'available'),
+(4347, 25, 'I', 11, 'normal', 0.00, 'available'),
+(4348, 25, 'I', 12, 'normal', 0.00, 'available'),
+(4349, 25, 'J', 1, 'normal', 0.00, 'available'),
+(4350, 25, 'J', 2, 'normal', 0.00, 'available'),
+(4351, 25, 'J', 3, 'normal', 0.00, 'available'),
+(4352, 25, 'J', 4, 'normal', 0.00, 'available'),
+(4353, 25, 'J', 5, 'normal', 0.00, 'available'),
+(4354, 25, 'J', 6, 'normal', 0.00, 'available'),
+(4355, 25, 'J', 7, 'normal', 0.00, 'available'),
+(4356, 25, 'J', 8, 'normal', 0.00, 'available'),
+(4357, 25, 'J', 9, 'normal', 0.00, 'available'),
+(4358, 25, 'J', 10, 'normal', 0.00, 'available'),
+(4359, 25, 'J', 11, 'normal', 0.00, 'available'),
+(4360, 25, 'J', 12, 'normal', 0.00, 'available');
 
 -- --------------------------------------------------------
 
@@ -1591,19 +1749,306 @@ CREATE TABLE `showtimes` (
 --
 
 INSERT INTO `showtimes` (`id`, `movie_id`, `room_id`, `show_date`, `start_time`, `end_time`, `adult_price`, `student_price`, `format`) VALUES
-(1, 8, 17, '2025-11-28', '15:00:00', '16:30:00', 80000.00, 65000.00, '2D'),
-(2, 7, 18, '2025-11-27', '16:00:00', '17:00:00', 75000.00, 65000.00, '3D'),
-(3, 6, 17, '2025-11-27', '15:00:00', '17:00:00', 85000.00, 70000.00, '3D'),
-(4, 8, 17, '2025-11-28', '17:30:00', '19:32:00', 80000.00, 65000.00, '2D'),
-(5, 6, 18, '2025-11-27', '14:00:00', '16:00:00', 75000.00, 60000.00, '3D'),
-(6, 9, 19, '2025-11-20', '15:00:00', '17:13:00', 70000.00, 60000.00, '2D'),
-(7, 9, 17, '2025-11-19', '10:30:00', '12:43:00', 80000.00, 70000.00, '2D'),
-(8, 7, 21, '2025-11-21', '13:45:00', '15:45:00', 75000.00, 60000.00, '3D'),
-(9, 9, 18, '2025-11-19', '09:30:00', '11:43:00', 80000.00, 70000.00, '2D'),
-(10, 11, 21, '2025-11-24', '10:00:00', '11:57:00', NULL, NULL, '2D'),
-(11, 11, 17, '2025-11-27', '17:02:00', '18:59:00', NULL, NULL, '2D'),
-(12, 12, 22, '2025-11-26', '01:15:00', '03:17:00', NULL, NULL, '2D'),
-(13, 6, 23, '2025-11-27', '14:30:00', '16:30:00', NULL, NULL, '3D');
+(1, 7, 23, '2025-12-18', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(2, 8, 18, '2025-12-11', '10:30:00', '12:52:00', 70000.00, 60000.00, '2D'),
+(3, 11, 23, '2025-12-14', '12:00:00', '14:17:00', 70000.00, 60000.00, '2D'),
+(4, 12, 21, '2025-12-09', '19:30:00', '21:52:00', 85000.00, 70000.00, '3D'),
+(5, 12, 23, '2025-12-05', '10:30:00', '12:52:00', 85000.00, 70000.00, '3D'),
+(6, 7, 21, '2025-12-09', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(7, 12, 22, '2025-12-16', '21:00:00', '23:22:00', 85000.00, 70000.00, '3D'),
+(8, 9, 23, '2025-11-28', '10:30:00', '13:03:00', 70000.00, 60000.00, '2D'),
+(9, 10, 18, '2025-12-08', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(10, 9, 24, '2025-12-04', '21:00:00', '23:33:00', 70000.00, 60000.00, '2D'),
+(11, 7, 24, '2025-12-03', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(12, 6, 18, '2025-11-30', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(13, 6, 23, '2025-12-01', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(14, 6, 24, '2025-12-07', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(15, 9, 21, '2025-12-15', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(16, 11, 24, '2025-12-16', '10:30:00', '12:47:00', 70000.00, 60000.00, '2D'),
+(17, 12, 17, '2025-12-07', '12:00:00', '14:22:00', 85000.00, 70000.00, '3D'),
+(18, 11, 23, '2025-11-30', '13:30:00', '15:47:00', 70000.00, 60000.00, '2D'),
+(19, 11, 24, '2025-12-09', '15:00:00', '17:17:00', 70000.00, 60000.00, '2D'),
+(20, 9, 18, '2025-12-08', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(21, 7, 23, '2025-12-08', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(22, 10, 19, '2025-12-11', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(23, 7, 24, '2025-12-12', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(24, 11, 18, '2025-12-12', '09:00:00', '11:17:00', 70000.00, 60000.00, '2D'),
+(25, 11, 22, '2025-12-02', '18:00:00', '20:17:00', 70000.00, 60000.00, '2D'),
+(26, 10, 21, '2025-12-17', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(27, 6, 23, '2025-12-16', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(28, 8, 19, '2025-12-11', '19:30:00', '21:52:00', 70000.00, 60000.00, '2D'),
+(29, 9, 22, '2025-12-01', '15:00:00', '17:33:00', 70000.00, 60000.00, '2D'),
+(30, 8, 21, '2025-12-11', '10:30:00', '12:52:00', 70000.00, 60000.00, '2D'),
+(31, 11, 21, '2025-12-14', '13:30:00', '15:47:00', 70000.00, 60000.00, '2D'),
+(32, 7, 24, '2025-11-28', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(33, 9, 21, '2025-12-01', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(34, 12, 22, '2025-12-16', '16:30:00', '18:52:00', 85000.00, 70000.00, '3D'),
+(35, 11, 17, '2025-12-19', '18:00:00', '20:17:00', 70000.00, 60000.00, '2D'),
+(36, 10, 18, '2025-12-15', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(37, 9, 25, '2025-12-19', '18:00:00', '20:33:00', 70000.00, 60000.00, '2D'),
+(38, 6, 19, '2025-12-06', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(39, 9, 23, '2025-12-17', '15:00:00', '17:33:00', 70000.00, 60000.00, '2D'),
+(40, 6, 24, '2025-12-08', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(41, 12, 22, '2025-12-10', '21:00:00', '23:22:00', 85000.00, 70000.00, '3D'),
+(42, 7, 22, '2025-12-05', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(43, 12, 22, '2025-11-28', '19:30:00', '21:52:00', 85000.00, 70000.00, '3D'),
+(44, 8, 23, '2025-12-10', '18:00:00', '20:22:00', 70000.00, 60000.00, '2D'),
+(45, 9, 21, '2025-12-07', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(46, 8, 23, '2025-12-18', '09:00:00', '11:22:00', 70000.00, 60000.00, '2D'),
+(47, 9, 19, '2025-12-11', '13:30:00', '16:03:00', 70000.00, 60000.00, '2D'),
+(48, 9, 19, '2025-12-10', '09:00:00', '11:33:00', 70000.00, 60000.00, '2D'),
+(49, 10, 19, '2025-12-10', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(50, 6, 18, '2025-11-28', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(51, 9, 25, '2025-12-12', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(52, 10, 21, '2025-12-16', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(53, 11, 23, '2025-12-11', '09:00:00', '11:17:00', 70000.00, 60000.00, '2D'),
+(54, 8, 19, '2025-12-09', '16:30:00', '18:52:00', 70000.00, 60000.00, '2D'),
+(55, 7, 21, '2025-11-29', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(56, 10, 22, '2025-12-06', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(57, 10, 21, '2025-11-28', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(58, 7, 19, '2025-12-02', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(59, 9, 18, '2025-12-18', '21:00:00', '23:33:00', 70000.00, 60000.00, '2D'),
+(60, 12, 17, '2025-12-09', '15:00:00', '17:22:00', 85000.00, 70000.00, '3D'),
+(61, 9, 17, '2025-12-06', '09:00:00', '11:33:00', 70000.00, 60000.00, '2D'),
+(62, 9, 23, '2025-12-13', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(63, 7, 25, '2025-12-18', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(64, 7, 19, '2025-12-06', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(65, 9, 25, '2025-12-16', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(66, 10, 22, '2025-12-17', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(67, 10, 22, '2025-12-10', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(68, 12, 19, '2025-12-06', '21:00:00', '23:22:00', 85000.00, 70000.00, '3D'),
+(69, 9, 19, '2025-12-14', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(70, 11, 23, '2025-12-17', '16:30:00', '18:47:00', 70000.00, 60000.00, '2D'),
+(71, 6, 24, '2025-12-13', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(72, 12, 21, '2025-11-30', '21:00:00', '23:22:00', 85000.00, 70000.00, '3D'),
+(73, 10, 17, '2025-12-16', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(74, 10, 18, '2025-12-06', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(75, 8, 19, '2025-12-08', '12:00:00', '14:22:00', 70000.00, 60000.00, '2D'),
+(76, 7, 19, '2025-12-07', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(77, 9, 22, '2025-12-19', '10:30:00', '13:03:00', 70000.00, 60000.00, '2D'),
+(78, 6, 19, '2025-11-29', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(79, 6, 25, '2025-12-08', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(80, 10, 19, '2025-12-12', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(81, 9, 18, '2025-12-06', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(82, 9, 25, '2025-12-06', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(83, 11, 17, '2025-12-07', '19:30:00', '21:47:00', 70000.00, 60000.00, '2D'),
+(84, 7, 18, '2025-12-10', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(85, 8, 19, '2025-12-12', '15:00:00', '17:22:00', 70000.00, 60000.00, '2D'),
+(86, 12, 22, '2025-12-20', '18:00:00', '20:22:00', 85000.00, 70000.00, '3D'),
+(87, 6, 25, '2025-12-10', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(88, 6, 25, '2025-12-19', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(89, 6, 17, '2025-12-16', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(90, 9, 25, '2025-12-16', '19:30:00', '22:03:00', 70000.00, 60000.00, '2D'),
+(91, 11, 21, '2025-12-03', '09:00:00', '11:17:00', 70000.00, 60000.00, '2D'),
+(92, 10, 22, '2025-12-05', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(93, 12, 24, '2025-12-04', '12:00:00', '14:22:00', 85000.00, 70000.00, '3D'),
+(94, 12, 21, '2025-12-04', '19:30:00', '21:52:00', 85000.00, 70000.00, '3D'),
+(95, 9, 24, '2025-12-17', '13:30:00', '16:03:00', 70000.00, 60000.00, '2D'),
+(96, 8, 17, '2025-12-09', '10:30:00', '12:52:00', 70000.00, 60000.00, '2D'),
+(97, 6, 25, '2025-12-19', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(98, 8, 24, '2025-12-07', '10:30:00', '12:52:00', 70000.00, 60000.00, '2D'),
+(99, 11, 22, '2025-11-28', '19:30:00', '21:47:00', 70000.00, 60000.00, '2D'),
+(100, 10, 19, '2025-12-06', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(101, 6, 21, '2025-12-15', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(102, 11, 23, '2025-11-29', '16:30:00', '18:47:00', 70000.00, 60000.00, '2D'),
+(103, 7, 17, '2025-12-19', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(104, 10, 23, '2025-12-14', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(105, 7, 24, '2025-12-05', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(106, 11, 17, '2025-11-28', '09:00:00', '11:17:00', 70000.00, 60000.00, '2D'),
+(107, 9, 17, '2025-11-30', '13:30:00', '16:03:00', 70000.00, 60000.00, '2D'),
+(108, 7, 21, '2025-12-09', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(109, 6, 19, '2025-11-30', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(110, 7, 18, '2025-12-08', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(111, 7, 18, '2025-12-17', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(112, 11, 25, '2025-12-12', '18:00:00', '20:17:00', 70000.00, 60000.00, '2D'),
+(113, 8, 17, '2025-12-07', '10:30:00', '12:52:00', 70000.00, 60000.00, '2D'),
+(114, 11, 22, '2025-12-16', '19:30:00', '21:47:00', 70000.00, 60000.00, '2D'),
+(115, 10, 17, '2025-12-15', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(116, 7, 25, '2025-12-12', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(117, 11, 22, '2025-12-11', '19:30:00', '21:47:00', 70000.00, 60000.00, '2D'),
+(118, 11, 17, '2025-12-12', '12:00:00', '14:17:00', 70000.00, 60000.00, '2D'),
+(119, 9, 23, '2025-12-06', '15:00:00', '17:33:00', 70000.00, 60000.00, '2D'),
+(120, 12, 18, '2025-12-10', '18:00:00', '20:22:00', 85000.00, 70000.00, '3D'),
+(121, 12, 25, '2025-12-17', '09:00:00', '11:22:00', 85000.00, 70000.00, '3D'),
+(122, 9, 21, '2025-11-29', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(123, 10, 17, '2025-12-19', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(124, 6, 25, '2025-12-18', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(125, 10, 21, '2025-12-18', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(126, 10, 19, '2025-12-07', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(127, 7, 24, '2025-12-20', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(128, 9, 25, '2025-12-06', '10:30:00', '13:03:00', 70000.00, 60000.00, '2D'),
+(129, 10, 24, '2025-12-03', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(130, 10, 24, '2025-12-17', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(131, 11, 19, '2025-12-09', '09:00:00', '11:17:00', 70000.00, 60000.00, '2D'),
+(132, 12, 25, '2025-11-30', '18:00:00', '20:22:00', 85000.00, 70000.00, '3D'),
+(133, 12, 21, '2025-12-01', '18:00:00', '20:22:00', 85000.00, 70000.00, '3D'),
+(134, 7, 18, '2025-12-05', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(135, 9, 24, '2025-12-12', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(136, 7, 23, '2025-12-12', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(137, 7, 22, '2025-12-10', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(138, 11, 24, '2025-11-28', '18:00:00', '20:17:00', 70000.00, 60000.00, '2D'),
+(139, 8, 17, '2025-12-12', '19:30:00', '21:52:00', 70000.00, 60000.00, '2D'),
+(140, 9, 25, '2025-12-07', '13:30:00', '16:03:00', 70000.00, 60000.00, '2D'),
+(141, 11, 22, '2025-12-04', '15:00:00', '17:17:00', 70000.00, 60000.00, '2D'),
+(142, 12, 19, '2025-11-30', '10:30:00', '12:52:00', 85000.00, 70000.00, '3D'),
+(143, 8, 21, '2025-12-13', '12:00:00', '14:22:00', 70000.00, 60000.00, '2D'),
+(144, 7, 21, '2025-12-09', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(145, 7, 25, '2025-12-20', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(146, 9, 22, '2025-12-17', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(147, 7, 18, '2025-12-17', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(148, 11, 25, '2025-12-17', '12:00:00', '14:17:00', 70000.00, 60000.00, '2D'),
+(149, 6, 17, '2025-12-02', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(150, 11, 17, '2025-11-29', '13:30:00', '15:47:00', 70000.00, 60000.00, '2D'),
+(151, 9, 18, '2025-12-16', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(152, 12, 24, '2025-12-10', '16:30:00', '18:52:00', 85000.00, 70000.00, '3D'),
+(153, 11, 23, '2025-12-03', '09:00:00', '11:17:00', 70000.00, 60000.00, '2D'),
+(154, 10, 21, '2025-11-30', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(155, 12, 24, '2025-12-06', '18:00:00', '20:22:00', 85000.00, 70000.00, '3D'),
+(156, 9, 22, '2025-12-06', '21:00:00', '23:33:00', 70000.00, 60000.00, '2D'),
+(157, 6, 19, '2025-12-10', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(158, 12, 21, '2025-12-12', '13:30:00', '15:52:00', 85000.00, 70000.00, '3D'),
+(159, 10, 17, '2025-11-29', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(160, 12, 19, '2025-12-20', '12:00:00', '14:22:00', 85000.00, 70000.00, '3D'),
+(161, 8, 24, '2025-12-06', '18:00:00', '20:22:00', 70000.00, 60000.00, '2D'),
+(162, 12, 21, '2025-12-05', '12:00:00', '14:22:00', 85000.00, 70000.00, '3D'),
+(163, 12, 25, '2025-12-06', '10:30:00', '12:52:00', 85000.00, 70000.00, '3D'),
+(164, 10, 22, '2025-12-19', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(165, 6, 22, '2025-12-20', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(166, 6, 24, '2025-12-17', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(167, 11, 18, '2025-12-04', '10:30:00', '12:47:00', 70000.00, 60000.00, '2D'),
+(168, 8, 21, '2025-12-01', '21:00:00', '23:22:00', 70000.00, 60000.00, '2D'),
+(169, 7, 19, '2025-12-11', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(170, 6, 19, '2025-12-18', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(171, 12, 24, '2025-12-16', '18:00:00', '20:22:00', 85000.00, 70000.00, '3D'),
+(172, 9, 17, '2025-12-02', '15:00:00', '17:33:00', 70000.00, 60000.00, '2D'),
+(173, 9, 22, '2025-12-20', '13:30:00', '16:03:00', 70000.00, 60000.00, '2D'),
+(174, 12, 23, '2025-12-14', '21:00:00', '23:22:00', 85000.00, 70000.00, '3D'),
+(175, 10, 22, '2025-12-16', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(176, 12, 24, '2025-12-16', '13:30:00', '15:52:00', 85000.00, 70000.00, '3D'),
+(177, 7, 18, '2025-11-28', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(178, 7, 17, '2025-12-19', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(179, 6, 25, '2025-12-14', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(180, 12, 18, '2025-12-16', '09:00:00', '11:22:00', 85000.00, 70000.00, '3D'),
+(181, 10, 23, '2025-12-10', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(182, 12, 19, '2025-12-14', '19:30:00', '21:52:00', 85000.00, 70000.00, '3D'),
+(183, 9, 23, '2025-12-15', '09:00:00', '11:33:00', 70000.00, 60000.00, '2D'),
+(184, 8, 23, '2025-12-19', '21:00:00', '23:22:00', 70000.00, 60000.00, '2D'),
+(185, 6, 23, '2025-12-04', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(186, 9, 22, '2025-12-13', '09:00:00', '11:33:00', 70000.00, 60000.00, '2D'),
+(187, 6, 21, '2025-11-30', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(188, 11, 22, '2025-12-18', '16:30:00', '18:47:00', 70000.00, 60000.00, '2D'),
+(189, 8, 18, '2025-12-07', '09:00:00', '11:22:00', 70000.00, 60000.00, '2D'),
+(190, 12, 18, '2025-12-02', '09:00:00', '11:22:00', 85000.00, 70000.00, '3D'),
+(191, 10, 19, '2025-12-07', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(192, 6, 25, '2025-12-20', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(193, 7, 21, '2025-12-07', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(194, 6, 24, '2025-12-01', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(195, 7, 21, '2025-12-20', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(196, 10, 17, '2025-12-02', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(197, 7, 22, '2025-12-03', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(198, 12, 22, '2025-12-16', '18:00:00', '20:22:00', 85000.00, 70000.00, '3D'),
+(199, 12, 21, '2025-12-03', '09:00:00', '11:22:00', 85000.00, 70000.00, '3D'),
+(200, 11, 19, '2025-12-15', '19:30:00', '21:47:00', 70000.00, 60000.00, '2D'),
+(201, 9, 18, '2025-11-30', '19:30:00', '22:03:00', 70000.00, 60000.00, '2D'),
+(202, 8, 22, '2025-12-01', '16:30:00', '18:52:00', 70000.00, 60000.00, '2D'),
+(203, 7, 18, '2025-12-12', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(204, 11, 22, '2025-12-15', '15:00:00', '17:17:00', 70000.00, 60000.00, '2D'),
+(205, 7, 23, '2025-11-28', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(206, 8, 17, '2025-12-01', '13:30:00', '15:52:00', 70000.00, 60000.00, '2D'),
+(207, 8, 25, '2025-12-04', '19:30:00', '21:52:00', 70000.00, 60000.00, '2D'),
+(208, 6, 18, '2025-12-16', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(209, 8, 17, '2025-12-18', '15:00:00', '17:22:00', 70000.00, 60000.00, '2D'),
+(210, 8, 25, '2025-12-13', '15:00:00', '17:22:00', 70000.00, 60000.00, '2D'),
+(211, 6, 23, '2025-12-08', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(212, 10, 23, '2025-12-01', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(213, 12, 24, '2025-12-12', '16:30:00', '18:52:00', 85000.00, 70000.00, '3D'),
+(214, 7, 19, '2025-12-20', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(215, 9, 18, '2025-12-15', '10:30:00', '13:03:00', 70000.00, 60000.00, '2D'),
+(216, 6, 25, '2025-12-05', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(217, 11, 25, '2025-12-20', '19:30:00', '21:47:00', 70000.00, 60000.00, '2D'),
+(218, 12, 17, '2025-12-03', '10:30:00', '12:52:00', 85000.00, 70000.00, '3D'),
+(219, 7, 18, '2025-12-07', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(220, 6, 19, '2025-11-29', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(221, 7, 25, '2025-12-01', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(222, 10, 21, '2025-12-07', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(223, 8, 23, '2025-12-10', '09:00:00', '11:22:00', 70000.00, 60000.00, '2D'),
+(224, 11, 18, '2025-12-17', '13:30:00', '15:47:00', 70000.00, 60000.00, '2D'),
+(225, 12, 21, '2025-11-28', '12:00:00', '14:22:00', 85000.00, 70000.00, '3D'),
+(226, 6, 24, '2025-11-28', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(227, 7, 25, '2025-12-03', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(228, 6, 22, '2025-12-04', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(229, 10, 24, '2025-12-05', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(230, 10, 25, '2025-12-11', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(231, 10, 23, '2025-12-09', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(232, 10, 17, '2025-12-15', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(233, 11, 18, '2025-12-20', '16:30:00', '18:47:00', 70000.00, 60000.00, '2D'),
+(234, 12, 24, '2025-12-12', '19:30:00', '21:52:00', 85000.00, 70000.00, '3D'),
+(235, 11, 22, '2025-12-05', '16:30:00', '18:47:00', 70000.00, 60000.00, '2D'),
+(236, 7, 21, '2025-11-29', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(237, 11, 21, '2025-12-09', '15:00:00', '17:17:00', 70000.00, 60000.00, '2D'),
+(238, 11, 24, '2025-11-29', '13:30:00', '15:47:00', 70000.00, 60000.00, '2D'),
+(239, 9, 25, '2025-12-14', '10:30:00', '13:03:00', 70000.00, 60000.00, '2D'),
+(240, 7, 21, '2025-12-08', '19:30:00', '21:50:00', 85000.00, 70000.00, '3D'),
+(241, 11, 21, '2025-12-13', '18:00:00', '20:17:00', 70000.00, 60000.00, '2D'),
+(242, 6, 17, '2025-11-30', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(243, 11, 21, '2025-12-13', '18:00:00', '20:17:00', 70000.00, 60000.00, '2D'),
+(244, 6, 18, '2025-12-19', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(245, 10, 18, '2025-12-01', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(246, 7, 18, '2025-12-18', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(247, 9, 19, '2025-12-01', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(248, 12, 19, '2025-12-17', '21:00:00', '23:22:00', 85000.00, 70000.00, '3D'),
+(249, 10, 21, '2025-12-13', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(250, 12, 19, '2025-11-28', '19:30:00', '21:52:00', 85000.00, 70000.00, '3D'),
+(251, 10, 25, '2025-11-30', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(252, 9, 22, '2025-12-19', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(253, 11, 25, '2025-12-13', '16:30:00', '18:47:00', 70000.00, 60000.00, '2D'),
+(254, 10, 18, '2025-12-17', '09:00:00', '11:20:00', 85000.00, 70000.00, '3D'),
+(255, 9, 24, '2025-12-02', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(256, 9, 25, '2025-12-08', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(257, 6, 17, '2025-11-30', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(258, 8, 18, '2025-11-30', '19:30:00', '21:52:00', 70000.00, 60000.00, '2D'),
+(259, 8, 22, '2025-11-28', '13:30:00', '15:52:00', 70000.00, 60000.00, '2D'),
+(260, 7, 17, '2025-12-10', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(261, 11, 19, '2025-12-13', '10:30:00', '12:47:00', 70000.00, 60000.00, '2D'),
+(262, 11, 21, '2025-12-02', '13:30:00', '15:47:00', 70000.00, 60000.00, '2D'),
+(263, 10, 18, '2025-12-08', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(264, 8, 23, '2025-12-06', '10:30:00', '12:52:00', 70000.00, 60000.00, '2D'),
+(265, 10, 25, '2025-12-10', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(266, 6, 25, '2025-11-28', '13:30:00', '15:50:00', 85000.00, 70000.00, '3D'),
+(267, 6, 22, '2025-12-12', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(268, 7, 18, '2025-12-09', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(269, 12, 22, '2025-12-05', '21:00:00', '23:22:00', 85000.00, 70000.00, '3D'),
+(270, 11, 17, '2025-11-29', '16:30:00', '18:47:00', 70000.00, 60000.00, '2D'),
+(271, 8, 23, '2025-12-10', '18:00:00', '20:22:00', 70000.00, 60000.00, '2D'),
+(272, 9, 23, '2025-12-13', '15:00:00', '17:33:00', 70000.00, 60000.00, '2D'),
+(273, 12, 21, '2025-11-28', '21:00:00', '23:22:00', 85000.00, 70000.00, '3D'),
+(274, 11, 17, '2025-12-07', '18:00:00', '20:17:00', 70000.00, 60000.00, '2D'),
+(275, 6, 22, '2025-12-19', '15:00:00', '17:20:00', 85000.00, 70000.00, '3D'),
+(276, 12, 19, '2025-12-17', '10:30:00', '12:52:00', 85000.00, 70000.00, '3D'),
+(277, 11, 24, '2025-12-08', '15:00:00', '17:17:00', 70000.00, 60000.00, '2D'),
+(278, 7, 18, '2025-12-01', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(279, 9, 23, '2025-11-28', '21:00:00', '23:33:00', 70000.00, 60000.00, '2D'),
+(280, 9, 18, '2025-12-15', '16:30:00', '19:03:00', 70000.00, 60000.00, '2D'),
+(281, 8, 22, '2025-11-30', '12:00:00', '14:22:00', 70000.00, 60000.00, '2D'),
+(282, 8, 22, '2025-12-04', '16:30:00', '18:52:00', 70000.00, 60000.00, '2D'),
+(283, 12, 19, '2025-12-17', '10:30:00', '12:52:00', 85000.00, 70000.00, '3D'),
+(284, 10, 17, '2025-12-13', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(285, 11, 22, '2025-12-15', '15:00:00', '17:17:00', 70000.00, 60000.00, '2D'),
+(286, 12, 17, '2025-12-20', '09:00:00', '11:22:00', 85000.00, 70000.00, '3D'),
+(287, 7, 19, '2025-12-07', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(288, 11, 24, '2025-11-30', '18:00:00', '20:17:00', 70000.00, 60000.00, '2D'),
+(289, 9, 17, '2025-12-15', '09:00:00', '11:33:00', 70000.00, 60000.00, '2D'),
+(290, 6, 22, '2025-12-20', '12:00:00', '14:20:00', 85000.00, 70000.00, '3D'),
+(291, 12, 19, '2025-12-08', '09:00:00', '11:22:00', 85000.00, 70000.00, '3D'),
+(292, 8, 21, '2025-12-17', '18:00:00', '20:22:00', 70000.00, 60000.00, '2D'),
+(293, 8, 18, '2025-12-02', '13:30:00', '15:52:00', 70000.00, 60000.00, '2D'),
+(294, 10, 22, '2025-12-11', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D'),
+(295, 6, 23, '2025-12-13', '18:00:00', '20:20:00', 85000.00, 70000.00, '3D'),
+(296, 7, 19, '2025-12-09', '10:30:00', '12:50:00', 85000.00, 70000.00, '3D'),
+(297, 9, 18, '2025-12-04', '12:00:00', '14:33:00', 70000.00, 60000.00, '2D'),
+(298, 7, 23, '2025-12-01', '21:00:00', '23:20:00', 85000.00, 70000.00, '3D'),
+(299, 12, 17, '2025-12-04', '15:00:00', '17:22:00', 85000.00, 70000.00, '3D'),
+(300, 10, 19, '2025-12-05', '16:30:00', '18:50:00', 85000.00, 70000.00, '3D');
 
 -- --------------------------------------------------------
 
@@ -1627,22 +2072,22 @@ CREATE TABLE `ticket_prices` (
 --
 
 INSERT INTO `ticket_prices` (`id`, `day_type`, `format`, `customer_type`, `seat_type`, `base_price`, `created_at`, `updated_at`) VALUES
-(1, 'weekday', '2D', 'student', 'normal', 55000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(2, 'weekday', '2D', 'student', 'vip', 65000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(3, 'weekday', '2D', 'adult', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(4, 'weekday', '2D', 'adult', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(5, 'weekday', '3D', 'student', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(6, 'weekday', '3D', 'student', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(7, 'weekday', '3D', 'adult', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(8, 'weekday', '3D', 'adult', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(9, 'weekend', '2D', 'student', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(10, 'weekend', '2D', 'student', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(11, 'weekend', '2D', 'adult', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(12, 'weekend', '2D', 'adult', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(13, 'weekend', '3D', 'student', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(14, 'weekend', '3D', 'student', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(15, 'weekend', '3D', 'adult', 'normal', 85000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53'),
-(16, 'weekend', '3D', 'adult', 'vip', 95000.00, '2025-11-22 14:55:53', '2025-11-22 14:55:53');
+(1, 'weekday', '2D', 'student', 'normal', 55000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(2, 'weekday', '2D', 'student', 'vip', 65000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(3, 'weekday', '2D', 'adult', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(4, 'weekday', '2D', 'adult', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(5, 'weekday', '3D', 'student', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(6, 'weekday', '3D', 'student', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(7, 'weekday', '3D', 'adult', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(8, 'weekday', '3D', 'adult', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(9, 'weekend', '2D', 'student', 'normal', 65000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(10, 'weekend', '2D', 'student', 'vip', 75000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(11, 'weekend', '2D', 'adult', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(12, 'weekend', '2D', 'adult', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(13, 'weekend', '3D', 'student', 'normal', 75000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(14, 'weekend', '3D', 'student', 'vip', 85000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(15, 'weekend', '3D', 'adult', 'normal', 85000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24'),
+(16, 'weekend', '3D', 'adult', 'vip', 95000.00, '2025-11-22 14:55:53', '2025-11-28 11:07:24');
 
 -- --------------------------------------------------------
 
@@ -1671,13 +2116,12 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_date`, `tier_id`, `total_spending`, `created_at`, `role`, `cinema_id`, `status`) VALUES
 (2, 'Nguyễn Đức Anh', 'anp93005@gmail.com', '$2y$10$CWyRPSmpryxfnvWJk.WU6ee587peAVpJ2WM.gPnWxn1EURYPTorwe', '0386036692', '2025-10-28', NULL, 0.00, '2025-11-15 20:56:13', 'admin', NULL, 'active'),
-(3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$7gVirXBuWLl4bzlkZvpaT.MVe380dkGfWNRRmYFa8t.GeG6R9dVp2', '0386036636', '2000-10-12', NULL, 1755000.00, '2025-11-15 21:17:27', 'customer', NULL, 'active'),
+(3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$7gVirXBuWLl4bzlkZvpaT.MVe380dkGfWNRRmYFa8t.GeG6R9dVp2', '0386036636', '2000-10-12', NULL, 2592500.00, '2025-11-15 21:17:27', 'customer', NULL, 'active'),
 (4, 'Bảo Châu', 'baochau06@gmail.com', '$2y$10$4msjaSiici7YXHciPSW0Cu/bYvTZuQRdlhm3ifOL4LTesvPmpzGxq', '0386036693', '2006-12-11', NULL, 0.00, '2025-11-18 22:28:02', 'manager', 3, 'active'),
 (5, 'quoc tuan', 'quoctuan26@gmail.com', '$2y$10$hMMowF.wiR0LVaRVr4kf3.Q1r/DAU3gdS6fe/qZbf8neBZAokstIK', '0386036695', '2006-10-02', NULL, 0.00, '2025-11-26 20:54:11', 'manager', 2, 'active'),
-(7, 'Anh Duc', 'anhnguyen121016@gmail.com', '$2y$10$aYquSofzM2G67EOJkmCFU.39C3rEOraUdheu6RV8oFRISvlvkDm8G', '0386036692', '2006-06-14', NULL, 0.00, '2025-11-26 21:46:48', 'staff', 1, 'active'),
-(8, 'nhat minh', 'minh264@gmail.com', '$2y$10$LF5hZWO7P8lwFvEACPVBdOdcIY4WpbPJlW13QikkT12QZiCd59qCy', '0386036652', '2006-06-12', NULL, 0.00, '2025-11-26 22:03:59', 'manager', 1, 'active');
-
--- --------------------------------------------------------
+(7, 'Anh Duc', 'anhnguyen121016@gmail.com', '$2y$10$aYquSofzM2G67EOJkmCFU.39C3rEOraUdheu6RV8oFRISvlvkDm8G', '0386036692', '2006-06-14', NULL, 0.00, '2025-11-26 21:46:48', 'staff', 2, 'active'),
+(8, 'nhat minh', 'minh264@gmail.com', '$2y$10$LF5hZWO7P8lwFvEACPVBdOdcIY4WpbPJlW13QikkT12QZiCd59qCy', '0386036652', '2006-06-12', NULL, 0.00, '2025-11-26 22:03:59', 'manager', 1, 'active'),
+(9, 'phong', 'p@gmail.com', '$2y$10$Rhh7ZfmteVo7RQh.FlvaiOS3YXiiO..rOFSpiwbHMwuRSpFnxmXiu', '0846146594', '2006-12-12', NULL, 75000.00, '2025-12-03 11:01:27', 'customer', NULL, 'active');
 
 --
 -- Indexes for dumped tables
@@ -1737,7 +2181,8 @@ ALTER TABLE `customer_tiers`
 --
 ALTER TABLE `discount_codes`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `code` (`code`);
+  ADD UNIQUE KEY `code` (`code`),
+  ADD KEY `fk_discount_codes_movie` (`movie_id`);
 
 --
 -- Indexes for table `food_drinks`
@@ -1746,20 +2191,21 @@ ALTER TABLE `food_drinks`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `invoices`
---
-ALTER TABLE `invoices`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `invoice_code` (`invoice_code`),
-  ADD KEY `fk_invoices_payment` (`payment_id`),
-  ADD KEY `fk_invoices_user` (`user_id`);
-
---
 -- Indexes for table `movies`
 --
 ALTER TABLE `movies`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_movies_genre` (`genre_id`);
+  ADD KEY `fk_movies_genre` (`genre_id`),
+  ADD KEY `fk_movies_cinema` (`cinema_id`);
+
+--
+-- Indexes for table `movie_cinemas`
+--
+ALTER TABLE `movie_cinemas`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_movie_cinema` (`movie_id`,`cinema_id`),
+  ADD KEY `fk_movie_cinemas_movie` (`movie_id`),
+  ADD KEY `fk_movie_cinemas_cinema` (`cinema_id`);
 
 --
 -- Indexes for table `movie_genres`
@@ -1835,7 +2281,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `booking_items`
@@ -1853,13 +2299,13 @@ ALTER TABLE `cinemas`
 -- AUTO_INCREMENT for table `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `customer_tiers`
@@ -1871,7 +2317,7 @@ ALTER TABLE `customer_tiers`
 -- AUTO_INCREMENT for table `discount_codes`
 --
 ALTER TABLE `discount_codes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `food_drinks`
@@ -1880,16 +2326,16 @@ ALTER TABLE `food_drinks`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `invoices`
---
-ALTER TABLE `invoices`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `movies`
 --
 ALTER TABLE `movies`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT for table `movie_cinemas`
+--
+ALTER TABLE `movie_cinemas`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `movie_genres`
@@ -1901,7 +2347,7 @@ ALTER TABLE `movie_genres`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -1919,19 +2365,19 @@ ALTER TABLE `role_permissions`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `seats`
 --
 ALTER TABLE `seats`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4241;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4361;
 
 --
 -- AUTO_INCREMENT for table `showtimes`
 --
 ALTER TABLE `showtimes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=301;
 
 --
 -- AUTO_INCREMENT for table `ticket_prices`
@@ -1943,7 +2389,7 @@ ALTER TABLE `ticket_prices`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables
@@ -1980,17 +2426,24 @@ ALTER TABLE `contacts`
   ADD CONSTRAINT `fk_contacts_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- Constraints for table `invoices`
+-- Constraints for table `discount_codes`
 --
-ALTER TABLE `invoices`
-  ADD CONSTRAINT `fk_invoices_payment` FOREIGN KEY (`payment_id`) REFERENCES `payments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_invoices_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `discount_codes`
+  ADD CONSTRAINT `fk_discount_codes_movie` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `movies`
 --
 ALTER TABLE `movies`
+  ADD CONSTRAINT `fk_movies_cinema` FOREIGN KEY (`cinema_id`) REFERENCES `cinemas` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_movies_genre` FOREIGN KEY (`genre_id`) REFERENCES `movie_genres` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `movie_cinemas`
+--
+ALTER TABLE `movie_cinemas`
+  ADD CONSTRAINT `fk_movie_cinemas_cinema` FOREIGN KEY (`cinema_id`) REFERENCES `cinemas` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_movie_cinemas_movie` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `payments`
@@ -2023,7 +2476,6 @@ ALTER TABLE `showtimes`
 ALTER TABLE `users`
   ADD CONSTRAINT `fk_users_cinema` FOREIGN KEY (`cinema_id`) REFERENCES `cinemas` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_users_tiers` FOREIGN KEY (`tier_id`) REFERENCES `customer_tiers` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../../../commons/auth.php'; ?>
 <div class="container-fluid">
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -65,21 +66,65 @@
               <?php endif; ?>
             </div>
 
-            <div class="mb-3">
-              <label for="genre_id" class="form-label">Thể loại <span class="text-danger">*</span></label>
-              <select name="genre_id" id="genre_id" class="form-select <?= !empty($errors['genre_id']) ? 'is-invalid' : '' ?>">
-                <option value="">-- Chọn thể loại --</option>
-                <?php if (!empty($genres)): ?>
-                  <?php foreach ($genres as $genre): ?>
-                    <option value="<?= $genre['id'] ?>" <?= (isset($_POST['genre_id']) && $_POST['genre_id'] == $genre['id']) ? 'selected' : '' ?>>
-                      <?= htmlspecialchars($genre['name']) ?>
-                    </option>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-              </select>
-              <?php if (!empty($errors['genre_id'])): ?>
-                <div class="text-danger small mt-1"><?= $errors['genre_id'] ?></div>
-              <?php endif; ?>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="genre_id" class="form-label">Thể loại <span class="text-danger">*</span></label>
+                  <select name="genre_id" id="genre_id" class="form-select <?= !empty($errors['genre_id']) ? 'is-invalid' : '' ?>">
+                    <option value="">-- Chọn thể loại --</option>
+                    <?php if (!empty($genres)): ?>
+                      <?php foreach ($genres as $genre): ?>
+                        <option value="<?= $genre['id'] ?>" <?= (isset($_POST['genre_id']) && $_POST['genre_id'] == $genre['id']) ? 'selected' : '' ?>>
+                          <?= htmlspecialchars($genre['name']) ?>
+                        </option>
+                      <?php endforeach; ?>
+                    <?php endif; ?>
+                  </select>
+                  <?php if (!empty($errors['genre_id'])): ?>
+                    <div class="text-danger small mt-1"><?= $errors['genre_id'] ?></div>
+                  <?php endif; ?>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Rạp <span class="text-danger">*</span></label>
+                  <div class="border rounded p-3 <?= !empty($errors['cinema_ids']) ? 'border-danger' : '' ?>" style="max-height: 200px; overflow-y: auto;">
+                    <?php if (!empty($cinemas)): ?>
+                      <?php 
+                      $isAdmin = isAdmin();
+                      $selectedCinemas = isset($_POST['cinema_ids']) ? $_POST['cinema_ids'] : [];
+                      if (isManager() && count($cinemas) == 1) {
+                        $selectedCinemas = [$cinemas[0]['id']];
+                      }
+                      ?>
+                      <?php foreach ($cinemas as $cinema): ?>
+                        <div class="form-check">
+                          <input class="form-check-input cinema-checkbox" 
+                                 type="checkbox" 
+                                 name="cinema_ids[]" 
+                                 value="<?= $cinema['id'] ?>" 
+                                 id="cinema_<?= $cinema['id'] ?>"
+                                 <?= in_array($cinema['id'], $selectedCinemas) ? 'checked' : '' ?>
+                                 <?= (isManager() && count($cinemas) == 1) ? 'disabled' : '' ?>
+                                 onchange="checkCinemaLimit()">
+                          <label class="form-check-label" for="cinema_<?= $cinema['id'] ?>">
+                            <?= htmlspecialchars($cinema['name']) ?>
+                          </label>
+                        </div>
+                      <?php endforeach; ?>
+                      <?php if (isManager() && count($cinemas) == 1): ?>
+                        <input type="hidden" name="cinema_ids[]" value="<?= $cinemas[0]['id'] ?>">
+                      <?php endif; ?>
+                    <?php else: ?>
+                      <p class="text-muted mb-0">Chưa có rạp nào</p>
+                    <?php endif; ?>
+                  </div>
+                  <small class="text-muted"><?= isAdmin() ? 'Chọn tối đa 3 rạp' : 'Rạp của bạn' ?></small>
+                  <?php if (!empty($errors['cinema_ids'])): ?>
+                    <div class="text-danger small mt-1"><?= $errors['cinema_ids'] ?></div>
+                  <?php endif; ?>
+                </div>
+              </div>
             </div>
 
             <div class="mb-3">
@@ -198,6 +243,24 @@
     }
   });
 
+  // Kiểm tra giới hạn chọn rạp (tối đa 3)
+  function checkCinemaLimit() {
+    const checkboxes = document.querySelectorAll('.cinema-checkbox:not(:disabled)');
+    const checked = document.querySelectorAll('.cinema-checkbox:not(:disabled):checked');
+    
+    if (checked.length >= 3) {
+      checkboxes.forEach(cb => {
+        if (!cb.checked) {
+          cb.disabled = true;
+        }
+      });
+    } else {
+      checkboxes.forEach(cb => {
+        cb.disabled = false;
+      });
+    }
+  }
+
   // Validation function
   function validateMovieForm(event) {
     const title = document.getElementById('title').value.trim();
@@ -210,6 +273,18 @@
     const ageRating = document.getElementById('age_rating').value;
     const format = document.getElementById('format').value;
     const originalLanguage = document.getElementById('original_language').value.trim();
+    
+    // Kiểm tra rạp đã chọn
+    const cinemaCheckboxes = document.querySelectorAll('input[name="cinema_ids[]"]:checked');
+    if (cinemaCheckboxes.length === 0) {
+      alert('Vui lòng chọn ít nhất một rạp!');
+      return false;
+    }
+    
+    if (cinemaCheckboxes.length > 3) {
+      alert('Chỉ được chọn tối đa 3 rạp!');
+      return false;
+    }
 
     if (!title || title === '') {
       alert('Vui lòng nhập tên phim!');
@@ -281,4 +356,9 @@
 
     return true;
   }
+  
+  // Khởi tạo khi trang load
+  document.addEventListener('DOMContentLoaded', function() {
+    checkCinemaLimit();
+  });
 </script>

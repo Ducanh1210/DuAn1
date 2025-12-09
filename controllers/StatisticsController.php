@@ -17,6 +17,25 @@ class StatisticsController
         require_once __DIR__ . '/../commons/auth.php';
         requireAdminOrStaff();
         
+        // Xử lý AJAX request cho biểu đồ
+        if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
+            header('Content-Type: application/json');
+            $year = isset($_GET['year']) && $_GET['year'] !== '' ? intval($_GET['year']) : null;
+            $month = isset($_GET['month']) && $_GET['month'] !== '' ? intval($_GET['month']) : null;
+            
+            $cinemaId = null;
+            if (isManager() || isStaff()) {
+                $cinemaId = getCurrentCinemaId();
+            }
+            
+            $movieStats = $this->getMoviesByMonth($year, $month, $cinemaId);
+            echo json_encode([
+                'success' => true,
+                'movieStats' => $movieStats
+            ]);
+            exit;
+        }
+        
         // Lấy cinema_id nếu là manager hoặc staff
         $cinemaId = null;
         $cinemaName = null;
@@ -29,6 +48,10 @@ class StatisticsController
                 $cinemaName = $cinema['name'] ?? null;
             }
         }
+        
+        // Lấy tham số bộ lọc
+        $filterYear = isset($_GET['year']) && $_GET['year'] !== '' ? intval($_GET['year']) : null;
+        $filterMonth = isset($_GET['month']) && $_GET['month'] !== '' ? intval($_GET['month']) : null;
         
         // Thống kê tổng quan
         $stats = [
@@ -50,11 +73,11 @@ class StatisticsController
         // Thống kê theo ngày (30 ngày gần nhất)
         $dailyStats = $this->getDailyStats(30, $cinemaId);
         
-        // Top phim bán chạy (theo rạp nếu có)
-        $topMovies = $this->getTopMovies(10, $cinemaId);
+        // Top phim bán chạy (theo rạp nếu có, có thể lọc theo tháng/năm)
+        $topMovies = $this->getTopMovies(5, $cinemaId, $filterYear, $filterMonth);
         
-        // Top phim hot nhất (theo rạp nếu có)
-        $hotMovies = $this->getHotMovies(10, $cinemaId);
+        // Top phim hot nhất (theo rạp nếu có, có thể lọc theo tháng/năm)
+        $hotMovies = $this->getHotMovies(5, $cinemaId, $filterYear, $filterMonth);
         
         // Top rạp doanh thu cao (chỉ admin mới thấy)
         $topCinemas = null;
@@ -68,6 +91,9 @@ class StatisticsController
         // Thống kê theo phương thức thanh toán
         $paymentMethodStats = $this->getPaymentMethodStats($cinemaId);
         
+        // Thống kê phim theo tháng/năm được chọn
+        $movieStats = $this->getMoviesByMonth($filterYear, $filterMonth, $cinemaId);
+        
         render('admin/statistics/index.php', [
             'stats' => $stats,
             'monthlyStats' => $monthlyStats,
@@ -77,15 +103,18 @@ class StatisticsController
             'topCinemas' => $topCinemas,
             'bookingStatusStats' => $bookingStatusStats,
             'paymentMethodStats' => $paymentMethodStats,
+            'movieStats' => $movieStats,
             'cinemaId' => $cinemaId,
-            'cinemaName' => $cinemaName
+            'cinemaName' => $cinemaName,
+            'filterYear' => $filterYear,
+            'filterMonth' => $filterMonth
         ]);
     }
 
     private function getTotalBookings($cinemaId = null)
     {
         try {
-            $whereClause = "WHERE status IN ('paid', 'confirmed', 'completed')";
+            $whereClause = "WHERE status = 'paid'";
             $params = [];
             
             if ($cinemaId) {
@@ -106,7 +135,7 @@ class StatisticsController
     private function getTotalRevenue($cinemaId = null)
     {
         try {
-            $whereClause = "WHERE status IN ('paid', 'confirmed', 'completed')";
+            $whereClause = "WHERE status = 'paid'";
             $params = [];
             
             if ($cinemaId) {
@@ -127,7 +156,7 @@ class StatisticsController
     private function getTodayBookings($cinemaId = null)
     {
         try {
-            $whereClause = "WHERE DATE(booking_date) = CURDATE() AND status IN ('paid', 'confirmed', 'completed')";
+            $whereClause = "WHERE DATE(booking_date) = CURDATE() AND status = 'paid'";
             $params = [];
             
             if ($cinemaId) {
@@ -148,7 +177,7 @@ class StatisticsController
     private function getTodayRevenue($cinemaId = null)
     {
         try {
-            $whereClause = "WHERE DATE(booking_date) = CURDATE() AND status IN ('paid', 'confirmed', 'completed')";
+            $whereClause = "WHERE DATE(booking_date) = CURDATE() AND status = 'paid'";
             $params = [];
             
             if ($cinemaId) {
@@ -169,7 +198,7 @@ class StatisticsController
     private function getThisMonthBookings($cinemaId = null)
     {
         try {
-            $whereClause = "WHERE MONTH(booking_date) = MONTH(CURDATE()) AND YEAR(booking_date) = YEAR(CURDATE()) AND status IN ('paid', 'confirmed', 'completed')";
+            $whereClause = "WHERE MONTH(booking_date) = MONTH(CURDATE()) AND YEAR(booking_date) = YEAR(CURDATE()) AND status = 'paid'";
             $params = [];
             
             if ($cinemaId) {
@@ -190,7 +219,7 @@ class StatisticsController
     private function getThisMonthRevenue($cinemaId = null)
     {
         try {
-            $whereClause = "WHERE MONTH(booking_date) = MONTH(CURDATE()) AND YEAR(booking_date) = YEAR(CURDATE()) AND status IN ('paid', 'confirmed', 'completed')";
+            $whereClause = "WHERE MONTH(booking_date) = MONTH(CURDATE()) AND YEAR(booking_date) = YEAR(CURDATE()) AND status = 'paid'";
             $params = [];
             
             if ($cinemaId) {
@@ -272,7 +301,7 @@ class StatisticsController
     {
         try {
             $whereClause = "WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL :months MONTH)
-                    AND status IN ('paid', 'confirmed', 'completed')";
+                    AND status = 'paid'";
             $params = [':months' => $months];
             
             if ($cinemaId) {
@@ -308,7 +337,7 @@ class StatisticsController
     {
         try {
             $whereClause = "WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
-                    AND status IN ('paid', 'confirmed', 'completed')";
+                    AND status = 'paid'";
             $params = [':days' => $days];
             
             if ($cinemaId) {
@@ -340,16 +369,29 @@ class StatisticsController
         }
     }
 
-    private function getTopMovies($limit = 10, $cinemaId = null)
+    private function getTopMovies($limit = 10, $cinemaId = null, $year = null, $month = null)
     {
         try {
             $joinClause = "";
-            $whereClause = "";
+            $whereClause = "WHERE b.status = 'paid'";
             $params = [];
             
+            // Lọc theo năm
+            if ($year !== null && $year > 0) {
+                $whereClause .= " AND YEAR(b.booking_date) = :year";
+                $params[':year'] = $year;
+            }
+            
+            // Lọc theo tháng
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $whereClause .= " AND MONTH(b.booking_date) = :month";
+                $params[':month'] = $month;
+            }
+            
+            // Lọc theo rạp
             if ($cinemaId) {
                 $joinClause = "LEFT JOIN rooms r ON st.room_id = r.id";
-                $whereClause = "AND r.cinema_id = :cinema_id";
+                $whereClause .= " AND r.cinema_id = :cinema_id";
                 $params[':cinema_id'] = $cinemaId;
             }
             
@@ -358,11 +400,11 @@ class StatisticsController
                         m.title,
                         m.image,
                         COUNT(b.id) as booking_count,
-                        SUM(b.final_amount) as revenue
+                        COALESCE(SUM(b.final_amount), 0) as revenue
                     FROM movies m
                     LEFT JOIN showtimes st ON m.id = st.movie_id
                     $joinClause
-                    LEFT JOIN bookings b ON st.id = b.showtime_id AND b.status IN ('paid', 'confirmed', 'completed') $whereClause
+                    LEFT JOIN bookings b ON st.id = b.showtime_id $whereClause
                     GROUP BY m.id, m.title, m.image
                     HAVING booking_count > 0
                     ORDER BY booking_count DESC, revenue DESC
@@ -380,15 +422,30 @@ class StatisticsController
     }
 
     /**
-     * Lấy phim hot nhất (theo doanh thu gần đây - 30 ngày)
+     * Lấy phim hot nhất (theo doanh thu)
+     * Nếu có lọc tháng/năm thì lọc theo đó, nếu không thì lấy 30 ngày gần đây
      */
-    private function getHotMovies($limit = 10, $cinemaId = null)
+    private function getHotMovies($limit = 10, $cinemaId = null, $year = null, $month = null)
     {
         try {
             $joinClause = "";
-            $whereClause = "AND b.booking_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+            $whereClause = "WHERE b.status = 'paid'";
             $params = [];
             
+            // Nếu có lọc tháng/năm thì dùng, nếu không thì lấy 30 ngày gần đây
+            if ($year !== null && $year > 0) {
+                $whereClause .= " AND YEAR(b.booking_date) = :year";
+                $params[':year'] = $year;
+            }
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $whereClause .= " AND MONTH(b.booking_date) = :month";
+                $params[':month'] = $month;
+            } else if ($year === null && $month === null) {
+                // Nếu không có lọc thì lấy 30 ngày gần đây
+                $whereClause .= " AND b.booking_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+            }
+            
+            // Lọc theo rạp
             if ($cinemaId) {
                 $joinClause = "LEFT JOIN rooms r ON st.room_id = r.id";
                 $whereClause .= " AND r.cinema_id = :cinema_id";
@@ -400,11 +457,11 @@ class StatisticsController
                         m.title,
                         m.image,
                         COUNT(b.id) as booking_count,
-                        SUM(b.final_amount) as revenue
+                        COALESCE(SUM(b.final_amount), 0) as revenue
                     FROM movies m
                     LEFT JOIN showtimes st ON m.id = st.movie_id
                     $joinClause
-                    LEFT JOIN bookings b ON st.id = b.showtime_id AND b.status IN ('paid', 'confirmed', 'completed') $whereClause
+                    LEFT JOIN bookings b ON st.id = b.showtime_id $whereClause
                     GROUP BY m.id, m.title, m.image
                     HAVING booking_count > 0
                     ORDER BY revenue DESC, booking_count DESC
@@ -431,7 +488,7 @@ class StatisticsController
                         SUM(b.final_amount) as revenue
                     FROM cinemas c
                     LEFT JOIN rooms r ON c.id = r.cinema_id
-                    LEFT JOIN bookings b ON r.id = b.room_id AND b.status IN ('paid', 'confirmed', 'completed')
+                    LEFT JOIN bookings b ON r.id = b.room_id AND b.status = 'paid'
                     GROUP BY c.id, c.name
                     HAVING booking_count > 0
                     ORDER BY revenue DESC, booking_count DESC
@@ -494,6 +551,61 @@ class StatisticsController
                     GROUP BY p.method";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute($params);
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Lấy thống kê phim theo tháng/năm với số vé và doanh thu
+     */
+    private function getMoviesByMonth($year = null, $month = null, $cinemaId = null)
+    {
+        try {
+            $joinClause = "";
+            $whereClause = "WHERE b.status = 'paid'";
+            $params = [];
+            
+            // Lọc theo năm
+            if ($year !== null && $year > 0) {
+                $whereClause .= " AND YEAR(b.booking_date) = :year";
+                $params[':year'] = $year;
+            }
+            
+            // Lọc theo tháng
+            if ($month !== null && $month > 0 && $month <= 12) {
+                $whereClause .= " AND MONTH(b.booking_date) = :month";
+                $params[':month'] = $month;
+            }
+            
+            // Lọc theo rạp
+            if ($cinemaId) {
+                $joinClause = "LEFT JOIN rooms r ON st.room_id = r.id";
+                $whereClause .= " AND r.cinema_id = :cinema_id";
+                $params[':cinema_id'] = $cinemaId;
+            }
+            
+            $sql = "SELECT 
+                        m.id,
+                        m.title,
+                        m.image,
+                        COUNT(b.id) as booking_count,
+                        COALESCE(SUM(b.final_amount), 0) as revenue
+                    FROM movies m
+                    LEFT JOIN showtimes st ON m.id = st.movie_id
+                    $joinClause
+                    LEFT JOIN bookings b ON st.id = b.showtime_id $whereClause
+                    GROUP BY m.id, m.title, m.image
+                    HAVING booking_count > 0
+                    ORDER BY booking_count DESC, revenue DESC
+                    LIMIT 20";
+            
+            $stmt = $this->conn->prepare($sql);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->execute();
             return $stmt->fetchAll();
         } catch (Exception $e) {
             return [];

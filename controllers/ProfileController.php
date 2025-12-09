@@ -458,13 +458,16 @@ class ProfileController
             exit;
         }
 
-        // Kiểm tra đã bình luận chưa cho phim này ở rạp này
+        // Kiểm tra đã bình luận chưa
         require_once __DIR__ . '/../models/Comment.php';
         $commentModel = new Comment();
-        $cinemaId = $booking['cinema_id'] ?? null;
         $existingComment = null;
-        if ($cinemaId) {
-            $existingComment = $commentModel->getByUserAndMovie($userId, $movieId, $cinemaId);
+        $userComments = $commentModel->getByUser($userId);
+        foreach ($userComments as $comment) {
+            if ($comment['movie_id'] == $movieId) {
+                $existingComment = $comment;
+                break;
+            }
         }
 
         renderClient('client/review.php', [
@@ -521,40 +524,34 @@ class ProfileController
                 require_once __DIR__ . '/../models/Comment.php';
                 $commentModel = new Comment();
 
-                // Lấy cinema_id từ booking
-                $cinemaId = $booking['cinema_id'] ?? null;
-                if (!$cinemaId) {
-                    $errors[] = 'Không thể xác định rạp chiếu phim. Vui lòng thử lại.';
-                } else {
-                    // Kiểm tra đã bình luận chưa cho phim này ở rạp này
-                    $existingComment = $commentModel->getByUserAndMovie($userId, $movieId, $cinemaId);
-
-                    if ($existingComment) {
-                        // Cập nhật bình luận cũ
-                        $commentModel->update($existingComment['id'], [
-                            'rating' => $rating,
-                            'content' => $content
-                        ]);
-                    } else {
-                        // Tạo bình luận mới
-                        $result = $commentModel->insert([
-                            'user_id' => $userId,
-                            'movie_id' => $movieId,
-                            'cinema_id' => $cinemaId,
-                            'rating' => $rating,
-                            'content' => $content
-                        ]);
-                        
-                        if (!$result) {
-                            $errors[] = 'Bạn đã bình luận phim này ở rạp này rồi. Mỗi tài khoản chỉ được bình luận 1 lần cho mỗi phim ở mỗi rạp.';
-                        }
-                    }
-                    
-                    if (empty($errors)) {
-                        header('Location: ' . BASE_URL . '?act=profile&tab=bookings&review_success=1');
-                        exit;
+                // Kiểm tra đã bình luận chưa
+                $userComments = $commentModel->getByUser($userId);
+                $existingComment = null;
+                foreach ($userComments as $comment) {
+                    if ($comment['movie_id'] == $movieId) {
+                        $existingComment = $comment;
+                        break;
                     }
                 }
+
+                if ($existingComment) {
+                    // Cập nhật bình luận cũ
+                    $commentModel->update($existingComment['id'], [
+                        'rating' => $rating,
+                        'content' => $content
+                    ]);
+                } else {
+                    // Tạo bình luận mới
+                    $commentModel->insert([
+                        'user_id' => $userId,
+                        'movie_id' => $movieId,
+                        'rating' => $rating,
+                        'content' => $content
+                    ]);
+                }
+
+                header('Location: ' . BASE_URL . '?act=profile&tab=bookings&review_success=1');
+                exit;
             }
         }
 
