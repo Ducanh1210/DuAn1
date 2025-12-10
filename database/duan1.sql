@@ -199,6 +199,8 @@ CREATE TABLE `discount_codes` (
   `benefits` json DEFAULT NULL,
   `status` varchar(20) DEFAULT 'active',
   `cta` varchar(100) DEFAULT NULL,
+  `usage_limit` int DEFAULT NULL,
+  `usage_used` int DEFAULT '0',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng mã giảm giá (movie_id = NULL: áp dụng cho tất cả phim, movie_id != NULL: chỉ áp dụng cho phim cụ thể)';
@@ -207,15 +209,19 @@ CREATE TABLE `discount_codes` (
 -- Dumping data for table `discount_codes`
 --
 
-INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_date`, `end_date`, `movie_id`, `description`, `benefits`, `status`, `cta`, `created_at`, `updated_at`) VALUES
-(1, 'WEEKEND25', 'Giảm giá cuối tuần 25%', 25, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho các suất chiếu cuối tuần (Thứ 6, Thứ 7, Chủ nhật). Áp dụng cho tất cả phim và tất cả rạp.', '[\"Áp dụng cho suất chiếu cuối tuần\", \"Giảm 25% cho mọi vé\", \"Không giới hạn số lượng vé\", \"Áp dụng cho tất cả phim\"]', 'active', 'Đặt vé cuối tuần', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', NULL, 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', '2025-11-20 15:00:00', '2025-11-24 09:19:57'),
-(3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', NULL, 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(6, 'FASHION209', '85%', 85, '2025-11-28', '2025-11-30', NULL, '', NULL, 'active', '', '2025-11-26 10:47:51', '2025-11-28 10:02:17'),
-(7, 'TRONCHAY30', 'Giảm giá TRỐN CHẠY TỬ THẦN 30%', 30, '2025-11-28', '2025-12-12', 9, 'Ưu đãi đặc biệt dành riêng cho phim TRỐN CHẠY TỬ THẦN-T18. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 30% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim TRỐN CHẠY TỬ THẦN-T18\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', '2025-11-28 10:00:00', '2025-11-28 10:00:00'),
-(8, 'CHINGA25', 'Giảm giá Chị Ngã Em Nâng 25%', 25, '2025-11-28', '2025-12-11', 12, 'Ưu đãi đặc biệt dành riêng cho phim Chị Ngã Em Nâng. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 25% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim Chị Ngã Em Nâng\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', '2025-11-28 10:00:00', '2025-11-28 10:00:00');
+INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_date`, `end_date`, `movie_id`, `description`, `benefits`, `status`, `cta`, `usage_limit`, `usage_used`, `created_at`, `updated_at`) VALUES
+(1, 'WEEKEND25', 'Giảm giá cuối tuần 25%', 25, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho các suất chiếu cuối tuần (Thứ 6, Thứ 7, Chủ nhật). Áp dụng cho tất cả phim và tất cả rạp.', '[\"Áp dụng cho suất chiếu cuối tuần\", \"Giảm 25% cho mọi vé\", \"Không giới hạn số lượng vé\", \"Áp dụng cho tất cả phim\"]', 'active', 'Đặt vé cuối tuần', 2, 0, '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', NULL, 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', 2, 0, '2025-11-20 15:00:00', '2025-11-24 09:19:57'),
+(3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', 2, 0, '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', 2, 0, '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', NULL, 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', 2, 0, '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(6, 'FASHION209', '85%', 85, '2025-11-28', '2025-11-30', NULL, '', NULL, 'active', '', 2, 0, '2025-11-26 10:47:51', '2025-11-28 10:02:17'),
+(7, 'TRONCHAY30', 'Giảm giá TRỐN CHẠY TỬ THẦN 30%', 30, '2025-11-28', '2025-12-12', 9, 'Ưu đãi đặc biệt dành riêng cho phim TRỐN CHẠY TỬ THẦN-T18. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 30% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim TRỐN CHẠY TỬ THẦN-T18\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', 3, 0, '2025-11-28 10:00:00', '2025-11-28 10:00:00'),
+(8, 'CHINGA25', 'Giảm giá Chị Ngã Em Nâng 25%', 25, '2025-11-28', '2025-12-11', 12, 'Ưu đãi đặc biệt dành riêng cho phim Chị Ngã Em Nâng. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 25% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim Chị Ngã Em Nâng\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', 3, 0, '2025-11-28 10:00:00', '2025-11-28 10:00:00');
+
+-- Cập nhật dữ liệu hiện có: mã theo phim giới hạn 3 lượt, mã tổng quát giới hạn 2 lượt
+UPDATE `discount_codes` SET `usage_limit` = 3 WHERE `movie_id` IS NOT NULL AND `usage_limit` IS NULL;
+UPDATE `discount_codes` SET `usage_limit` = 2 WHERE `movie_id` IS NULL AND `usage_limit` IS NULL;
 
 -- --------------------------------------------------------
 

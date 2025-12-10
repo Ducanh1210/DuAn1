@@ -17,6 +17,7 @@
               <th>Mã khuyến mại</th>
               <th>Tiêu đề</th>
               <th>Giảm giá</th>
+              <th>Lượt sử dụng</th>
               <th>Ngày bắt đầu</th>
               <th>Ngày kết thúc</th>
               <th>Trạng thái</th>
@@ -61,6 +62,15 @@
                 <td><strong class="text-primary"><?= htmlspecialchars($item['code']) ?></strong></td>
                 <td><?= htmlspecialchars($item['title']) ?></td>
                 <td><span class="badge bg-danger"><?= $item['discount_percent'] ?>%</span></td>
+                <?php
+                  $usageLimit = isset($item['usage_limit']) ? (int)$item['usage_limit'] : null;
+                  $usageUsed = (int)($item['usage_used'] ?? 0);
+                  $usageLabel = $usageLimit === null
+                    ? $usageUsed . ' / ∞'
+                    : $usageUsed . ' / ' . $usageLimit;
+                  $usageClass = ($usageLimit !== null && $usageUsed >= $usageLimit) ? 'danger' : 'primary';
+                ?>
+                <td><span class="badge bg-<?= $usageClass ?>"><?= $usageLabel ?></span></td>
                 <td><?= $item['start_date'] ? date('d/m/Y', strtotime($item['start_date'])) : '-' ?></td>
                 <td><?= $item['end_date'] ? date('d/m/Y', strtotime($item['end_date'])) : '-' ?></td>
                 <td>
@@ -83,7 +93,7 @@
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="8" class="text-center text-muted py-4">Chưa có mã khuyến mại nào</td>
+                <td colspan="9" class="text-center text-muted py-4">Chưa có mã khuyến mại nào</td>
               </tr>
             <?php endif; ?>
           </tbody>

@@ -279,6 +279,7 @@ function formatPrice($price)
 
     // Numeric values (VND)
     let originalTotal = <?= $totalPrice ?>;
+    const seatCount = <?= count($selectedSeats ?? []) ?>;
     let subtotal = originalTotal;
     let fee = 0;
     let appliedVoucher = null;
@@ -322,7 +323,7 @@ function formatPrice($price)
 
         // Kiểm tra discount code qua API
         const movieId = '<?= $movie['id'] ?? '' ?>';
-        const url = '<?= BASE_URL ?>?act=check-voucher&code=' + encodeURIComponent(voucherCode) + '&total_amount=' + originalTotal + '&movie_id=' + movieId;
+        const url = '<?= BASE_URL ?>?act=check-voucher&code=' + encodeURIComponent(voucherCode) + '&total_amount=' + originalTotal + '&movie_id=' + movieId + '&seat_count=' + seatCount;
         fetch(url)
             .then(response => response.json())
             .then(data => {

@@ -41,6 +41,12 @@ $isActive = ($status === 'ongoing' || $status === 'upcoming');
                 <i class="bi bi-calendar-event"></i>
                 <?= htmlspecialchars($promo['period'] ?? 'Áp dụng thường xuyên') ?>
             </span>
+            <?php if (!empty($promo['usage_label'])): ?>
+                <span class="usage">
+                    <i class="bi bi-ticket-perforated"></i>
+                    <?= htmlspecialchars($promo['usage_label']) ?>
+                </span>
+            <?php endif; ?>
             <?php if (!empty($code) && $status === 'ongoing'): ?>
                 <button class="code-btn" data-code="<?= $code ?>">
                     <span><?= $code ?></span>
