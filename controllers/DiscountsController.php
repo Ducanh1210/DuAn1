@@ -67,6 +67,20 @@ class DiscountsController
                 $errors['max_discount'] = "Giá trị giảm tối đa phải là số";
             }
 
+            // Validate số lượt sử dụng (tùy chọn, mỗi ghế trừ 1 lượt)
+            if (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') {
+                if (!is_numeric($_POST['usage_limit']) || (int)$_POST['usage_limit'] < 0) {
+                    $errors['usage_limit'] = "Số lượt sử dụng phải là số không âm";
+                }
+            }
+
+            // Validate số lượt sử dụng (tùy chọn, mỗi ghế trừ 1 lượt)
+            if (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') {
+                if (!is_numeric($_POST['usage_limit']) || (int)$_POST['usage_limit'] < 0) {
+                    $errors['usage_limit'] = "Số lượt sử dụng phải là số không âm";
+                }
+            }
+
             if (empty(trim($_POST['start_date'] ?? ''))) {
                 $errors['start_date'] = "Bạn vui lòng chọn ngày bắt đầu";
             }
@@ -107,7 +121,8 @@ class DiscountsController
                     'description' => trim($_POST['description'] ?? ''),
                     'benefits' => $benefits,
                     'status' => $_POST['status'] ?? 'active',
-                    'cta' => trim($_POST['cta'] ?? '')
+                    'cta' => trim($_POST['cta'] ?? ''),
+                    'usage_limit' => (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') ? (int)$_POST['usage_limit'] : null
                 ];
 
                 $result = $this->discountCode->insert($data);
@@ -231,7 +246,8 @@ class DiscountsController
                     'description' => trim($_POST['description'] ?? ''),
                     'benefits' => $benefits,
                     'status' => $_POST['status'] ?? 'active',
-                    'cta' => trim($_POST['cta'] ?? '')
+                    'cta' => trim($_POST['cta'] ?? ''),
+                    'usage_limit' => (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') ? (int)$_POST['usage_limit'] : null
                 ];
 
                 $result = $this->discountCode->update($id, $data);

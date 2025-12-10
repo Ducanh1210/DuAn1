@@ -96,7 +96,7 @@
             </div>
 
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="mb-3">
                   <label for="discount_percent" class="form-label">Phần trăm giảm giá (%) <span class="text-danger">*</span></label>
                   <input type="number" 
@@ -114,7 +114,23 @@
                   <?php endif; ?>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="usage_limit" class="form-label">Số lượt sử dụng (tính theo số ghế)</label>
+                  <input type="number"
+                         name="usage_limit"
+                         id="usage_limit"
+                         class="form-control <?= !empty($errors['usage_limit']) ? 'is-invalid' : '' ?>"
+                         value="<?= htmlspecialchars($_POST['usage_limit'] ?? '') ?>"
+                         min="0"
+                         placeholder="Để trống nếu không giới hạn">
+                  <small class="form-text text-muted">Mỗi ghế dùng mã sẽ trừ 1 lượt. Để trống để không giới hạn.</small>
+                  <?php if (!empty($errors['usage_limit'])): ?>
+                    <div class="text-danger small mt-1"><?= $errors['usage_limit'] ?></div>
+                  <?php endif; ?>
+                </div>
+              </div>
+              <div class="col-md-4">
                 <div class="mb-3">
                   <label for="status" class="form-label">Trạng thái</label>
                   <select name="status" id="status" class="form-select">

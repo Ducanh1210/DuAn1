@@ -63,13 +63,14 @@ class DiscountCode
     }
 
     /**
-     * Validate discount code với total amount và movie_id (nếu có)
+     * Validate discount code với total amount, movie_id (nếu có) và số vé dùng mã
      * Trả về null nếu không hợp lệ, hoặc array với thông tin discount nếu hợp lệ
      * Có thể trả về error message trong trường hợp đặc biệt
      */
-    public function validateDiscountCode($code, $totalAmount = 0, $movieId = null)
+    public function validateDiscountCode($code, $totalAmount = 0, $movieId = null, $seatCount = 1)
     {
         try {
+            $seatCount = max(1, (int)$seatCount);
             // Tìm mã giảm giá (không cần status = 'active' ở đây vì sẽ check riêng)
             $sql = "SELECT * FROM discount_codes WHERE code = :code";
             $stmt = $this->conn->prepare($sql);
@@ -83,6 +84,19 @@ class DiscountCode
             // Kiểm tra status
             if ($discount['status'] !== 'active') {
                 return ['error' => 'Mã giảm giá không hoạt động'];
+            }
+
+            // Kiểm tra lượt sử dụng còn lại (mỗi ghế sử dụng 1 lượt)
+            $usageLimit = isset($discount['usage_limit']) ? (int)$discount['usage_limit'] : null;
+            $usageUsed = isset($discount['usage_used']) ? (int)$discount['usage_used'] : 0;
+            if ($usageLimit !== null) {
+                $remaining = $usageLimit - $usageUsed;
+                if ($remaining <= 0) {
+                    return ['error' => 'Mã giảm giá đã hết lượt sử dụng'];
+                }
+                if ($seatCount > $remaining) {
+                    return ['error' => "Mã giảm giá chỉ còn {$remaining} lượt, không đủ cho số ghế đã chọn"];
+                }
             }
 
             // Kiểm tra thời gian hiệu lực
@@ -119,7 +133,9 @@ class DiscountCode
                 'discount_amount' => $discountAmount,
                 'start_date' => $discount['start_date'],
                 'end_date' => $discount['end_date'],
-                'movie_id' => $discount['movie_id'] ?? null
+                'movie_id' => $discount['movie_id'] ?? null,
+                'usage_limit' => $usageLimit,
+                'usage_used' => $usageUsed
             ];
         } catch (Exception $e) {
             error_log('Error in DiscountCode->validateDiscountCode(): ' . $e->getMessage());
@@ -133,8 +149,8 @@ class DiscountCode
     public function insert($data)
     {
         try {
-            $sql = "INSERT INTO discount_codes (code, title, discount_percent, start_date, end_date, movie_id, description, benefits, status, cta) 
-                    VALUES (:code, :title, :discount_percent, :start_date, :end_date, :movie_id, :description, :benefits, :status, :cta)";
+            $sql = "INSERT INTO discount_codes (code, title, discount_percent, start_date, end_date, movie_id, description, benefits, status, cta, usage_limit, usage_used) 
+                    VALUES (:code, :title, :discount_percent, :start_date, :end_date, :movie_id, :description, :benefits, :status, :cta, :usage_limit, :usage_used)";
             $stmt = $this->conn->prepare($sql);
 
             // Xử lý benefits JSON
@@ -157,7 +173,9 @@ class DiscountCode
                 ':description' => $data['description'] ?? null,
                 ':benefits' => $benefits,
                 ':status' => $data['status'] ?? 'active',
-                ':cta' => $data['cta'] ?? null
+                ':cta' => $data['cta'] ?? null,
+                ':usage_limit' => isset($data['usage_limit']) && $data['usage_limit'] !== '' ? (int)$data['usage_limit'] : null,
+                ':usage_used' => 0
             ]);
         } catch (Exception $e) {
             error_log('Error in DiscountCode->insert(): ' . $e->getMessage());
@@ -174,7 +192,7 @@ class DiscountCode
             $sql = "UPDATE discount_codes 
                     SET code = :code, title = :title, discount_percent = :discount_percent, 
                         start_date = :start_date, end_date = :end_date, movie_id = :movie_id, 
-                        description = :description, benefits = :benefits, status = :status, cta = :cta, updated_at = NOW()
+                        description = :description, benefits = :benefits, status = :status, cta = :cta, usage_limit = :usage_limit, updated_at = NOW()
                     WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
 
@@ -199,7 +217,8 @@ class DiscountCode
                 ':description' => $data['description'] ?? null,
                 ':benefits' => $benefits,
                 ':status' => $data['status'] ?? 'active',
-                ':cta' => $data['cta'] ?? null
+                ':cta' => $data['cta'] ?? null,
+                ':usage_limit' => isset($data['usage_limit']) && $data['usage_limit'] !== '' ? (int)$data['usage_limit'] : null
             ]);
         } catch (Exception $e) {
             error_log('Error in DiscountCode->update(): ' . $e->getMessage());
@@ -262,6 +281,7 @@ class DiscountCode
                     FROM discount_codes dc
                     LEFT JOIN movies m ON dc.movie_id = m.id
                     WHERE dc.status = 'active'
+                    AND (dc.usage_limit IS NULL OR dc.usage_used < dc.usage_limit)
                     AND (dc.start_date IS NULL OR dc.start_date <= :now)
                     AND (dc.end_date IS NULL OR dc.end_date >= :now)";
             
@@ -291,6 +311,37 @@ class DiscountCode
         } catch (Exception $e) {
             error_log('Error in DiscountCode->getAvailableCodes(): ' . $e->getMessage());
             return [];
+        }
+    }
+
+    /**
+     * Trừ lượt sử dụng mã theo số ghế. Trả về true nếu cập nhật thành công.
+     */
+    public function consumeUsage($discountId, $seatCount = 1, $externalConn = null)
+    {
+        try {
+            $seatCount = max(1, (int)$seatCount);
+            $conn = $externalConn ?? $this->conn;
+
+            $sql = "UPDATE discount_codes
+                    SET usage_used = usage_used + :seat_count,
+                        status = CASE 
+                            WHEN usage_limit IS NOT NULL AND usage_used + :seat_count >= usage_limit THEN 'inactive' 
+                            ELSE status 
+                        END,
+                        updated_at = NOW()
+                    WHERE id = :id
+                      AND (usage_limit IS NULL OR usage_used + :seat_count <= usage_limit)";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([
+                ':seat_count' => $seatCount,
+                ':id' => $discountId
+            ]);
+
+            return $stmt->rowCount() > 0;
+        } catch (Exception $e) {
+            error_log('Error in DiscountCode->consumeUsage(): ' . $e->getMessage());
+            return false;
         }
     }
 }
