@@ -1377,9 +1377,11 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
             seat.classList.remove('vip', 'available');
             return {
                 id: seat.getAttribute('data-seat-id'),
+                label: seat.getAttribute('data-seat-label'),
                 row: rowLabel,
                 column: parseInt(seat.getAttribute('data-seat-column')) || 0,
-                type: seat.getAttribute('data-seat-type') || 'normal'
+                type: seat.getAttribute('data-seat-type') || 'normal',
+                status: seat.getAttribute('data-seat-status') || 'available'
             };
         });
     }
@@ -1439,78 +1441,43 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
 
         const candidates = [];
 
-        // Logic đặc biệt cho số lượng >= 3: phải chọn đúng trong phạm vi 6 ghế của mỗi dãy
+        // Logic đặc biệt cho 3 hoặc 4 ghế: bám lề trong cùng block, không tràn sang block kia
         if (count >= 3) {
-            // Xác định phạm vi hợp lệ trong block
             let validRanges = [];
             if (startBlock === 'left') {
-                // Dãy trái (1-6)
                 if (count === 3) {
-                    // Chỉ có thể chọn: 1-3 hoặc 4-6
                     validRanges = [
                         [1, 3],
                         [4, 6]
                     ];
                 } else if (count === 4) {
-                    // Chỉ có thể chọn: 1-4 hoặc 3-6
                     validRanges = [
                         [1, 4],
                         [3, 6]
                     ];
-                } else if (count === 5) {
-                    // Chỉ có thể chọn: 1-5 hoặc 2-6
-                    validRanges = [
-                        [1, 5],
-                        [2, 6]
-                    ];
-                } else if (count === 6) {
-                    // Chỉ có thể chọn: 1-6
-                    validRanges = [
-                        [1, 6]
-                    ];
                 }
             } else if (startBlock === 'right') {
-                // Dãy phải (7-12)
                 if (count === 3) {
-                    // Chỉ có thể chọn: 7-9 hoặc 10-12
                     validRanges = [
                         [7, 9],
                         [10, 12]
                     ];
                 } else if (count === 4) {
-                    // Chỉ có thể chọn: 7-10 hoặc 9-12
                     validRanges = [
                         [7, 10],
                         [9, 12]
                     ];
-                } else if (count === 5) {
-                    // Chỉ có thể chọn: 7-11 hoặc 8-12
-                    validRanges = [
-                        [7, 11],
-                        [8, 12]
-                    ];
-                } else if (count === 6) {
-                    // Chỉ có thể chọn: 7-12
-                    validRanges = [
-                        [7, 12]
-                    ];
                 }
             }
 
-            // Tìm range chứa startColumn
-            let selectedRange = null;
-            for (const range of validRanges) {
-                if (startColumn >= range[0] && startColumn <= range[1]) {
-                    selectedRange = range;
-                    break;
-                }
-            }
+            const selectedRange = validRanges.find(range =>
+                startColumn >= range[0] && startColumn <= range[1]
+            );
 
             if (!selectedRange) {
-                return []; // Không có range hợp lệ
+                return [];
             }
 
-            // Tạo candidate từ range đã chọn
             const blockStart = selectedRange[0];
             const blockEnd = selectedRange[1];
             const seatsList = [];
@@ -1529,11 +1496,9 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                 return [];
             }
 
-            // Tính toán số ghế đơn lẻ sẽ tạo ra
             const newCols = seatsList.map(s => parseInt(s.getAttribute('data-seat-column')) || 0);
             const isolatedCount = countIsolatedSeats(sameRowSelectedCols, newCols);
 
-            // Tìm ghế gần nhất bên trái và phải
             const nearestLeft = (() => {
                 for (let i = sameRowSelectedCols.length - 1; i >= 0; i--) {
                     if (sameRowSelectedCols[i] < blockStart) {
@@ -1554,8 +1519,6 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
 
             const gapLeft = nearestLeft !== null ? blockStart - nearestLeft - 1 : 99;
             const gapRight = nearestRight !== null ? nearestRight - blockEnd - 1 : 99;
-
-            // Ưu tiên: 1. Ghép với ghế đã chọn (gap = 0), 2. Ít ghế đơn lẻ, 3. Ít gap
             const touchesLeft = gapLeft === 0 ? 0 : 1;
             const touchesRight = gapRight === 0 ? 0 : 1;
             const touchesBoth = touchesLeft + touchesRight;
@@ -1568,6 +1531,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     isolatedCount,
                     touchesBoth,
                     preferLeft: 0,
+                    preferUpperRow: 0,
                     gapLeft,
                     gapRight,
                     centerDistance: Math.abs(startColumn - ((blockStart + blockEnd) / 2)),
@@ -1575,89 +1539,87 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     blockStart
                 }
             });
-        }
+        } else {
+            // Tạo các candidate ranges trong cùng block (áp dụng cho 1 hoặc 2 ghế)
+            const offsetOrder = count === 2 ? [1, 0] : [];
+            for (let i = 0; i < count; i++) {
+                const offset = offsetOrder.length > 0 ? (i < offsetOrder.length ? offsetOrder[i] : i) : i;
+                const blockStart = startColumn - offset;
+                const blockEnd = blockStart + count - 1;
 
-
-        // Tạo các candidate ranges trong cùng block (hàng hiện tại)
-        // Khi chọn 2 ghế, ưu tiên offset lớn hơn (chọn về bên trái) trước
-        const offsetOrder = count === 2 ? [1, 0] : [];
-        for (let i = 0; i < count; i++) {
-            const offset = offsetOrder.length > 0 ? (i < offsetOrder.length ? offsetOrder[i] : i) : i;
-            const blockStart = startColumn - offset;
-            const blockEnd = blockStart + count - 1;
-
-            // Kiểm tra không được tràn sang block khác
-            if (!isInSameBlock(blockStart, blockEnd)) {
-                continue;
-            }
-
-            if (blockStart < 1 || blockEnd > MAX_COLUMNS) {
-                continue;
-            }
-
-            const seatsList = [];
-            let isValidBlock = true;
-
-            for (let col = blockStart; col <= blockEnd; col++) {
-                const seat = seatMap[col];
-                if (!isSeatSelectable(seat)) {
-                    isValidBlock = false;
-                    break;
+                // Kiểm tra không được tràn sang block khác
+                if (!isInSameBlock(blockStart, blockEnd)) {
+                    continue;
                 }
-                seatsList.push(seat);
-            }
 
-            if (!isValidBlock) {
-                continue;
-            }
+                if (blockStart < 1 || blockEnd > MAX_COLUMNS) {
+                    continue;
+                }
 
-            // Tính toán số ghế đơn lẻ sẽ tạo ra
-            const newCols = seatsList.map(s => parseInt(s.getAttribute('data-seat-column')) || 0);
-            const isolatedCount = countIsolatedSeats(sameRowSelectedCols, newCols);
+                const seatsList = [];
+                let isValidBlock = true;
 
-            // Tìm ghế gần nhất bên trái và phải
-            const nearestLeft = (() => {
-                for (let i = sameRowSelectedCols.length - 1; i >= 0; i--) {
-                    if (sameRowSelectedCols[i] < blockStart) {
-                        return sameRowSelectedCols[i];
+                for (let col = blockStart; col <= blockEnd; col++) {
+                    const seat = seatMap[col];
+                    if (!isSeatSelectable(seat)) {
+                        isValidBlock = false;
+                        break;
                     }
+                    seatsList.push(seat);
                 }
-                return null;
-            })();
 
-            const nearestRight = (() => {
-                for (let i = 0; i < sameRowSelectedCols.length; i++) {
-                    if (sameRowSelectedCols[i] > blockEnd) {
-                        return sameRowSelectedCols[i];
+                if (!isValidBlock) {
+                    continue;
+                }
+
+                // Tính toán số ghế đơn lẻ sẽ tạo ra
+                const newCols = seatsList.map(s => parseInt(s.getAttribute('data-seat-column')) || 0);
+                const isolatedCount = countIsolatedSeats(sameRowSelectedCols, newCols);
+
+                // Tìm ghế gần nhất bên trái và phải
+                const nearestLeft = (() => {
+                    for (let i = sameRowSelectedCols.length - 1; i >= 0; i--) {
+                        if (sameRowSelectedCols[i] < blockStart) {
+                            return sameRowSelectedCols[i];
+                        }
                     }
-                }
-                return null;
-            })();
+                    return null;
+                })();
 
-            const gapLeft = nearestLeft !== null ? blockStart - nearestLeft - 1 : 99;
-            const gapRight = nearestRight !== null ? nearestRight - blockEnd - 1 : 99;
+                const nearestRight = (() => {
+                    for (let i = 0; i < sameRowSelectedCols.length; i++) {
+                        if (sameRowSelectedCols[i] > blockEnd) {
+                            return sameRowSelectedCols[i];
+                        }
+                    }
+                    return null;
+                })();
 
-            // Ưu tiên: 1. Ghép với ghế đã chọn (gap = 0), 2. Ít ghế đơn lẻ, 3. Ít gap
-            const touchesLeft = gapLeft === 0 ? 0 : 1;
-            const touchesRight = gapRight === 0 ? 0 : 1;
-            const touchesBoth = touchesLeft + touchesRight;
+                const gapLeft = nearestLeft !== null ? blockStart - nearestLeft - 1 : 99;
+                const gapRight = nearestRight !== null ? nearestRight - blockEnd - 1 : 99;
 
-            candidates.push({
-                seats: seatsList,
-                rowLabel,
-                newCols,
-                priority: {
-                    isolatedCount, // Số ghế đơn lẻ (ưu tiên thấp hơn = tốt hơn)
-                    touchesBoth, // Số ghế đã chọn được ghép (ưu tiên thấp hơn = tốt hơn)
-                    preferLeft: 0, // Luôn ưu tiên chọn về bên trái
-                    preferUpperRow: 0, // Ưu tiên ở đúng hàng đang click
-                    gapLeft,
-                    gapRight,
-                    centerDistance: Math.abs(startColumn - ((blockStart + blockEnd) / 2)),
-                    leanOffset: offset, // offset lớn hơn = ưu tiên hơn (chọn về bên trái)
-                    blockStart
-                }
-            });
+                // Ưu tiên: 1. Ghép với ghế đã chọn (gap = 0), 2. Ít ghế đơn lẻ, 3. Ít gap
+                const touchesLeft = gapLeft === 0 ? 0 : 1;
+                const touchesRight = gapRight === 0 ? 0 : 1;
+                const touchesBoth = touchesLeft + touchesRight;
+
+                candidates.push({
+                    seats: seatsList,
+                    rowLabel,
+                    newCols,
+                    priority: {
+                        isolatedCount, // Số ghế đơn lẻ (ưu tiên thấp hơn = tốt hơn)
+                        touchesBoth, // Số ghế đã chọn được ghép (ưu tiên thấp hơn = tốt hơn)
+                        preferLeft: 0, // Luôn ưu tiên chọn về bên trái
+                        preferUpperRow: 0, // Ưu tiên ở đúng hàng đang click
+                        gapLeft,
+                        gapRight,
+                        centerDistance: Math.abs(startColumn - ((blockStart + blockEnd) / 2)),
+                        leanOffset: offset, // offset lớn hơn = ưu tiên hơn (chọn về bên trái)
+                        blockStart
+                    }
+                });
+            }
         }
 
 
