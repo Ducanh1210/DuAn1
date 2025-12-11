@@ -1071,6 +1071,33 @@ h1 {
   display: none !important;
 }
 
+/* Phim sắp chiếu - Grid layout 5 cột, tự động xuống dòng */
+#movieCarouselComingSoon {
+  overflow: visible;
+}
+
+#movieCarouselComingSoon .carousel-track {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--gap);
+  padding: var(--track-padding);
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  scroll-behavior: auto !important;
+  flex-wrap: nowrap;
+}
+
+#movieCarouselComingSoon .movie-card-link {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+/* Ẩn carousel dots cho phim sắp chiếu vì không còn carousel */
+#carouselDotsComingSoon {
+  display: none !important;
+}
+
 /* movie card */
 .movie-card {
   width: 100%;
@@ -1346,6 +1373,16 @@ h1 {
     width: 100%;
     max-width: 100%;
   }
+
+  /* Phim sắp chiếu - 4 phim mỗi hàng */
+  #movieCarouselComingSoon .carousel-track {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  #movieCarouselComingSoon .movie-card-link {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1367,6 +1404,16 @@ h1 {
   #movieCarousel .movie-card-link {
     width: 100%;
     max-width: 100%;
+  }
+
+  /* Phim sắp chiếu - 3 phim mỗi hàng */
+  #movieCarouselComingSoon .carousel-track {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  
+  #movieCarouselComingSoon .movie-card-link {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .promo-card img,
@@ -1400,6 +1447,16 @@ h1 {
   #movieCarousel .movie-card-link {
     width: 100%;
     max-width: 100%;
+  }
+
+  /* Phim sắp chiếu - 2 phim mỗi hàng */
+  #movieCarouselComingSoon .carousel-track {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  #movieCarouselComingSoon .movie-card-link {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .carousel-dots {
