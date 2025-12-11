@@ -833,17 +833,20 @@ class MoviesController
     }
 
     // Lấy danh sách phim đang chiếu (có thể lọc theo tên phim và rạp)
+    // Hiển thị phim có release_date <= today và end_date >= today (hoặc NULL)
+    // Không bắt buộc phải có showtimes, nhưng nếu lọc theo rạp thì phải có showtimes
     private function getNowShowing($searchKeyword = '', $cinemaId = '')
     {
         try {
+            // Sử dụng LEFT JOIN để lấy cả phim chưa có showtimes
             $sql = "SELECT DISTINCT movies.*, movie_genres.name AS genre_name
                     FROM movies
                     LEFT JOIN movie_genres ON movies.genre_id = movie_genres.id";
 
             $where = [
                 "movies.status = 'active'",
-                "(movies.release_date <= CURDATE() OR movies.release_date IS NULL)",
-                "(movies.end_date >= CURDATE() OR movies.end_date IS NULL)"
+                "movies.release_date <= CURDATE()",
+                "(movies.end_date IS NULL OR movies.end_date >= CURDATE())"
             ];
 
             $params = [];
@@ -854,11 +857,12 @@ class MoviesController
                 $params[':search'] = '%' . $searchKeyword . '%';
             }
 
-            // Lọc theo rạp
+            // Lọc theo rạp - nếu có rạp thì phải join với showtimes và rooms
             if (!empty($cinemaId)) {
                 $sql .= " INNER JOIN showtimes ON movies.id = showtimes.movie_id
                          INNER JOIN rooms ON showtimes.room_id = rooms.id";
                 $where[] = "rooms.cinema_id = :cinema_id";
+                $where[] = "showtimes.show_date >= CURDATE()"; // Nếu lọc theo rạp thì chỉ lấy phim có showtimes từ hôm nay
                 $params[':cinema_id'] = $cinemaId;
             }
 
@@ -1108,6 +1112,9 @@ class MoviesController
         // Lấy cinema_id từ URL nếu có (để lọc suất chiếu theo rạp)
         $cinemaId = $_GET['cinema'] ?? '';
 
+        // Lấy lịch chiếu cho phim và ngày được chọn (đã lọc theo rạp nếu có)
+        $showtimes = $showtimeModel->getByMovieAndDate($movieId, $selectedDate, $cinemaId);
+        
         // Kiểm tra phim có phải là phim sắp chiếu không (chưa có lịch chiếu hoặc release_date > today)
         $isComingSoon = false;
         $today = date('Y-m-d');
@@ -1127,9 +1134,6 @@ class MoviesController
                 // Nếu lỗi, giữ nguyên giá trị mặc định
             }
         }
-
-        // Lấy lịch chiếu cho phim và ngày được chọn (đã lọc theo rạp nếu có)
-        $showtimes = $showtimeModel->getByMovieAndDate($movieId, $selectedDate, $cinemaId);
         
         // Nếu ngày được chọn không có lịch chiếu và KHÔNG phải phim sắp chiếu, tự động tìm ngày có lịch chiếu đầu tiên
         if (empty($showtimes) && !$isComingSoon) {

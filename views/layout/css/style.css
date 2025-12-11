@@ -1044,11 +1044,31 @@ h1 {
   min-width: 0;
 }
 
-/* Phim đang chiếu - 4 phim mỗi hàng */
+/* Phim đang chiếu - Grid layout 4 cột, tự động xuống dòng */
+#movieCarousel {
+  overflow: visible;
+}
+
+#movieCarousel .carousel-track {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+  padding: var(--track-padding);
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  scroll-behavior: auto !important;
+  flex-wrap: nowrap;
+}
+
 #movieCarousel .movie-card-link {
-  flex: 0 0 calc((100% - (var(--gap) * 3)) / 4);
-  /* 4 per view */
-  max-width: calc((100% - (var(--gap) * 3)) / 4);
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: none !important;
+}
+
+/* Ẩn carousel dots cho phim đang chiếu vì không còn carousel */
+#carouselDots {
+  display: none !important;
 }
 
 /* movie card */
@@ -1318,9 +1338,13 @@ h1 {
 
   /* 3 per view */
   /* Phim đang chiếu - 3 phim mỗi hàng */
+  #movieCarousel .carousel-track {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
   #movieCarousel .movie-card-link {
-    flex: 0 0 calc((100% - (var(--gap) * 2)) / 3);
-    max-width: calc((100% - (var(--gap) * 2)) / 3);
+    width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -1336,9 +1360,13 @@ h1 {
 
   /* 2 per view */
   /* Phim đang chiếu - 2 phim mỗi hàng */
+  #movieCarousel .carousel-track {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
   #movieCarousel .movie-card-link {
-    flex: 0 0 calc((100% - var(--gap)) / 2);
-    max-width: calc((100% - var(--gap)) / 2);
+    width: 100%;
+    max-width: 100%;
   }
 
   .promo-card img,
@@ -1365,8 +1393,12 @@ h1 {
 
   /* 1 per view */
   /* Phim đang chiếu - 1 phim mỗi hàng */
+  #movieCarousel .carousel-track {
+    grid-template-columns: 1fr;
+  }
+  
   #movieCarousel .movie-card-link {
-    flex: 0 0 100%;
+    width: 100%;
     max-width: 100%;
   }
 
