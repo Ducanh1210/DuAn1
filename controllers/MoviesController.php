@@ -930,6 +930,33 @@ class MoviesController
 
         // Lấy ngày được chọn từ URL hoặc mặc định là hôm nay
         $selectedDate = $_GET['date'] ?? date('Y-m-d');
+        
+        // Nếu có movieId và chưa có date, tự động tìm ngày có lịch chiếu đầu tiên
+        if (!empty($movieId) && empty($_GET['date'])) {
+            try {
+                $sql = "SELECT MIN(show_date) as first_date 
+                        FROM showtimes 
+                        WHERE movie_id = :movie_id 
+                        AND show_date >= CURDATE()
+                        ORDER BY show_date ASC 
+                        LIMIT 1";
+                $stmt = $showtimeModel->conn->prepare($sql);
+                $stmt->execute([':movie_id' => $movieId]);
+                $result = $stmt->fetch();
+                if ($result && !empty($result['first_date'])) {
+                    $selectedDate = $result['first_date'];
+                    // Redirect với ngày đã tìm được
+                    $redirectUrl = BASE_URL . '?act=lichchieu&movie=' . $movieId . '&date=' . $selectedDate;
+                    if (!empty($cinemaId)) {
+                        $redirectUrl .= '&cinema=' . $cinemaId;
+                    }
+                    header('Location: ' . $redirectUrl);
+                    exit;
+                }
+            } catch (Exception $e) {
+                // Nếu lỗi, giữ nguyên selectedDate mặc định
+            }
+        }
 
         // Lấy danh sách ngày (7 ngày từ hôm nay)
         $dates = [];
@@ -1078,6 +1105,63 @@ class MoviesController
             $endDate = $startDate;
         }
 
+        // Lấy cinema_id từ URL nếu có (để lọc suất chiếu theo rạp)
+        $cinemaId = $_GET['cinema'] ?? '';
+
+        // Kiểm tra phim có phải là phim sắp chiếu không (chưa có lịch chiếu hoặc release_date > today)
+        $isComingSoon = false;
+        $today = date('Y-m-d');
+        if (!empty($movie['release_date']) && $movie['release_date'] > $today) {
+            $isComingSoon = true;
+        } else {
+            // Kiểm tra xem có lịch chiếu nào không
+            try {
+                $sql = "SELECT COUNT(*) as count FROM showtimes WHERE movie_id = :movie_id AND show_date >= CURDATE()";
+                $stmt = $showtimeModel->conn->prepare($sql);
+                $stmt->execute([':movie_id' => $movieId]);
+                $result = $stmt->fetch();
+                if ($result && $result['count'] == 0) {
+                    $isComingSoon = true;
+                }
+            } catch (Exception $e) {
+                // Nếu lỗi, giữ nguyên giá trị mặc định
+            }
+        }
+
+        // Lấy lịch chiếu cho phim và ngày được chọn (đã lọc theo rạp nếu có)
+        $showtimes = $showtimeModel->getByMovieAndDate($movieId, $selectedDate, $cinemaId);
+        
+        // Nếu ngày được chọn không có lịch chiếu và KHÔNG phải phim sắp chiếu, tự động tìm ngày có lịch chiếu đầu tiên
+        if (empty($showtimes) && !$isComingSoon) {
+            try {
+                $sql = "SELECT MIN(show_date) as first_date 
+                        FROM showtimes 
+                        WHERE movie_id = :movie_id 
+                        AND show_date >= CURDATE()";
+                $params = [':movie_id' => $movieId];
+                if (!empty($cinemaId)) {
+                    $sql .= " AND room_id IN (SELECT id FROM rooms WHERE cinema_id = :cinema_id)";
+                    $params[':cinema_id'] = $cinemaId;
+                }
+                $sql .= " ORDER BY show_date ASC LIMIT 1";
+                $stmt = $showtimeModel->conn->prepare($sql);
+                $stmt->execute($params);
+                $result = $stmt->fetch();
+                if ($result && !empty($result['first_date'])) {
+                    $selectedDate = $result['first_date'];
+                    // Redirect với ngày đã tìm được
+                    $redirectUrl = BASE_URL . '?act=movies&id=' . $movieId . '&date=' . $selectedDate;
+                    if (!empty($cinemaId)) {
+                        $redirectUrl .= '&cinema=' . $cinemaId;
+                    }
+                    header('Location: ' . $redirectUrl);
+                    exit;
+                }
+            } catch (Exception $e) {
+                // Nếu lỗi, giữ nguyên selectedDate
+            }
+        }
+
         // Tạo danh sách ngày
         $dates = [];
         $currentDate = strtotime($startDate);
@@ -1095,12 +1179,6 @@ class MoviesController
             ];
             $currentDate = strtotime('+1 day', $currentDate);
         }
-
-        // Lấy cinema_id từ URL nếu có (để lọc suất chiếu theo rạp)
-        $cinemaId = $_GET['cinema'] ?? '';
-
-        // Lấy lịch chiếu cho phim và ngày được chọn (đã lọc theo rạp nếu có)
-        $showtimes = $showtimeModel->getByMovieAndDate($movieId, $selectedDate, $cinemaId);
 
         // Xác định cinema_id để kiểm tra đánh giá và hiển thị bình luận
         // Ưu tiên: URL > showtime đầu tiên > booking đầu tiên
@@ -1186,7 +1264,8 @@ class MoviesController
             'existingComment' => $existingComment,
             'allUserComments' => $allUserComments, // Tất cả bình luận của user ở các rạp
             'comments' => $comments, // Chỉ bình luận của rạp hiện tại
-            'ratingStats' => $ratingStats // Thống kê chỉ của rạp hiện tại
+            'ratingStats' => $ratingStats, // Thống kê chỉ của rạp hiện tại
+            'isComingSoon' => $isComingSoon // Phim sắp chiếu - ẩn phần lịch chiếu
         ], htmlspecialchars($movie['title']));
         exit;
     }

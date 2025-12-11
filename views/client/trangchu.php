@@ -308,7 +308,7 @@ if (empty($promoBannerData)) {
                             <!-- movie card (repeat) -->
                             <?php if (!empty($moviesComingSoon)): ?>
                                 <?php foreach ($moviesComingSoon as $movie): ?>
-                                    <a href="<?= BASE_URL ?>?act=lichchieu&movie=<?= $movie['id'] ?>" class="movie-card-link">
+                                    <a href="<?= BASE_URL ?>?act=movies&id=<?= $movie['id'] ?>" class="movie-card-link">
                                         <article class="movie-card">
                                             <div class="poster">
                                                 <?php if (!empty($movie['image'])): ?>

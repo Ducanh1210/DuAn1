@@ -140,7 +140,8 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                     <?php endif; ?>
                 </div>
 
-                <!-- dates & times -->
+                <!-- dates & times - Chỉ hiển thị nếu phim đang chiếu (không phải phim sắp chiếu) -->
+                <?php if (empty($isComingSoon)): ?>
                 <div class="dates-wrap" id="datesWrap" aria-label="Chọn ngày và suất chiếu">
                     <div class="date-tabs" id="dateTabs">
                         <?php if (!empty($dates)): ?>
@@ -171,6 +172,7 @@ $selectedDate = $selectedDate ?? date('Y-m-d');
                         <?php endif; ?>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
