@@ -454,10 +454,7 @@ class StatisticsController
     }
 }
 
-    /**
-     * Lấy phim hot nhất (theo doanh thu)
-     * Nếu có lọc tháng/năm thì lọc theo đó, nếu không thì lấy 30 ngày gần đây
-     */
+
     private function getHotMovies($limit = 10, $cinemaId = null, $year = null, $month = null)
 {
     try {
@@ -465,7 +462,6 @@ class StatisticsController
         $whereClause = "WHERE b.status = 'paid'";
         $params = [];
         
-        // Nếu có lọc tháng/năm thì dùng, nếu không thì lấy 30 ngày gần đây
         if ($year !== null && $year > 0) {
             $whereClause .= " AND YEAR(b.booking_date) = :year";
             $params[':year'] = $year;
@@ -474,11 +470,9 @@ class StatisticsController
             $whereClause .= " AND MONTH(b.booking_date) = :month";
             $params[':month'] = $month;
         } else if ($year === null && $month === null) {
-            // Nếu không có lọc thì lấy 30 ngày gần đây
             $whereClause .= " AND b.booking_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
         }
         
-        // Lọc theo rạp
         if ($cinemaId) {
             $joinClause = "LEFT JOIN rooms r ON st.room_id = r.id";
             $whereClause .= " AND r.cinema_id = :cinema_id";
@@ -600,9 +594,7 @@ class StatisticsController
         }
     }
 
-    /**
-     * Lấy thống kê phim theo tháng/năm với số vé và doanh thu
-     */
+   
     private function getMoviesByMonth($year = null, $month = null, $cinemaId = null)
 {
     try {
@@ -610,19 +602,17 @@ class StatisticsController
         $whereClause = "WHERE b.status = 'paid'";
         $params = [];
         
-        // Lọc theo năm
         if ($year !== null && $year > 0) {
             $whereClause .= " AND YEAR(b.booking_date) = :year";
             $params[':year'] = $year;
         }
         
-        // Lọc theo tháng
         if ($month !== null && $month > 0 && $month <= 12) {
             $whereClause .= " AND MONTH(b.booking_date) = :month";
             $params[':month'] = $month;
         }
         
-        // Lọc theo rạp
+      
         if ($cinemaId) {
             $joinClause = "LEFT JOIN rooms r ON st.room_id = r.id";
             $whereClause .= " AND r.cinema_id = :cinema_id";
