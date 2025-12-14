@@ -1,0 +1,727 @@
+/* Contact Page Styles */
+.contact-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    padding-top: 80px;
+}
+
+/* Light mode: nền sáng */
+[data-theme="light"] .contact-page {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+}
+
+/* Hero Section */
+.contact-hero {
+    position: relative;
+    height: 400px;
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.contact-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+    padding: 0 20px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    font-weight: 300;
+    opacity: 0.95;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Main Container */
+.contact-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+.contact-wrapper {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+
+/* Section Headers */
+.section-header {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-title i {
+    color: #ff6b35;
+    font-size: 1.8rem;
+}
+
+.section-description {
+    color: #b0b0b0;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Contact Form Section */
+.contact-form-section {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group label i {
+    color: #ff6b35;
+    font-size: 1.1rem;
+}
+
+.required {
+    color: #ff6b35;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: #ffffff !important;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.contact-form-section input.form-control,
+.contact-form-section textarea.form-control,
+.contact-form-section select.form-control,
+.contact-form-section input,
+.contact-form-section textarea,
+.contact-form-section select {
+    color: #ffffff !important;
+}
+
+/* Đảm bảo màu trắng khi đang gõ */
+.contact-form-section input[type="text"],
+.contact-form-section input[type="email"],
+.contact-form-section input[type="tel"],
+.contact-form-section textarea,
+.contact-form-section select {
+    color: #ffffff !important;
+}
+
+.contact-form-section input[type="text"]:focus,
+.contact-form-section input[type="email"]:focus,
+.contact-form-section input[type="tel"]:focus,
+.contact-form-section textarea:focus,
+.contact-form-section select:focus {
+    color: #ffffff !important;
+}
+
+.form-control::placeholder {
+    color: #888;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: #ff6b35 !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+    transform: translateY(-2px);
+    color: #ffffff !important;
+}
+
+.form-group.focused label {
+    color: #ff6b35;
+}
+
+.form-control:focus::placeholder {
+    color: #aaa;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 150px;
+    font-family: inherit;
+    color: #ffffff !important;
+}
+
+/* Style cho dropdown select và options - nền tối */
+.contact-form-section select.form-control,
+.contact-form-section select {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 18px center !important;
+    background-size: 12px !important;
+    padding-right: 45px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+}
+
+.contact-form-section select.form-control option,
+.contact-form-section select option {
+    background: #1a1a1a !important;
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+    padding: 10px !important;
+}
+
+.contact-form-section select.form-control option:checked,
+.contact-form-section select option:checked {
+    background: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}
+
+.contact-form-section select.form-control option:hover,
+.contact-form-section select option:hover {
+    background: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}
+
+/* Override dark mode cho select */
+[data-theme="dark"] .contact-form-section select,
+[data-theme="dark"] .contact-form-section select.form-control {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .contact-form-section select option {
+    background: #1a1a1a !important;
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+/* Override tất cả CSS khác để đảm bảo màu trắng */
+.contact-form input,
+.contact-form textarea,
+.contact-form select,
+.contact-form input.form-control,
+.contact-form textarea.form-control,
+.contact-form select.form-control {
+    color: #ffffff !important;
+}
+
+.contact-form input:not(:placeholder-shown),
+.contact-form textarea:not(:placeholder-shown) {
+    color: #ffffff !important;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 16px 32px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+.btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Alerts */
+.alert {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+}
+
+.alert-success {
+    background: rgba(40, 167, 69, 0.2);
+    border: 1px solid rgba(40, 167, 69, 0.5);
+    color: #4ade80;
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.2);
+    border: 1px solid rgba(220, 53, 69, 0.5);
+    color: #f87171;
+}
+
+.alert i {
+    font-size: 1.2rem;
+}
+
+/* Contact Info Section */
+.contact-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.contact-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.contact-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+    border-color: rgba(255, 107, 53, 0.3);
+}
+
+.card-icon {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.card-text {
+    color: #b0b0b0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.card-text a {
+    color: #ff6b35;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.card-text a:hover {
+    color: #f7931e;
+    text-decoration: underline;
+}
+
+/* Social Section */
+.social-section {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.social-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+.social-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.social-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.social-link.facebook:hover {
+    border-color: #1877f2;
+    color: #1877f2;
+}
+
+.social-link.zalo:hover {
+    border-color: #0068ff;
+    color: #0068ff;
+}
+
+.social-link.youtube:hover {
+    border-color: #ff0000;
+    color: #ff0000;
+}
+
+.social-link.instagram:hover {
+    border-color: #e4405f;
+    color: #e4405f;
+}
+
+.social-link i {
+    font-size: 1.3rem;
+}
+
+/* Map Section */
+.map-section {
+    margin-top: 40px;
+}
+
+.map-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.map-container iframe {
+    border-radius: 12px;
+    width: 100%;
+    height: 450px;
+    border: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .contact-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .contact-hero {
+        height: 300px;
+    }
+    
+    .contact-container {
+        padding: 40px 15px;
+    }
+    
+    .contact-form-section {
+        padding: 30px 20px;
+    }
+    
+    .section-title {
+        font-size: 1.6rem;
+    }
+    
+    .social-links {
+        grid-template-columns: 1fr;
+    }
+    
+    .map-container {
+        padding: 15px;
+    }
+    
+    .map-container iframe {
+        height: 350px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .contact-form-section {
+        padding: 25px 15px;
+    }
+    
+    .contact-card {
+        padding: 20px;
+    }
+    
+    .card-icon {
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* Override dark mode để đảm bảo màu trắng khi đang gõ */
+[data-theme="dark"] .contact-form-section input,
+[data-theme="dark"] .contact-form-section textarea,
+[data-theme="dark"] .contact-form-section select,
+[data-theme="dark"] .contact-form-section .form-control {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .contact-form-section input:focus,
+[data-theme="dark"] .contact-form-section textarea:focus,
+[data-theme="dark"] .contact-form-section select:focus,
+[data-theme="dark"] .contact-form-section .form-control:focus {
+    color: #ffffff !important;
+}
+
+/* ===== LIGHT MODE OVERRIDES ===== */
+/* Nền sáng cho các section */
+[data-theme="light"] .contact-form-section,
+[data-theme="light"] .contact-card,
+[data-theme="light"] .social-section,
+[data-theme="light"] .map-container {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .contact-card:hover {
+    background: #f8f9fa !important;
+    border-color: rgba(255, 107, 53, 0.3) !important;
+}
+
+/* Tất cả text màu đen trong light mode */
+[data-theme="light"] .section-title,
+[data-theme="light"] .section-description,
+[data-theme="light"] .form-group label,
+[data-theme="light"] .card-title,
+[data-theme="light"] .card-text,
+[data-theme="light"] .social-title,
+[data-theme="light"] .social-link {
+    color: #000 !important;
+}
+
+[data-theme="light"] .section-description {
+    color: #4a5568 !important;
+}
+
+[data-theme="light"] .card-text {
+    color: #4a5568 !important;
+}
+
+/* Form controls trong light mode */
+[data-theme="light"] .form-control {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .form-control:focus {
+    background: #ffffff !important;
+    border-color: #ff6b35 !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2) !important;
+    color: #000000 !important;
+}
+
+[data-theme="light"] .form-control::placeholder {
+    color: #718096 !important;
+}
+
+/* Đảm bảo chữ đen trong light mode cho tất cả input/textarea/select */
+[data-theme="light"] .contact-form-section input,
+[data-theme="light"] .contact-form-section textarea,
+[data-theme="light"] .contact-form-section select,
+[data-theme="light"] .contact-form-section input.form-control,
+[data-theme="light"] .contact-form-section textarea.form-control,
+[data-theme="light"] .contact-form-section select.form-control,
+[data-theme="light"] .contact-form input,
+[data-theme="light"] .contact-form textarea,
+[data-theme="light"] .contact-form select {
+    color: #000000 !important;
+    background: #ffffff !important;
+}
+
+[data-theme="light"] .contact-form-section input:focus,
+[data-theme="light"] .contact-form-section textarea:focus,
+[data-theme="light"] .contact-form-section select:focus,
+[data-theme="light"] .contact-form-section input.form-control:focus,
+[data-theme="light"] .contact-form-section textarea.form-control:focus,
+[data-theme="light"] .contact-form-section select.form-control:focus {
+    color: #000000 !important;
+    background: #ffffff !important;
+}
+
+/* Select dropdown trong light mode */
+[data-theme="light"] .contact-form-section select,
+[data-theme="light"] .contact-form-section select.form-control {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+[data-theme="light"] .contact-form-section select option {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+[data-theme="light"] .contact-form-section select option:checked,
+[data-theme="light"] .contact-form-section select option:hover {
+    background: #f8f9fa !important;
+    background-color: #f8f9fa !important;
+    color: #000000 !important;
+}
+
+[data-theme="light"] .form-group.focused label {
+    color: #ff6b35 !important;
+}
+
+/* Alert trong light mode */
+[data-theme="light"] .alert-success {
+    background: rgba(40, 167, 69, 0.1) !important;
+    border-color: rgba(40, 167, 69, 0.3) !important;
+    color: #15803d !important;
+}
+
+[data-theme="light"] .alert-danger {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.3) !important;
+    color: #dc2626 !important;
+}
+
+/* Social links trong light mode */
+[data-theme="light"] .social-link {
+    background: #f8f9fa !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    color: #000 !important;
+}
+
+[data-theme="light"] .social-link:hover {
+    background: #e9ecef !important;
+}
+
