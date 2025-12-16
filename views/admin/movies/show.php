@@ -1,11 +1,19 @@
+<?php
+// MOVIES/SHOW.PHP - TRANG CHI TIẾT PHIM ADMIN
+// Chức năng: Hiển thị thông tin chi tiết của một phim (ảnh, thông tin phim, mô tả, lịch chiếu)
+// Biến từ controller: $movie (thông tin phim), $showtimes (danh sách lịch chiếu của phim)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và các nút thao tác -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Chi tiết phim</h4>
       <div>
+        <!-- Link sửa phim -->
         <a href="<?= BASE_URL ?>?act=movies-edit&id=<?= $movie['id'] ?>" class="btn btn-warning">
           <i class="bi bi-pencil"></i> Sửa phim
         </a>
+        <!-- Link quay lại danh sách phim -->
         <a href="<?= BASE_URL ?>?act=/" class="btn btn-secondary">
           <i class="bi bi-arrow-left"></i> Quay lại
         </a>
@@ -13,19 +21,25 @@
     </div>
     <div class="card-body">
       <div class="row">
+        <!-- Cột trái: Ảnh phim -->
         <div class="col-md-4">
           <div class="text-center mb-4">
+            <!-- Kiểm tra nếu có ảnh phim -->
             <?php if (!empty($movie['image'])): ?>
+              <!-- Hiển thị ảnh phim -->
               <img src="<?= BASE_URL . '/' . $movie['image'] ?>" alt="<?= htmlspecialchars($movie['title']) ?>" class="img-fluid rounded shadow" style="max-width: 100%;">
             <?php else: ?>
+              <!-- Hiển thị placeholder nếu không có ảnh -->
               <div class="border rounded d-flex align-items-center justify-content-center bg-light" style="height: 400px;">
                 <span class="text-muted">Chưa có ảnh</span>
               </div>
             <?php endif; ?>
           </div>
         </div>
+        <!-- Cột phải: Thông tin phim -->
         <div class="col-md-8">
           <div class="row">
+            <!-- Tên phim -->
             <div class="col-md-6 mb-3">
               <div class="border-bottom pb-2">
                 <label class="text-muted small mb-1 d-block">Tên phim</label>
@@ -33,10 +47,12 @@
               </div>
             </div>
 
+            <!-- Thể loại: hiển thị nếu có -->
             <?php if (!empty($movie['genre_name'])): ?>
             <div class="col-md-6 mb-3">
               <div class="border-bottom pb-2">
                 <label class="text-muted small mb-1 d-block">Thể loại</label>
+                <!-- Badge hiển thị tên thể loại -->
                 <span class="badge bg-info"><?= htmlspecialchars($movie['genre_name']) ?></span>
               </div>
             </div>

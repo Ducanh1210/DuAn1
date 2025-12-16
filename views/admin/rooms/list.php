@@ -1,37 +1,51 @@
+<?php
+// ROOMS/LIST.PHP - TRANG QUẢN LÝ PHÒNG CHIẾU ADMIN
+// Chức năng: Hiển thị danh sách phòng chiếu với bộ lọc (rạp, tìm kiếm)
+// Biến từ controller: $data (danh sách phòng), $cinemas (danh sách rạp), $cinemaFilter, $searchKeyword
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút thêm phòng mới -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Quản lý phòng chiếu</h4>
       <div>
+        <!-- Link đến trang tạo phòng mới -->
         <a href="<?= BASE_URL ?>?act=rooms-create" class="btn btn-primary">
           <i class="bi bi-plus-circle"></i> Thêm phòng mới
         </a>
       </div>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi từ session -->
       <?php if (isset($_SESSION['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <?= htmlspecialchars($_SESSION['error']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        <!-- Xóa lỗi sau khi hiển thị -->
         <?php unset($_SESSION['error']); ?>
       <?php endif; ?>
 
-      <!-- Filter và Search -->
+      <!-- Form bộ lọc và tìm kiếm -->
       <div class="row mb-3">
         <div class="col-md-12">
           <form method="GET" action="" class="d-flex gap-2 flex-wrap align-items-end">
+            <!-- Hidden input: giữ nguyên action -->
             <input type="hidden" name="act" value="rooms">
             <?php 
+            // Include file auth để dùng hàm isAdmin()
             require_once __DIR__ . '/../../../commons/auth.php';
-            $isAdmin = isAdmin();
+            $isAdmin = isAdmin(); // Kiểm tra quyền admin
             ?>
+            <!-- Dropdown lọc theo rạp: chỉ hiển thị nếu là admin và có danh sách rạp -->
             <?php if ($isAdmin && !empty($cinemas)): ?>
               <div style="min-width: 200px;">
                 <label for="cinema_id" class="form-label small mb-1">Lọc theo rạp:</label>
                 <select name="cinema_id" id="cinema_id" class="form-select form-select-sm">
                   <option value="">Tất cả rạp</option>
+                  <!-- Vòng lặp: tạo option cho mỗi rạp -->
                   <?php foreach ($cinemas as $cinema): ?>
+                    <!-- selected: đánh dấu rạp đang được chọn -->
                     <option value="<?= $cinema['id'] ?>" <?= ($cinemaFilter ?? null) == $cinema['id'] ? 'selected' : '' ?>>
                       <?= htmlspecialchars($cinema['name']) ?>
                     </option>
@@ -39,6 +53,7 @@
                 </select>
               </div>
             <?php endif; ?>
+            <!-- Input tìm kiếm: tìm theo tên phòng, mã phòng, tên rạp -->
             <div style="flex: 1; min-width: 250px;">
               <label for="search" class="form-label small mb-1">Tìm kiếm:</label>
               <input type="text" name="search" id="search" class="form-control form-control-sm" 
@@ -46,6 +61,7 @@
                      value="<?= htmlspecialchars($searchKeyword ?? '') ?>">
             </div>
             <div>
+              <!-- Nút submit form tìm kiếm -->
               <button type="submit" class="btn btn-primary btn-sm">
                 <i class="bi bi-search"></i> Tìm kiếm
               </button>

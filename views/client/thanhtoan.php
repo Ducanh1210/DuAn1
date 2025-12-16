@@ -1,5 +1,7 @@
 <?php
-// Lấy dữ liệu từ controller
+// THANHTOAN.PHP - TRANG THANH TOÁN CLIENT
+// Chức năng: Hiển thị thông tin đặt vé, áp dụng mã giảm giá, chọn phương thức thanh toán (VNPay)
+// Biến từ controller: $showtime, $movie, $room, $cinema, $selectedSeats, $seatIds, $seatLabels, $totalPrice, $vipExtraPrice
 $showtime = $showtime ?? null;
 $movie = $movie ?? null;
 $room = $room ?? null;
@@ -399,14 +401,30 @@ function formatPrice($price)
             formData.append('voucher_code', voucherCode);
         }
 
+        // ============================================
+        // GỬI REQUEST THANH TOÁN ĐẾN SERVER
+        // ============================================
+        // API Endpoint: ?act=payment-process (POST)
+        // Controller: BookingController->processPayment()
+        // 
+        // LUỒNG XỬ LÝ:
+        // 1. Frontend gửi POST request với formData (showtime_id, seats, payment_method, ...)
+        // 2. Server tạo booking với status = 'pending'
+        // 3. Server tạo URL thanh toán VNPay
+        // 4. Server trả về JSON: { success: true, payment_method: 'vnpay', payment_url: '...' }
+        // 5. Frontend redirect user đến payment_url (VNPay)
+        // 6. User thanh toán trên VNPay
+        // 7. VNPay callback về: ?act=vnpay-return
+        // 8. Server xử lý callback và render trang kết quả
         fetch('<?= BASE_URL ?>?act=payment-process', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
-                // Kiểm tra Content-Type header
+                // Kiểm tra Content-Type header (phải là application/json)
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
+                    // Nếu không phải JSON, log lỗi và throw exception
                     return response.text().then(text => {
                         console.error('Expected JSON but got:', contentType, text.substring(0, 200));
                         throw new Error('Server returned non-JSON response');
@@ -417,14 +435,20 @@ function formatPrice($price)
             .then(data => {
                 if (data.success) {
                     if (data.payment_method === 'vnpay' && data.payment_url) {
-                        // Chuyển hướng đến VNPay
+                        // ============================================
+                        // CHUYỂN HƯỚNG ĐẾN VNPAY
+                        // ============================================
+                        // Redirect user đến URL thanh toán VNPay
+                        // User sẽ thanh toán trên VNPay
+                        // Sau khi thanh toán xong, VNPay sẽ redirect về: ?act=vnpay-return
                         window.location.href = data.payment_url;
                     } else {
-                        // Các phương thức thanh toán khác
+                        // Các phương thức thanh toán khác (chưa implement)
                         alert(data.message || 'Thanh toán thành công!');
                         window.location.href = '<?= BASE_URL ?>?act=my-bookings';
                     }
                 } else {
+                    // Thanh toán thất bại (có thể do ghế đã được đặt, mã giảm giá không hợp lệ, ...)
                     alert(data.message || 'Có lỗi xảy ra khi thanh toán.');
                     payBtn.disabled = false;
                     payBtn.textContent = "Thanh toán";

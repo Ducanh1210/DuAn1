@@ -1,52 +1,67 @@
+<?php
+// BOOKINGS/SHOW.PHP - TRANG CHI TIẾT ĐẶT VÉ ADMIN
+// Chức năng: Hiển thị thông tin chi tiết của một đặt vé (thông tin vé, khách hàng, phim, suất chiếu, thanh toán)
+// Biến từ controller: $booking (thông tin đặt vé), $bookingItems (đồ ăn/nước), $payment (thông tin thanh toán)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề với ID đặt vé và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Chi tiết đặt vé #<?= $booking['id'] ?></h4>
+      <!-- Link quay lại danh sách đặt vé -->
       <a href="<?= BASE_URL ?>?act=bookings" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
       <div class="row">
+        <!-- Cột trái: Thông tin đặt vé -->
         <div class="col-md-6">
           <h5>Thông tin đặt vé</h5>
           <table class="table table-bordered">
+            <!-- Mã đặt vé: $booking['booking_code'] từ database -->
             <tr>
               <th width="40%">Mã đặt vé:</th>
               <td><strong><?= htmlspecialchars($booking['booking_code'] ?? 'N/A') ?></strong></td>
             </tr>
+            <!-- Trạng thái đặt vé: switch case để xác định class và text hiển thị -->
             <tr>
               <th>Trạng thái:</th>
               <td>
                 <?php
-                $statusClass = 'secondary';
-                $statusText = 'N/A';
+                // Khởi tạo biến mặc định
+                $statusClass = 'secondary'; // Class màu badge mặc định
+                $statusText = 'N/A'; // Text hiển thị mặc định
+                // Switch case: kiểm tra trạng thái và gán class/text tương ứng
                 switch($booking['status'] ?? '') {
-                  case 'pending':
-                    $statusClass = 'warning';
+                  case 'pending': // Chờ xử lý
+                    $statusClass = 'warning'; // Màu vàng
                     $statusText = 'Chờ xử lý';
                     break;
-                  case 'confirmed':
-                    $statusClass = 'info';
+                  case 'confirmed': // Đã xác nhận
+                    $statusClass = 'info'; // Màu xanh dương
                     $statusText = 'Đã xác nhận';
                     break;
-                  case 'paid':
-                    $statusClass = 'success';
+                  case 'paid': // Đã thanh toán
+                    $statusClass = 'success'; // Màu xanh lá
                     $statusText = 'Đã thanh toán';
                     break;
-                  case 'cancelled':
-                    $statusClass = 'danger';
+                  case 'cancelled': // Đã hủy
+                    $statusClass = 'danger'; // Màu đỏ
                     $statusText = 'Đã hủy';
                     break;
                 }
                 ?>
+                <!-- Badge hiển thị trạng thái với màu tương ứng -->
                 <span class="badge bg-<?= $statusClass ?>"><?= $statusText ?></span>
               </td>
             </tr>
+            <!-- Ngày đặt vé: format từ datetime sang d/m/Y H:i:s -->
             <tr>
               <th>Ngày đặt:</th>
               <td><?= $booking['booking_date'] ? date('d/m/Y H:i:s', strtotime($booking['booking_date'])) : 'N/A' ?></td>
             </tr>
+            <!-- Ghế đã đặt: danh sách ghế (ví dụ: A1, A2, B3) -->
             <tr>
               <th>Ghế đã đặt:</th>
               <td><strong><?= htmlspecialchars($booking['booked_seats'] ?? 'N/A') ?></strong></td>

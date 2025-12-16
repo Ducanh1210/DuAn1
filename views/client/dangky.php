@@ -1,3 +1,8 @@
+<?php
+// DANGKY.PHP - TRANG ĐĂNG KÝ CLIENT
+// Chức năng: Form đăng ký tài khoản mới (họ tên, email, password)
+// Biến từ controller: $errors (lỗi validation)
+?>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -14,7 +19,7 @@
     </head>
     <body>
         <div class="container" role="main" aria-labelledby="reg-title">
-            <!-- LEFT: brand/benefits -->
+            <!-- LEFT: BRAND/BENEFITS - Panel giới thiệu bên trái -->
             <aside class="panel-brand" aria-hidden="false">
                 <div class="brand-top">
                     <div class="brand-logo" aria-hidden="true"><img src="<?= BASE_URL ?>/image/logokhongnen.png" alt="TicketHub"></div>
@@ -45,11 +50,12 @@
                 </div>
             </aside>
 
-            <!-- RIGHT: registration form -->
+            <!-- Form đăng ký -->
             <section class="panel-form" aria-labelledby="reg-title">
                 <h2 id="reg-title">Tạo tài khoản mới</h2>
                 <p class="lead">Nhanh chóng, an toàn — chỉ mất vài bước</p>
 
+                <!-- Hiển thị lỗi validation -->
                 <?php if (!empty($errors)): ?>
                     <div class="alert alert-error" style="padding: 14px 16px; border-radius: 10px; margin-bottom: 20px; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.3); color: #ff6a6a;">
                         <i class="bi bi-exclamation-triangle"></i>
@@ -61,7 +67,9 @@
                     </div>
                 <?php endif; ?>
 
+                <!-- Form đăng ký: submit POST -->
                 <form action="" method="POST">
+                    <!-- Row 1: Họ tên + Ngày sinh -->
                     <div class="row">
                         <div class="col">
                             <label for="full_name">Họ và tên <span style="color: #ff6a6a;">*</span></label>
@@ -89,6 +97,7 @@
                         </div>
                     </div>
 
+                    <!-- Row 2: Email + Số điện thoại -->
                     <div class="row">
                         <div class="col">
                             <label for="email">Email <span style="color: #ff6a6a;">*</span></label>
@@ -115,6 +124,7 @@
                         </div>
                     </div>
 
+                    <!-- Row 3: Mật khẩu + Xác nhận mật khẩu -->
                     <div class="row">
                         <div class="col">
                             <label for="password">Mật khẩu <span style="color: #ff6a6a;">*</span></label>
@@ -140,9 +150,11 @@
                         </div>
                     </div>
 
+                   <!-- Nút submit -->
                    <div class="actions">
                         <button class="btn btn-primary" type="submit">Đăng Ký</button>
                     </div>
+                    <!-- Link đăng nhập -->
                     <div class="foot">Đã có tài khoản? <a href="<?= BASE_URL ?>?act=dangnhap"
                             style="color:#9ad7ff;text-decoration:underline">Đăng nhập</a></div>
                 </form>

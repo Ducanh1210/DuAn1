@@ -1,51 +1,65 @@
 <?php
+// TICKET-PRICES/LIST.PHP - TRANG QUẢN LÝ GIÁ VÉ ADMIN
+// Chức năng: Hiển thị bảng giá vé theo các tiêu chí (ngày trong tuần/cuối tuần, loại phim 2D/3D, loại khách hàng, loại ghế)
+// Biến từ controller: $weekdayPrices (giá vé ngày thường), $weekendPrices (giá vé cuối tuần)
+
+// Khởi tạo mảng giá nếu không có
 $weekdayPrices = $weekdayPrices ?? [];
 $weekendPrices = $weekendPrices ?? [];
 
-// Helper function để format giá
+// Hàm helper: format giá tiền với dấu phẩy và đơn vị "đ"
 function formatPrice($price) {
     return number_format($price, 0, ',', '.') . ' đ';
 }
 
-// Helper function để lấy label
+// Hàm helper: lấy label cho loại ngày (weekday hoặc weekend)
 function getDayTypeLabel($dayType) {
     return $dayType === 'weekday' ? 'Thứ 2-5' : 'Thứ 6-CN & Ngày lễ';
 }
 
+// Hàm helper: lấy label cho loại phim (2D hoặc 3D)
 function getFormatLabel($format) {
     return $format === '2D' ? '2D' : '3D';
 }
 
+// Hàm helper: lấy label cho loại khách hàng (adult hoặc student)
 function getCustomerTypeLabel($customerType) {
     return $customerType === 'adult' ? 'Người lớn' : 'Sinh viên';
 }
 
+// Hàm helper: lấy label cho loại ghế (vip hoặc normal)
 function getSeatTypeLabel($seatType) {
     return $seatType === 'vip' ? 'VIP' : 'Thường';
 }
 ?>
 
 <div class="container-fluid py-4">
+    <!-- Header: tiêu đề và nút chỉnh sửa giá vé -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Quản lý giá vé</h2>
+        <!-- Link đến trang chỉnh sửa giá vé -->
         <a href="<?= BASE_URL ?>?act=ticket-prices-edit" class="btn btn-primary">
             <i class="bi bi-pencil-square"></i> Chỉnh sửa giá vé
         </a>
     </div>
 
+    <!-- Hiển thị thông báo thành công từ session -->
     <?php if (isset($_SESSION['success_message'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <?= htmlspecialchars($_SESSION['success_message']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+        <!-- Xóa thông báo sau khi hiển thị -->
         <?php unset($_SESSION['success_message']); ?>
     <?php endif; ?>
 
+    <!-- Hiển thị thông báo lỗi từ session -->
     <?php if (isset($_SESSION['error_message'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <?= htmlspecialchars($_SESSION['error_message']) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+        <!-- Xóa thông báo sau khi hiển thị -->
         <?php unset($_SESSION['error_message']); ?>
     <?php endif; ?>
 

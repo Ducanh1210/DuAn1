@@ -1,5 +1,10 @@
+<?php
+// DASHBOARD.PHP - TRANG TỔNG QUAN ADMIN
+// Chức năng: Hiển thị thống kê tổng quan (doanh thu, vé bán, người dùng, phim, biểu đồ)
+// Biến từ controller: $totalRevenue, $totalTickets, $totalUsers, $totalMovies, $revenueByMonth, $topMovies, $topCinemas, $bookingStats
+?>
 <div class="container-fluid">
-  <!-- Dashboard Header -->
+  <!-- Header trang dashboard: tiêu đề và bộ lọc -->
   <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
     <div>
       <h2 class="mb-1 d-flex align-items-center gap-2">
@@ -7,36 +12,46 @@
         <span>Dashboard</span>
       </h2>
       <p class="text-secondary mb-0">
+        <!-- Hiển thị thời gian hiện tại -->
         <i class="bi bi-calendar3"></i> <?= date('d/m/Y H:i') ?> - Tổng quan hệ thống và thống kê
       </p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
-      <!-- Bộ lọc thống kê -->
+      <!-- Bộ lọc thống kê theo năm/tháng -->
       <div class="d-flex gap-2 align-items-center">
+        <!-- Dropdown chọn năm: hiển thị từ năm hiện tại về trước 5 năm -->
         <select id="filterYearGlobal" class="form-select form-select-sm" style="width: auto;" onchange="applyGlobalFilter()">
           <option value="">Tất cả năm</option>
           <?php
-          $currentYear = date('Y');
+          $currentYear = date('Y'); // Lấy năm hiện tại
+          // Tạo option cho 6 năm (năm hiện tại + 5 năm trước)
           for ($i = $currentYear; $i >= $currentYear - 5; $i--) {
+            // Đánh dấu selected nếu năm này đang được chọn
             $selected = (isset($filterYear) && $filterYear == $i) ? ' selected' : '';
             echo "<option value='$i'$selected>$i</option>";
           }
           ?>
         </select>
+        <!-- Dropdown chọn tháng: hiển thị 12 tháng -->
         <select id="filterMonthGlobal" class="form-select form-select-sm" style="width: auto;" onchange="applyGlobalFilter()">
           <option value="">Tất cả tháng</option>
           <?php
+          // Mảng tên tháng bằng tiếng Việt
           $monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+          // Tạo option cho 12 tháng
           for ($i = 1; $i <= 12; $i++) {
+            // Đánh dấu selected nếu tháng này đang được chọn
             $selected = (isset($filterMonth) && $filterMonth == $i) ? ' selected' : '';
             echo "<option value='$i'$selected>{$monthNames[$i-1]}</option>";
           }
           ?>
         </select>
+        <!-- Nút reset bộ lọc về mặc định -->
         <button class="btn btn-sm btn-outline-secondary" onclick="resetFilter()">
           <i class="bi bi-arrow-counterclockwise"></i> Reset
         </button>
       </div>
+      <!-- Nút xuất báo cáo Excel -->
       <button class="btn btn-outline-primary d-flex align-items-center gap-2" onclick="exportReport()">
         <i class="bi bi-download"></i>
         <span>Xuất báo cáo</span>
@@ -44,23 +59,26 @@
     </div>
   </div>
 
-  <!-- Statistics Cards Row 1 -->
+  <!-- Hàng thẻ thống kê đầu tiên: Doanh thu, Vé bán, Người dùng, Phim -->
   <div class="row g-4 mb-4">
-    <!-- Card 1: Doanh thu -->
+    <!-- Card 1: Tổng doanh thu -->
     <div class="col-md-6 col-lg-3">
       <div class="card shadow-sm border-0 dashboard-card revenue-card">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
               <p class="text-secondary small mb-1 fw-semibold text-uppercase">Tổng doanh thu</p>
+              <!-- Hiển thị tổng doanh thu: $totalRevenue từ controller, format số với dấu phẩy -->
               <h3 class="mb-0 fw-bold text-primary"><?= number_format($totalRevenue, 0, ',', '.') ?></h3>
               <small class="text-secondary">VNĐ</small>
             </div>
+            <!-- Icon biểu tượng doanh thu -->
             <div class="p-3 rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="min-width: 60px; min-height: 60px;">
               <i class="bi bi-currency-exchange fs-3 text-primary"></i>
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
+            <!-- Badge hiển thị doanh thu hôm nay: $todayRevenue từ controller -->
             <span class="badge bg-success-subtle text-success">
               <i class="bi bi-calendar-day"></i> Hôm nay: <?= number_format($todayRevenue, 0, ',', '.') ?> đ
             </span>
@@ -92,24 +110,28 @@
       </div>
     </div>
 
-    <!-- Card 3: Người dùng -->
+    <!-- Card 3: Tổng số người dùng - $totalUsers từ controller -->
     <div class="col-md-6 col-lg-3">
       <div class="card shadow-sm border-0 dashboard-card users-card">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
               <p class="text-secondary small mb-1 fw-semibold text-uppercase">Người dùng</p>
+              <!-- Hiển thị tổng số người dùng -->
               <h3 class="mb-0 fw-bold text-warning"><?= number_format($totalUsers) ?></h3>
               <small class="text-secondary">tổng số</small>
             </div>
+            <!-- Icon người dùng -->
             <div class="p-3 rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="min-width: 60px; min-height: 60px;">
               <i class="bi bi-people fs-3 text-warning"></i>
             </div>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Badge số người dùng hoạt động: $activeUsers từ controller -->
             <span class="badge bg-success-subtle text-success">
               <i class="bi bi-check-circle"></i> Hoạt động: <?= number_format($activeUsers) ?>
             </span>
+            <!-- Badge số người dùng bị khóa: chỉ hiển thị nếu > 0 -->
             <?php if ($bannedUsers > 0): ?>
             <span class="badge bg-danger-subtle text-danger">
               <i class="bi bi-lock"></i> Đã khóa: <?= number_format($bannedUsers) ?>
@@ -120,21 +142,24 @@
       </div>
     </div>
 
-    <!-- Card 4: Phim -->
+    <!-- Card 4: Tổng số phim - $totalMovies từ controller -->
     <div class="col-md-6 col-lg-3">
       <div class="card shadow-sm border-0 dashboard-card movies-card">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
               <p class="text-secondary small mb-1 fw-semibold text-uppercase">Phim</p>
+              <!-- Hiển thị tổng số phim -->
               <h3 class="mb-0 fw-bold text-info"><?= number_format($totalMovies) ?></h3>
               <small class="text-secondary">tổng số</small>
             </div>
+            <!-- Icon phim -->
             <div class="p-3 rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center" style="min-width: 60px; min-height: 60px;">
               <i class="bi bi-film fs-3 text-info"></i>
             </div>
           </div>
           <div class="d-flex align-items-center gap-2">
+            <!-- Badge số phim đang chiếu: $activeMovies từ controller -->
             <span class="badge bg-success-subtle text-success">
               <i class="bi bi-play-circle"></i> Đang chiếu: <?= number_format($activeMovies) ?>
             </span>

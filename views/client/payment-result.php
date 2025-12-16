@@ -1,5 +1,7 @@
 <?php
-// Lấy dữ liệu từ controller
+// PAYMENT-RESULT.PHP - TRANG KẾT QUẢ THANH TOÁN CLIENT
+// Chức năng: Hiển thị kết quả thanh toán sau khi VNPay callback
+// Biến từ controller: $success (thành công), $message (thông báo), $bookingId, $booking, $transactionCode
 $success = $success ?? false;
 $message = $message ?? '';
 $bookingId = $bookingId ?? null;

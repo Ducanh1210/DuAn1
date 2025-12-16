@@ -1,37 +1,53 @@
+<?php
+// STATISTICS/INDEX.PHP - TRANG THỐNG KÊ ADMIN
+// Chức năng: Hiển thị thống kê chi tiết (tổng đặt vé, doanh thu, top phim, biểu đồ) với bộ lọc năm/tháng
+// Biến từ controller: $stats (thống kê tổng quan), $topMovies (top phim bán chạy), $revenueByMonth (doanh thu theo tháng), $filterYear, $filterMonth, $cinemaName
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và bộ lọc năm/tháng -->
     <div class="card-header">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <h4 class="mb-0">
           <i class="bi bi-bar-chart"></i> Thống Kê
+          <!-- Badge hiển thị tên rạp nếu đang lọc theo rạp -->
           <?php if (!empty($cinemaName)): ?>
             <span class="badge bg-primary ms-2"><?= htmlspecialchars($cinemaName) ?></span>
           <?php endif; ?>
         </h4>
         <div class="d-flex gap-2 align-items-center flex-wrap">
+          <!-- Dropdown chọn năm: hiển thị từ năm hiện tại về trước 5 năm -->
           <select id="filterYear" class="form-select form-select-sm" style="width: auto;">
             <option value="">Tất cả năm</option>
             <?php
-            $currentYear = date('Y');
+            $currentYear = date('Y'); // Lấy năm hiện tại
+            // Tạo option cho 6 năm (năm hiện tại + 5 năm trước)
             for ($i = $currentYear; $i >= $currentYear - 5; $i--) {
+              // Đánh dấu selected nếu năm này đang được chọn
               $selected = (isset($filterYear) && $filterYear == $i) ? ' selected' : '';
               echo "<option value='$i'$selected>$i</option>";
             }
             ?>
           </select>
+          <!-- Dropdown chọn tháng: hiển thị 12 tháng -->
           <select id="filterMonth" class="form-select form-select-sm" style="width: auto;">
             <option value="">Tất cả tháng</option>
             <?php
+            // Mảng tên tháng bằng tiếng Việt
             $monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+            // Tạo option cho 12 tháng
             for ($i = 1; $i <= 12; $i++) {
+              // Đánh dấu selected nếu tháng này đang được chọn
               $selected = (isset($filterMonth) && $filterMonth == $i) ? ' selected' : '';
               echo "<option value='$i'$selected>{$monthNames[$i-1]}</option>";
             }
             ?>
           </select>
+          <!-- Nút apply filter: gọi hàm JavaScript applyFilter() -->
           <button class="btn btn-sm btn-primary" onclick="applyFilter()">
             <i class="bi bi-funnel"></i> Lọc
           </button>
+          <!-- Nút reset filter: gọi hàm JavaScript resetFilter() -->
           <button class="btn btn-sm btn-outline-secondary" onclick="resetFilter()">
             <i class="bi bi-arrow-counterclockwise"></i> Reset
           </button>
@@ -39,12 +55,14 @@
       </div>
     </div>
     <div class="card-body">
-      <!-- Tổng quan -->
+      <!-- Hàng thẻ thống kê tổng quan -->
       <div class="row mb-4">
+        <!-- Card tổng đặt vé: $stats['totalBookings'] từ controller -->
         <div class="col-md-3 mb-3">
           <div class="card bg-primary text-white">
             <div class="card-body">
               <h6 class="card-title">Tổng đặt vé</h6>
+              <!-- Hiển thị tổng số đặt vé: format số với dấu phẩy -->
               <h3 class="mb-0"><?= number_format($stats['totalBookings'], 0, ',', '.') ?></h3>
             </div>
           </div>

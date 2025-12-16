@@ -1,16 +1,25 @@
+<?php
+// DISCOUNTS/CREATE.PHP - TRANG TẠO MÃ KHUYẾN MẠI MỚI ADMIN
+// Chức năng: Form tạo mã khuyến mại mới (mã, tiêu đề, giảm giá, ngày bắt đầu/kết thúc, lượt sử dụng, áp dụng cho phim)
+// Biến từ controller: $errors (lỗi validation), $movies (danh sách phim)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Thêm mã khuyến mại mới</h4>
+      <!-- Link quay lại danh sách mã khuyến mại -->
       <a href="<?= BASE_URL ?>?act=discounts" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi validation nếu có: $errors từ controller -->
       <?php if (!empty($errors)): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <strong><i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường sau:</strong>
           <ul class="mb-0 mt-2">
+            <!-- Vòng lặp: hiển thị từng lỗi -->
             <?php foreach ($errors as $field => $error): ?>
               <li><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
@@ -20,13 +29,17 @@
       <?php endif; ?>
 
       <?php
+        // Khởi tạo mảng phim nếu không có
         $movies = $movies ?? [];
+        // Lấy ID phim đã chọn từ POST (nếu đã submit form)
         $selectedMovieId = $_POST['movie_id'] ?? '';
       ?>
 
+      <!-- Form tạo mã khuyến mại -->
       <form action="" method="post">
         <div class="row">
           <div class="col-md-8">
+            <!-- Input mã khuyến mại: bắt buộc (*), text-transform: uppercase để tự động chuyển thành chữ hoa -->
             <div class="mb-3">
               <label for="code" class="form-label">Mã khuyến mại <span class="text-danger">*</span></label>
               <input type="text" 
@@ -36,7 +49,7 @@
                      value="<?= htmlspecialchars($_POST['code'] ?? '') ?>" 
                      required
                      placeholder="VD: WEEKEND25, HOLIDAY30..."
-                     style="text-transform: uppercase;">
+                     style="text-transform: uppercase;"> <!-- CSS tự động chuyển thành chữ hoa khi gõ -->
               <small class="form-text text-muted">Mã sẽ được tự động chuyển thành chữ in hoa</small>
               <?php if (!empty($errors['code'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['code'] ?></div>

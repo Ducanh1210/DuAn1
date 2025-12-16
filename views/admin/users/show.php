@@ -1,11 +1,19 @@
+<?php
+// USERS/SHOW.PHP - TRANG CHI TIẾT NGƯỜI DÙNG ADMIN
+// Chức năng: Hiển thị thông tin chi tiết của một người dùng (thông tin cá nhân, quyền, rạp, tổng chi tiêu)
+// Biến từ controller: $user (thông tin người dùng)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và các nút thao tác -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Chi tiết người dùng</h4>
       <div>
+        <!-- Link sửa người dùng -->
         <a href="<?= BASE_URL ?>?act=users-edit&id=<?= $user['id'] ?>" class="btn btn-warning">
           <i class="bi bi-pencil"></i> Sửa
         </a>
+        <!-- Link quay lại danh sách người dùng -->
         <a href="<?= BASE_URL ?>?act=users" class="btn btn-secondary">
           <i class="bi bi-arrow-left"></i> Quay lại
         </a>
@@ -13,25 +21,31 @@
     </div>
     <div class="card-body">
       <div class="row">
+        <!-- Cột trái: Thông tin cá nhân -->
         <div class="col-md-6">
           <table class="table table-bordered">
             <tbody>
+              <!-- ID người dùng -->
               <tr>
                 <th width="40%">ID</th>
                 <td><?= $user['id'] ?></td>
               </tr>
+              <!-- Họ tên -->
               <tr>
                 <th>Họ tên</th>
                 <td><?= htmlspecialchars($user['full_name']) ?></td>
               </tr>
+              <!-- Email -->
               <tr>
                 <th>Email</th>
                 <td><?= htmlspecialchars($user['email']) ?></td>
               </tr>
+              <!-- Số điện thoại: hiển thị "N/A" nếu không có -->
               <tr>
                 <th>Số điện thoại</th>
                 <td><?= htmlspecialchars($user['phone'] ?? 'N/A') ?></td>
               </tr>
+              <!-- Ngày sinh: format d/m/Y -->
               <tr>
                 <th>Ngày sinh</th>
                 <td><?= $user['birth_date'] ? date('d/m/Y', strtotime($user['birth_date'])) : 'N/A' ?></td>

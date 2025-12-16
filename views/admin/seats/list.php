@@ -1,52 +1,70 @@
+<?php
+// SEATS/LIST.PHP - TRANG QUẢN LÝ GHẾ ADMIN
+// Chức năng: Hiển thị danh sách ghế và sơ đồ ghế của một phòng chiếu
+// Biến từ controller: $rooms (danh sách phòng), $selectedRoomId (phòng được chọn), $room (thông tin phòng), $seats (danh sách ghế)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và các nút thao tác -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Quản lý ghế</h4>
       <div>
+        <!-- Link tạo sơ đồ ghế tự động: tự động tạo ghế theo số hàng và số cột -->
         <a href="<?= BASE_URL ?>?act=seats-generate" class="btn btn-success me-2">
           <i class="bi bi-grid-3x3-gap"></i> Tạo sơ đồ ghế tự động
         </a>
+        <!-- Link thêm ghế mới: thêm ghế thủ công -->
         <a href="<?= BASE_URL ?>?act=seats-create" class="btn btn-primary">
           <i class="bi bi-plus-circle"></i> Thêm ghế mới
         </a>
       </div>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi từ session -->
       <?php if (isset($_SESSION['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <?= htmlspecialchars($_SESSION['error']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        <!-- Xóa lỗi sau khi hiển thị -->
         <?php unset($_SESSION['error']); ?>
       <?php endif; ?>
       
+      <!-- Hiển thị thông báo thành công từ session -->
       <?php if (isset($_SESSION['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
           <?= htmlspecialchars($_SESSION['success']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        <!-- Xóa thông báo sau khi hiển thị -->
         <?php unset($_SESSION['success']); ?>
       <?php endif; ?>
 
-      <!-- Filter by room -->
+      <!-- Form lọc theo phòng: onchange tự động submit form -->
       <form method="GET" class="mb-4">
         <input type="hidden" name="act" value="seats">
         <div class="row g-3">
           <div class="col-md-4">
             <label class="form-label">Lọc theo phòng:</label>
+            <!-- Dropdown chọn phòng: onchange tự động submit để load ghế của phòng -->
             <select name="room_id" class="form-select" onchange="this.form.submit()">
               <option value="">-- Chọn phòng để xem sơ đồ ghế --</option>
+              <!-- Vòng lặp: tạo option cho mỗi phòng -->
               <?php foreach ($rooms as $r): ?>
+                <!-- selected: đánh dấu phòng đang được chọn -->
                 <option value="<?= $r['id'] ?>" <?= $selectedRoomId == $r['id'] ? 'selected' : '' ?>>
+                  <!-- Nếu là admin: hiển thị tên phòng - tên rạp (mã phòng) -->
                   <?php if (isAdmin()): ?>
                     <?= htmlspecialchars($r['name'] ?? '') ?> - <?= htmlspecialchars($r['cinema_name'] ?? '') ?> (<?= htmlspecialchars($r['room_code'] ?? '') ?>)
                   <?php else: ?>
+                    <!-- Nếu không phải admin: chỉ hiển thị tên phòng (mã phòng) -->
                     <?= htmlspecialchars($r['name'] ?? '') ?> (<?= htmlspecialchars($r['room_code'] ?? '') ?>)
                   <?php endif; ?>
                 </option>
               <?php endforeach; ?>
             </select>
           </div>
+          <!-- Hiển thị thông tin phòng và sơ đồ ghế nếu đã chọn phòng -->
           <?php if ($selectedRoomId && $room): ?>
             <div class="col-md-8 d-flex align-items-end gap-2">
               <div class="text-muted">

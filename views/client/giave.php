@@ -1,4 +1,7 @@
 <?php
+// GIAVE.PHP - TRANG BẢNG GIÁ VÉ CLIENT
+// Chức năng: Hiển thị bảng giá vé theo ngày, format, loại khách, loại ghế
+// Biến từ controller: $groupedPrices (mảng giá đã group theo weekday/weekend, format, customer_type, seat_type)
 $groupedPrices = $groupedPrices ?? [];
 ?>
 
@@ -10,7 +13,7 @@ $groupedPrices = $groupedPrices ?? [];
         <p class="price-subtitle">Giá vé có thể thay đổi tùy theo ngày, loại phim và loại khách hàng</p>
 
         <div class="price-tables">
-            <!-- Thứ 2-5 (Weekday) -->
+            <!-- Section 1: Thứ 2-5 (Ngày thường - Giảm 5.000đ) -->
             <div class="price-section">
                 <div class="section-header">
                     <h2 class="section-title">

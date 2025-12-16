@@ -1,3 +1,8 @@
+<?php
+// MY-BOOKINGS.PHP - TRANG LỊCH SỬ ĐẶT VÉ CLIENT
+// Chức năng: Hiển thị danh sách vé đã đặt của user
+// Biến từ controller: $bookings (danh sách booking), $pagination (thông tin phân trang)
+?>
 <div class="page">
   <header class="page-header" role="banner">
     <h2><span class="dot" aria-hidden="true"></span> Lịch sử đặt vé</h2>
@@ -59,6 +64,7 @@
                 <td><?= !empty($booking['booking_date']) ? date('d/m/Y H:i', strtotime($booking['booking_date'])) : 'N/A' ?></td>
                 <td>
                   <?php
+                  // Xác định màu và text cho status badge
                   $statusClass = 'secondary';
                   $statusText = 'N/A';
                   $currentStatus = $booking['status'] ?? '';

@@ -1,31 +1,47 @@
+<?php
+// BOOKINGS/LIST.PHP - TRANG QUẢN LÝ ĐẶT VÉ ADMIN
+// Chức năng: Hiển thị danh sách đặt vé với bộ lọc (trạng thái, ngày đặt)
+// Biến từ controller: $data (danh sách bookings), $selectedStatus, $selectedDate
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề trang -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Quản lý đặt vé</h4>
     </div>
     <div class="card-body">
-      <!-- Filter form -->
+      <!-- Form bộ lọc: lọc theo trạng thái và ngày đặt -->
       <div class="mb-3">
         <form method="get" action="" class="row g-3">
+          <!-- Hidden input: giữ nguyên action -->
           <input type="hidden" name="act" value="bookings">
+          <!-- Dropdown lọc theo trạng thái đặt vé -->
           <div class="col-md-3">
             <label for="status" class="form-label">Lọc theo trạng thái:</label>
             <select name="status" id="status" class="form-select">
               <option value="">Tất cả</option>
+              <!-- Option chờ xử lý: selected nếu $selectedStatus === 'pending' -->
               <option value="pending" <?= ($selectedStatus ?? '') === 'pending' ? 'selected' : '' ?>>Chờ xử lý</option>
+              <!-- Option đã xác nhận: selected nếu $selectedStatus === 'confirmed' -->
               <option value="confirmed" <?= ($selectedStatus ?? '') === 'confirmed' ? 'selected' : '' ?>>Đã xác nhận</option>
+              <!-- Option đã thanh toán: selected nếu $selectedStatus === 'paid' -->
               <option value="paid" <?= ($selectedStatus ?? '') === 'paid' ? 'selected' : '' ?>>Đã thanh toán</option>
+              <!-- Option đã hủy: selected nếu $selectedStatus === 'cancelled' -->
               <option value="cancelled" <?= ($selectedStatus ?? '') === 'cancelled' ? 'selected' : '' ?>>Đã hủy</option>
             </select>
           </div>
+          <!-- Input lọc theo ngày đặt vé -->
           <div class="col-md-3">
             <label for="date" class="form-label">Lọc theo ngày đặt:</label>
+            <!-- Input type="date": hiển thị date picker, value là ngày đang được chọn -->
             <input type="date" name="date" id="date" class="form-control" value="<?= htmlspecialchars($selectedDate ?? '') ?>">
           </div>
           <div class="col-md-3 d-flex align-items-end">
+            <!-- Nút submit form lọc -->
             <button type="submit" class="btn btn-secondary me-2">
               <i class="bi bi-funnel"></i> Lọc
             </button>
+            <!-- Link xóa bộ lọc: quay về trang bookings không có filter -->
             <a href="<?= BASE_URL ?>?act=bookings" class="btn btn-outline-secondary">
               <i class="bi bi-x-circle"></i> Xóa bộ lọc
             </a>

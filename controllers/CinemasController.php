@@ -129,15 +129,54 @@ class CinemasController
     {
         require_once __DIR__ . '/../commons/auth.php';
         requireAdmin(); // Chỉ admin mới được xóa rạp
+        
+        // Khởi tạo session nếu chưa có
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         $id = $_GET['id'] ?? null;
         if (!$id) {
+            $_SESSION['error'] = 'Không tìm thấy rạp cần xóa.';
             header('Location: ' . BASE_URL . '?act=cinemas');
             exit;
         }
 
         $cinema = $this->cinema->find($id);
-        if ($cinema) {
-            $this->cinema->delete($id);
+        if (!$cinema) {
+            $_SESSION['error'] = 'Không tìm thấy rạp cần xóa.';
+            header('Location: ' . BASE_URL . '?act=cinemas');
+            exit;
+        }
+
+        // Kiểm tra rạp có phòng chiếu không
+        if ($this->cinema->hasRooms($id)) {
+            $_SESSION['error'] = 'Không thể xóa rạp này vì đang có phòng chiếu. Vui lòng xóa tất cả phòng chiếu trước.';
+            header('Location: ' . BASE_URL . '?act=cinemas');
+            exit;
+        }
+
+        // Kiểm tra rạp có lịch chiếu không
+        if ($this->cinema->hasShowtimes($id)) {
+            $_SESSION['error'] = 'Không thể xóa rạp này vì đang có lịch chiếu. Vui lòng xóa tất cả lịch chiếu trước.';
+            header('Location: ' . BASE_URL . '?act=cinemas');
+            exit;
+        }
+
+        // Kiểm tra rạp có phim đang chiếu không
+        if ($this->cinema->hasActiveMovies($id)) {
+            $_SESSION['error'] = 'Không thể xóa rạp này vì đang có phim đang chiếu. Vui lòng đợi đến khi phim kết thúc chiếu.';
+            header('Location: ' . BASE_URL . '?act=cinemas');
+            exit;
+        }
+
+        // Nếu không có vấn đề gì, tiến hành xóa
+        $result = $this->cinema->delete($id);
+        
+        if ($result) {
+            $_SESSION['success'] = 'Xóa rạp thành công!';
+        } else {
+            $_SESSION['error'] = 'Có lỗi xảy ra khi xóa rạp. Vui lòng thử lại.';
         }
 
         header('Location: ' . BASE_URL . '?act=cinemas');

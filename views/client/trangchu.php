@@ -1,18 +1,28 @@
 <?php
-// Start session ở đầu file, trước mọi output
+// TRANGCHU.PHP - TRANG CHỦ CLIENT
+// Chức năng: Hiển thị trang chủ với danh sách phim đang chiếu, sắp chiếu, khuyến mãi
+// Biến từ controller: $homepagePromotions (danh sách khuyến mãi)
+// Khởi động session nếu chưa có
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Lấy danh sách khuyến mãi từ controller
 $homepagePromotions = $homepagePromotions ?? [];
+
+// Chuyển đổi khuyến mãi thành format cho banner carousel
 $promoBannerData = array_map(function ($promo) {
+    // Lấy đường dẫn ảnh
     $imagePath = $promo['movie_image'] ?? '';
+    // Kiểm tra nếu không phải URL thì thêm BASE_URL
     if (!empty($imagePath) && !preg_match('#^https?://#', $imagePath)) {
         $imagePath = BASE_URL . '/' . ltrim($imagePath, '/');
     } elseif (empty($imagePath)) {
+        // Dùng logo mặc định nếu không có ảnh
         $imagePath = BASE_URL . '/image/logo.png';
     }
 
+    // Trả về mảng dữ liệu cho banner
     return [
         'image' => $imagePath,
         'title' => $promo['title'] ?? '',
@@ -23,6 +33,7 @@ $promoBannerData = array_map(function ($promo) {
     ];
 }, $homepagePromotions);
 
+// Tạo banner mặc định nếu không có khuyến mãi
 if (empty($promoBannerData)) {
     $promoBannerData = [
         [
@@ -63,15 +74,17 @@ if (empty($promoBannerData)) {
                     </a>
                 </div>
                 <?php
-                // Lấy trang hiện tại
+                // Lấy trang hiện tại từ URL
                 $currentAct = $_GET['act'] ?? 'trangchu';
-                // Kiểm tra active cho từng menu item
+                // Xác định menu item nào đang active
                 $isTrangChu = in_array($currentAct, ['trangchu', '', 'movies']);
                 $isGioiThieu = ($currentAct === 'gioithieu');
                 $isLichChieu = ($currentAct === 'lichchieu');
                 $isGiaVe = ($currentAct === 'giave');
                 $isLienHe = ($currentAct === 'lienhe');
+                $isKhuyenMai = ($currentAct === 'khuyenmai');
                 ?>
+                <!-- Menu navigation: các link điều hướng -->
                 <div style="flex:1;display:flex;justify-content:center">
                     <nav class="nav-center">
                         <a href="<?= BASE_URL ?>?act=trangchu" class="<?= $isTrangChu ? 'active' : '' ?>">Trang Chủ</a>
@@ -82,12 +95,14 @@ if (empty($promoBannerData)) {
                         <a href="<?= BASE_URL ?>?act=lienhe" class="<?= $isLienHe ? 'active' : '' ?>">Liên Hệ</a>
 
                 </div>
+                <!-- Actions: thông báo, tìm kiếm, user menu -->
                 <div class="nav-actions">
                     <?php
+                    // Hiển thị thông báo nếu user đã đăng nhập
                     if (isset($_SESSION['user_id'])):
                         $userName = htmlspecialchars($_SESSION['user_name'] ?? 'User');
                     ?>
-                        <!-- Notifications for logged-in users - ĐẶT TRƯỚC SEARCH -->
+                        <!-- Notification icon và dropdown -->
                         <div class="notification-wrapper">
                             <i class="bi bi-bell notification-icon" id="clientNotificationIcon"></i>
                             <span class="notification-badge" id="clientNotificationBadge" style="display: none;">0</span>
@@ -218,43 +233,55 @@ if (empty($promoBannerData)) {
     </section>
     <!-- phần nội dung -->
     <main>
+        <!-- Phần hiển thị phim đang chiếu: $moviesNowShowing từ controller -->
         <section class="movies-wrap">
             <div class="movies-inner">
-                <!-- Left: carousel -->
+                <!-- Carousel phim đang chiếu bên trái -->
                 <div class="movies-left">
                     <div class="section-header">
                         <div class="title-left">
                             <span class="dot"></span>
                             <h3>Phim đang chiếu</h3>
                         </div>
+                        <!-- Link đến trang lịch chiếu để xem tất cả -->
                         <a class="view-all" href="<?= BASE_URL ?>?act=lichchieu">Xem tất cả</a>
                     </div>
 
+                    <!-- Carousel container: tabindex="0" để có thể focus bằng keyboard -->
                     <div class="carousel" id="movieCarousel" tabindex="0">
                         <div class="carousel-track">
-                            <!-- movie card (repeat) -->
+                            <!-- Kiểm tra nếu có phim đang chiếu -->
                             <?php if (!empty($moviesNowShowing)): ?>
+                                <!-- Vòng lặp foreach: duyệt qua từng phim trong mảng $moviesNowShowing -->
                                 <?php foreach ($moviesNowShowing as $movie): ?>
+                                    <!-- Link đến trang lịch chiếu với ID phim được chọn -->
                                     <a href="<?= BASE_URL ?>?act=lichchieu&movie=<?= $movie['id'] ?>" class="movie-card-link">
                                         <article class="movie-card">
                                             <div class="poster">
+                                                <!-- Kiểm tra nếu phim có ảnh -->
                                                 <?php if (!empty($movie['image'])): ?>
+                                                    <!-- Hiển thị ảnh phim: htmlspecialchars để tránh XSS -->
                                                     <img src="<?= BASE_URL . '/' . htmlspecialchars($movie['image']) ?>"
                                                         alt="<?= htmlspecialchars($movie['title']) ?>">
                                                 <?php else: ?>
+                                                    <!-- Nếu không có ảnh, hiển thị logo mặc định -->
                                                     <img src="<?= BASE_URL ?>/image/logo.png"
                                                         alt="<?= htmlspecialchars($movie['title']) ?>">
                                                 <?php endif; ?>
                                             </div>
                                             <div class="card-body">
+                                                <!-- Hiển thị thể loại phim: $movie['genre_name'] từ JOIN với bảng genres -->
                                                 <div class="tags">
                                                     <?= !empty($movie['genre_name']) ? htmlspecialchars($movie['genre_name']) : '—' ?>
                                                 </div>
+                                                <!-- Hiển thị ngày phát hành: date() format từ Y-m-d sang d/m/Y -->
                                                 <div class="date">
                                                     <?= !empty($movie['release_date']) ? date('d/m/Y', strtotime($movie['release_date'])) : '—' ?>
                                                 </div>
+                                                <!-- Hiển thị tên phim: strtoupper() chuyển thành chữ hoa -->
                                                 <h4 class="movie-title">
                                                     <?= strtoupper(htmlspecialchars($movie['title'])) ?>
+                                                    <!-- Hiển thị độ tuổi (nếu có): C13, C16, C18, etc. -->
                                                     <?php if (!empty($movie['age_rating'])): ?>
                                                         - <?= htmlspecialchars($movie['age_rating']) ?>
                                                     <?php endif; ?>
@@ -264,70 +291,85 @@ if (empty($promoBannerData)) {
                                     </a>
                                 <?php endforeach; ?>
                             <?php else: ?>
+                                <!-- Thông báo nếu không có phim đang chiếu -->
                                 <p class="text-center text-muted" style="padding: 40px;">Chưa có phim đang chiếu</p>
                             <?php endif; ?>
                         </div>
 
-                        <!-- dots -->
+                        <!-- Dots điều hướng carousel: JavaScript sẽ tạo dots động -->
                         <div class="carousel-dots" id="carouselDots"></div>
                     </div>
                 </div>
+                <!-- Sidebar bên phải: hiển thị carousel khuyến mãi -->
                 <aside class="movies-right">
                     <div class="promo-header">
                         <h3 class="promo-title">Khuyến mãi</h3>
+                        <!-- Link đến trang khuyến mãi đầy đủ -->
                         <a class="view-all" href="<?= BASE_URL ?>?act=khuyenmai">Xem tất cả</a>
                     </div>
 
+                    <!-- Wrapper cho carousel khuyến mãi: JavaScript sẽ render vào đây -->
                     <div class="promo-carousel-wrapper" id="viewport">
                         <div class="promo-carousel">
+                            <!-- Track chứa danh sách khuyến mãi: JavaScript sẽ thêm vào -->
                             <div class="promo-list" id="track"></div>
                         </div>
                     </div>
 
-                    <!-- small pager (mirrors carousel pages) -->
+                    <!-- Dots điều hướng carousel khuyến mãi: JavaScript sẽ tạo động -->
                     <div class="mini-dots" id="dots"></div>
                 </aside>
             </div>
         </section>
 
-        <!-- phần phim sắp chiếu -->
+        <!-- Phần hiển thị phim sắp chiếu: $moviesComingSoon từ controller (release_date > today) -->
         <section class="movies-wrap">
             <div class="movies-inner">
-                <!-- Left: carousel -->
+                <!-- Carousel phim sắp chiếu -->
                 <div class="movies-left">
                     <div class="section-header">
                         <div class="title-left">
                             <span class="dot"></span>
                             <h3>Phim Sắp Chiếu</h3>
                         </div>
+                        <!-- Link đến trang lịch chiếu -->
                         <a class="view-all" href="<?= BASE_URL ?>?act=lichchieu">Xem tất cả</a>
                     </div>
 
+                    <!-- Carousel container cho phim sắp chiếu -->
                     <div class="carousel" id="movieCarouselComingSoon" tabindex="0">
                         <div class="carousel-track">
-                            <!-- movie card (repeat) -->
+                            <!-- Kiểm tra nếu có phim sắp chiếu -->
                             <?php if (!empty($moviesComingSoon)): ?>
+                                <!-- Vòng lặp foreach: duyệt qua từng phim sắp chiếu -->
                                 <?php foreach ($moviesComingSoon as $movie): ?>
+                                    <!-- Link đến trang chi tiết phim (không phải lịch chiếu vì chưa có suất chiếu) -->
                                     <a href="<?= BASE_URL ?>?act=movies&id=<?= $movie['id'] ?>" class="movie-card-link">
                                         <article class="movie-card">
                                             <div class="poster">
+                                                <!-- Kiểm tra và hiển thị ảnh phim -->
                                                 <?php if (!empty($movie['image'])): ?>
                                                     <img src="<?= BASE_URL . '/' . htmlspecialchars($movie['image']) ?>"
                                                         alt="<?= htmlspecialchars($movie['title']) ?>">
                                                 <?php else: ?>
+                                                    <!-- Logo mặc định nếu không có ảnh -->
                                                     <img src="<?= BASE_URL ?>/image/logo.png"
                                                         alt="<?= htmlspecialchars($movie['title']) ?>">
                                                 <?php endif; ?>
                                             </div>
                                             <div class="card-body">
+                                                <!-- Thể loại phim -->
                                                 <div class="tags">
                                                     <?= !empty($movie['genre_name']) ? htmlspecialchars($movie['genre_name']) : '—' ?>
                                                 </div>
+                                                <!-- Ngày phát hành: format d/m/Y -->
                                                 <div class="date">
                                                     <?= !empty($movie['release_date']) ? date('d/m/Y', strtotime($movie['release_date'])) : '—' ?>
                                                 </div>
+                                                <!-- Tên phim: chữ hoa -->
                                                 <h4 class="movie-title">
                                                     <?= strtoupper(htmlspecialchars($movie['title'])) ?>
+                                                    <!-- Độ tuổi (nếu có) -->
                                                     <?php if (!empty($movie['age_rating'])): ?>
                                                         - <?= htmlspecialchars($movie['age_rating']) ?>
                                                     <?php endif; ?>
@@ -337,11 +379,12 @@ if (empty($promoBannerData)) {
                                     </a>
                                 <?php endforeach; ?>
                             <?php else: ?>
+                                <!-- Thông báo nếu không có phim sắp chiếu -->
                                 <p class="text-center text-muted" style="padding: 40px;">Chưa có phim sắp chiếu</p>
                             <?php endif; ?>
                         </div>
 
-                        <!-- dots -->
+                        <!-- Dots điều hướng carousel phim sắp chiếu -->
                         <div class="carousel-dots" id="carouselDotsComingSoon"></div>
                     </div>
                 </div>
@@ -434,123 +477,147 @@ if (empty($promoBannerData)) {
         </div>
     </footer>
 </body>
+<!-- File JavaScript xử lý carousel và các tương tác -->
 <script type="text/javascript" src="app.js"></script>
 <script>
+    // Export dữ liệu khuyến mãi ra biến global để app.js sử dụng
+    // json_encode: chuyển mảng PHP thành JSON, JSON_UNESCAPED_UNICODE giữ nguyên tiếng Việt
     window.HOMEPAGE_PROMOS = <?= json_encode($promoBannerData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
 
 <script>
-    // Đặt năm hiện tại
+    // Hàm đặt năm hiện tại vào footer
+    // getFullYear(): lấy năm từ đối tượng Date
     document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-    // Search box toggle functionality
+    // IIFE (Immediately Invoked Function Expression): hàm tự gọi để tránh conflict biến
+    // Chức năng: xử lý mở/đóng search box
     (function() {
-        const searchIcon = document.getElementById('searchIcon');
-        const searchBox = document.getElementById('searchBox');
-        const searchInput = document.getElementById('searchInput');
-        const searchClose = document.getElementById('searchClose');
-        const searchBtn = document.getElementById('searchBtn');
+        // Lấy các phần tử DOM cần thiết
+        const searchIcon = document.getElementById('searchIcon'); // Icon tìm kiếm
+        const searchBox = document.getElementById('searchBox'); // Box chứa form tìm kiếm
+        const searchInput = document.getElementById('searchInput'); // Input nhập từ khóa
+        const searchClose = document.getElementById('searchClose'); // Nút đóng
+        const searchBtn = document.getElementById('searchBtn'); // Nút submit
 
-        // Toggle search box khi click vào icon
+        // Event listener: mở search box khi click vào icon
         if (searchIcon) {
             searchIcon.addEventListener('click', function(e) {
-                e.stopPropagation();
-                searchBox.classList.add('active');
-                searchInput.focus();
+                e.stopPropagation(); // Ngăn event bubble lên parent
+                searchBox.classList.add('active'); // Thêm class 'active' để hiển thị
+                searchInput.focus(); // Tự động focus vào input để người dùng có thể gõ ngay
             });
         }
 
-        // Đóng search box khi click bên ngoài
+        // Event listener: đóng search box khi click bên ngoài
+        // contains(): kiểm tra phần tử có chứa phần tử khác không
         document.addEventListener('click', function(e) {
             if (!searchBox.contains(e.target) && !searchIcon.contains(e.target)) {
-                searchBox.classList.remove('active');
+                searchBox.classList.remove('active'); // Xóa class 'active' để ẩn
             }
         });
 
-        // Xử lý khi nhấn Enter trong search input
+        // Event listener: xử lý khi nhấn phím Enter trong input
         const searchForm = document.getElementById('searchForm');
         if (searchInput) {
             searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault();
+                    e.preventDefault(); // Ngăn hành vi mặc định (submit form)
                     if (searchForm) {
-                        searchForm.submit();
+                        searchForm.submit(); // Submit form để tìm kiếm
                     }
                 }
             });
         }
 
-        // Xử lý khi click vào nút search
+        // Event listener: xử lý khi click vào nút search
         if (searchBtn) {
             searchBtn.addEventListener('click', function(e) {
-                e.preventDefault();
+                e.preventDefault(); // Ngăn hành vi mặc định
                 if (searchForm) {
-                    searchForm.submit();
+                    searchForm.submit(); // Submit form tìm kiếm
                 }
             });
         }
     })();
 
-    // User dropdown toggle
+    // IIFE: xử lý dropdown menu người dùng
     (function() {
-        const userDropdownToggle = document.getElementById('userDropdownToggle');
+        // Lấy các phần tử dropdown
+        const userDropdownToggle = document.getElementById('userDropdownToggle'); // Nút mở dropdown
+        // closest(): tìm phần tử cha gần nhất có class 'user-dropdown-wrapper'
         const userDropdownWrapper = userDropdownToggle ? userDropdownToggle.closest('.user-dropdown-wrapper') : null;
-        const userDropdownMenu = document.getElementById('userDropdownMenu');
+        const userDropdownMenu = document.getElementById('userDropdownMenu'); // Menu dropdown
 
+        // Kiểm tra nếu có đủ phần tử
         if (userDropdownToggle && userDropdownWrapper) {
+            // Event listener: toggle dropdown khi click vào nút
             userDropdownToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
+                e.stopPropagation(); // Ngăn event bubble
+                // toggle(): thêm class nếu chưa có, xóa nếu đã có
                 userDropdownWrapper.classList.toggle('active');
             });
 
-            // Đóng dropdown khi click bên ngoài
+            // Event listener: đóng dropdown khi click bên ngoài
             document.addEventListener('click', function(e) {
                 if (!userDropdownWrapper.contains(e.target)) {
-                    userDropdownWrapper.classList.remove('active');
+                    userDropdownWrapper.classList.remove('active'); // Xóa class 'active'
                 }
             });
         }
     })();
 
-    // Promo Carousel - Tự động chạy và hỗ trợ vuốt (mỗi trang 3 ảnh)
+    // IIFE: xử lý carousel khuyến mãi - tự động chạy và hỗ trợ vuốt (mỗi trang 3 ảnh)
     (function() {
+        // Link mặc định đến trang khuyến mãi
         const defaultPromoLink = '<?= BASE_URL ?>?act=khuyenmai';
+        // map(): chuyển đổi mỗi banner thành object với các thuộc tính cần thiết
+        // || '': dùng giá trị mặc định nếu không có
         const promoBanners = (window.HOMEPAGE_PROMOS || []).map(banner => ({
-            image: banner.image,
-            title: banner.title || 'Ưu đãi phim',
-            code: banner.code || '',
-            movie_title: banner.movie_title || '',
-            cta: banner.cta || 'Xem chi tiết',
-            link: banner.link || defaultPromoLink
+            image: banner.image, // Đường dẫn ảnh
+            title: banner.title || 'Ưu đãi phim', // Tiêu đề, mặc định 'Ưu đãi phim'
+            code: banner.code || '', // Mã giảm giá
+            movie_title: banner.movie_title || '', // Tên phim
+            cta: banner.cta || 'Xem chi tiết', // Text nút
+            link: banner.link || defaultPromoLink // Link đến trang khuyến mãi
         }));
 
+        // Nếu không có banner nào, thoát hàm
         if (!promoBanners.length) {
             return;
         }
 
-        const perPage = 3; // số ảnh trên 1 trang
-        const pages = [];
+        const perPage = 3; // Số ảnh hiển thị trên 1 trang carousel
+        const pages = []; // Mảng chứa các trang (mỗi trang là mảng 3 banner)
 
+        // Vòng lặp: chia banner thành các trang, mỗi trang 3 banner
+        // i += perPage: tăng i lên 3 mỗi lần lặp
         for (let i = 0; i < promoBanners.length; i += perPage) {
+            // slice(i, i + perPage): lấy 3 phần tử từ vị trí i
             pages.push(promoBanners.slice(i, i + perPage));
         }
 
+        // Nếu không có trang nào, thoát hàm
         if (!pages.length) {
             return;
         }
 
-        const track = document.getElementById('track');
-        const dotsContainer = document.getElementById('dots');
-        const viewport = document.getElementById('viewport');
+        // Lấy các phần tử DOM cần thiết
+        const track = document.getElementById('track'); // Container chứa các trang
+        const dotsContainer = document.getElementById('dots'); // Container chứa dots điều hướng
+        const viewport = document.getElementById('viewport'); // Viewport của carousel
 
+        // Kiểm tra nếu thiếu phần tử nào thì thoát
         if (!track || !dotsContainer || !viewport) return;
 
-        // tạo DOM cho các page
+        // Vòng lặp: tạo DOM cho mỗi trang
+        // forEach(): duyệt qua từng trang, pageIndex là chỉ số trang
         pages.forEach((pageBanners, pageIndex) => {
-            const page = document.createElement('div');
-            page.className = 'page';
+            const page = document.createElement('div'); // Tạo div cho mỗi trang
+            page.className = 'page'; // Gán class 'page'
+            // Vòng lặp: tạo DOM cho mỗi banner trong trang
             pageBanners.forEach(banner => {
-                const a = document.createElement('a');
+                const a = document.createElement('a'); // Tạo thẻ <a> cho mỗi banner
                 a.className = 'card promo-banner-card';
                 a.href = banner.link || defaultPromoLink;
                 const label = banner.title || banner.movie_title || 'Khuyến mãi';

@@ -1,50 +1,67 @@
+<?php
+// COMMENTS/LIST.PHP - TRANG QUẢN LÝ BÌNH LUẬN ĐÁNH GIÁ ADMIN
+// Chức năng: Hiển thị danh sách bình luận đánh giá phim với bộ lọc (rạp, phim, tìm kiếm)
+// Biến từ controller: $data (danh sách bình luận), $stats (thống kê), $cinemas (danh sách rạp), $movies (danh sách phim), $cinemaFilter, $movieFilter, $searchKeyword
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề trang -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Quản lý bình luận đánh giá</h4>
     </div>
     <div class="card-body">
-      <!-- Thống kê -->
+      <!-- Card thống kê: tổng số bình luận -->
       <div class="row mb-4">
         <div class="col-md-12">
           <div class="card bg-primary text-white">
             <div class="card-body">
               <h5 class="card-title">Tổng số bình luận</h5>
+              <!-- Hiển thị tổng số bình luận: $stats['total'] từ controller -->
               <h3><?= $stats['total'] ?></h3>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Filter và Search -->
+      <!-- Form bộ lọc và tìm kiếm -->
       <div class="row mb-3">
         <div class="col-md-12">
           <form method="GET" action="" class="d-flex gap-2 flex-wrap">
+            <!-- Hidden input: giữ nguyên action -->
             <input type="hidden" name="act" value="comments">
+            <!-- Dropdown lọc theo rạp: chỉ hiển thị nếu là admin và có danh sách rạp -->
             <?php if (isset($isAdmin) && $isAdmin && !empty($cinemas)): ?>
               <select name="cinema_id" class="form-select" style="max-width: 200px;">
                 <option value="">Tất cả rạp</option>
+                <!-- Vòng lặp: tạo option cho mỗi rạp -->
                 <?php foreach ($cinemas as $cinema): ?>
+                  <!-- selected: đánh dấu rạp đang được chọn -->
                   <option value="<?= $cinema['id'] ?>" <?= ($cinemaFilter ?? null) == $cinema['id'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($cinema['name']) ?>
                   </option>
                 <?php endforeach; ?>
               </select>
             <?php endif; ?>
+            <!-- Dropdown lọc theo phim -->
             <select name="movie_id" class="form-select" style="max-width: 250px;">
               <option value="">Tất cả phim</option>
+              <!-- Vòng lặp: tạo option cho mỗi phim -->
               <?php if (!empty($movies)): ?>
                 <?php foreach ($movies as $movie): ?>
+                  <!-- selected: đánh dấu phim đang được chọn -->
                   <option value="<?= $movie['id'] ?>" <?= $movieFilter == $movie['id'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($movie['title']) ?>
                   </option>
                 <?php endforeach; ?>
               <?php endif; ?>
             </select>
+            <!-- Input tìm kiếm: tìm theo nội dung, tên người dùng hoặc tên phim -->
             <input type="text" name="search" class="form-control" placeholder="Tìm kiếm theo nội dung, tên người dùng hoặc tên phim..." value="<?= htmlspecialchars($searchKeyword) ?>">
+            <!-- Nút submit form tìm kiếm -->
             <button type="submit" class="btn btn-outline-primary">
               <i class="bi bi-search"></i> Tìm
             </button>
+            <!-- Nút xóa bộ lọc: chỉ hiển thị nếu có filter đang active -->
             <?php if ($movieFilter || $searchKeyword || ($cinemaFilter ?? null)): ?>
               <a href="<?= BASE_URL ?>?act=comments" class="btn btn-outline-secondary">
                 <i class="bi bi-x-circle"></i> Xóa bộ lọc

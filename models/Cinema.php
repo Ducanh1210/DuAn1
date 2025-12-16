@@ -73,6 +73,64 @@ class Cinema
         }
     }
 
+    // Kiểm tra rạp có phòng chiếu không
+    public function hasRooms($id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM rooms WHERE cinema_id = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            $result = $stmt->fetch();
+            return ($result['count'] ?? 0) > 0;
+        } catch (Exception $e) {
+            debug($e);
+            return false;
+        }
+    }
+
+    // Kiểm tra rạp có lịch chiếu không (qua phòng chiếu)
+    public function hasShowtimes($id)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count 
+                    FROM showtimes s
+                    INNER JOIN rooms r ON s.room_id = r.id
+                    WHERE r.cinema_id = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            $result = $stmt->fetch();
+            return ($result['count'] ?? 0) > 0;
+        } catch (Exception $e) {
+            debug($e);
+            return false;
+        }
+    }
+
+    // Kiểm tra rạp có phim đang chiếu không (qua lịch chiếu)
+    public function hasActiveMovies($id)
+    {
+        try {
+            $today = date('Y-m-d');
+            $sql = "SELECT COUNT(*) as count 
+                    FROM showtimes s
+                    INNER JOIN rooms r ON s.room_id = r.id
+                    INNER JOIN movies m ON s.movie_id = m.id
+                    WHERE r.cinema_id = :id 
+                    AND s.show_date >= :today
+                    AND m.status = 'active'";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                ':id' => $id,
+                ':today' => $today
+            ]);
+            $result = $stmt->fetch();
+            return ($result['count'] ?? 0) > 0;
+        } catch (Exception $e) {
+            debug($e);
+            return false;
+        }
+    }
+
     // Xóa rạp
     public function delete($id)
     {

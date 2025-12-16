@@ -1,5 +1,7 @@
 <?php
-// Lấy dữ liệu từ controller
+// LIENHE.PHP - TRANG LIÊN HỆ CLIENT
+// Chức năng: Form liên hệ gửi tin nhắn cho admin
+// Biến từ controller: $success (thành công), $error (lỗi), $formData (dữ liệu form), $cinemas (danh sách rạp)
 $success = $success ?? false;
 $error = $error ?? '';
 $formData = $formData ?? [];

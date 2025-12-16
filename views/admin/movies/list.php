@@ -1,46 +1,61 @@
-<?php require_once __DIR__ . '/../../../commons/auth.php'; ?>
+<?php
+// MOVIES/LIST.PHP - TRANG QUẢN LÝ PHIM ADMIN
+// Chức năng: Hiển thị danh sách phim với bộ lọc (rạp, trạng thái, tìm kiếm)
+// Biến từ controller: $data (danh sách phim), $cinemas (danh sách rạp), $cinemaFilter, $statusFilter, $searchKeyword
+require_once __DIR__ . '/../../../commons/auth.php'; // Include file auth để dùng hàm isAdmin()
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút thêm phim mới -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Quản lý phim</h4>
       <div>
+        <!-- Link đến trang tạo phim mới -->
         <a href="<?= BASE_URL ?>?act=movies-create" class="btn btn-primary">
           <i class="bi bi-plus-circle"></i> Thêm phim mới
         </a>
       </div>
     </div>
     <div class="card-body">
-      <!-- Hiển thị thông báo lỗi/thành công -->
+      <!-- Hiển thị thông báo lỗi từ session -->
       <?php if (isset($_SESSION['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($_SESSION['error']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        <!-- Xóa thông báo lỗi sau khi hiển thị để không hiện lại -->
         <?php unset($_SESSION['error']); ?>
       <?php endif; ?>
       
+      <!-- Hiển thị thông báo thành công từ session -->
       <?php if (isset($_SESSION['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
           <i class="bi bi-check-circle"></i> <?= htmlspecialchars($_SESSION['success']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        <!-- Xóa thông báo thành công sau khi hiển thị -->
         <?php unset($_SESSION['success']); ?>
       <?php endif; ?>
       
-      <!-- Filter và Search -->
+      <!-- Form bộ lọc và tìm kiếm -->
       <div class="row mb-3">
         <div class="col-md-12">
           <form method="GET" action="" class="d-flex gap-2 flex-wrap align-items-end">
+            <!-- Hidden input: giữ nguyên action hiện tại -->
             <input type="hidden" name="act" value="/">
             <?php 
+            // Kiểm tra quyền admin: chỉ admin mới thấy filter theo rạp
             $isAdmin = isAdmin();
             ?>
+            <!-- Dropdown lọc theo rạp: chỉ hiển thị nếu là admin và có danh sách rạp -->
             <?php if ($isAdmin && !empty($cinemas)): ?>
               <div style="min-width: 200px;">
                 <label for="cinema_id" class="form-label small mb-1">Lọc theo rạp:</label>
                 <select name="cinema_id" id="cinema_id" class="form-select form-select-sm">
                   <option value="">Tất cả rạp</option>
+                  <!-- Vòng lặp: tạo option cho mỗi rạp -->
                   <?php foreach ($cinemas as $cinema): ?>
+                    <!-- selected: đánh dấu rạp đang được chọn -->
                     <option value="<?= $cinema['id'] ?>" <?= ($cinemaFilter ?? null) == $cinema['id'] ? 'selected' : '' ?>>
                       <?= htmlspecialchars($cinema['name']) ?>
                     </option>
@@ -48,24 +63,31 @@
                 </select>
               </div>
             <?php endif; ?>
+            <!-- Dropdown lọc theo trạng thái: active (đang chiếu) hoặc inactive (ngừng chiếu) -->
             <div style="min-width: 180px;">
               <label for="status" class="form-label small mb-1">Lọc theo trạng thái:</label>
               <select name="status" id="status" class="form-select form-select-sm">
                 <option value="">Tất cả trạng thái</option>
+                <!-- Option đang chiếu: selected nếu $statusFilter === 'active' -->
                 <option value="active" <?= ($statusFilter ?? '') === 'active' ? 'selected' : '' ?>>Đang chiếu</option>
+                <!-- Option ngừng chiếu: selected nếu $statusFilter === 'inactive' -->
                 <option value="inactive" <?= ($statusFilter ?? '') === 'inactive' ? 'selected' : '' ?>>Ngừng chiếu</option>
               </select>
             </div>
+            <!-- Input tìm kiếm theo tên phim -->
             <div style="flex: 1; min-width: 250px;">
               <label for="search" class="form-label small mb-1">Tìm kiếm theo tên phim:</label>
+              <!-- value: hiển thị từ khóa đang tìm (nếu có) -->
               <input type="text" name="search" id="search" class="form-control form-control-sm" 
                      placeholder="Nhập tên phim..." 
                      value="<?= htmlspecialchars($searchKeyword ?? '') ?>">
             </div>
             <div>
+              <!-- Nút submit form tìm kiếm -->
               <button type="submit" class="btn btn-primary btn-sm">
                 <i class="bi bi-search"></i> Tìm kiếm
               </button>
+              <!-- Nút xóa bộ lọc: chỉ hiển thị nếu có filter đang active -->
               <?php if ($searchKeyword || $statusFilter || ($cinemaFilter ?? null)): ?>
                 <a href="<?= BASE_URL ?>?act=/" class="btn btn-outline-secondary btn-sm">
                   <i class="bi bi-x-circle"></i> Xóa bộ lọc

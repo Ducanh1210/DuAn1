@@ -1,16 +1,25 @@
+<?php
+// DISCOUNTS/EDIT.PHP - TRANG SỬA MÃ KHUYẾN MẠI ADMIN
+// Chức năng: Form sửa mã khuyến mại (mã, tiêu đề, giảm giá, ngày bắt đầu/kết thúc, lượt sử dụng, áp dụng cho phim)
+// Biến từ controller: $discount (thông tin mã khuyến mại cần sửa), $errors (lỗi validation), $movies (danh sách phim)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề với mã khuyến mại và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Sửa mã khuyến mại: <?= htmlspecialchars($discount['code']) ?></h4>
+      <!-- Link quay lại danh sách mã khuyến mại -->
       <a href="<?= BASE_URL ?>?act=discounts" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi validation nếu có: $errors từ controller -->
       <?php if (!empty($errors)): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <strong><i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường sau:</strong>
           <ul class="mb-0 mt-2">
+            <!-- Vòng lặp: hiển thị từng lỗi -->
             <?php foreach ($errors as $field => $error): ?>
               <li><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
@@ -20,15 +29,20 @@
       <?php endif; ?>
 
       <?php
+        // Khởi tạo mảng phim nếu không có
         $movies = $movies ?? [];
+        // Lấy ID phim đã chọn: từ $_POST nếu đã submit, nếu không thì từ $discount
         $selectedMovieId = $_POST['movie_id'] ?? ($discount['movie_id'] ?? '');
       ?>
 
+      <!-- Form sửa mã khuyến mại -->
       <form action="" method="post">
         <div class="row">
           <div class="col-md-8">
+            <!-- Input mã khuyến mại: bắt buộc (*), text-transform: uppercase để tự động chuyển thành chữ hoa -->
             <div class="mb-3">
               <label for="code" class="form-label">Mã khuyến mại <span class="text-danger">*</span></label>
+              <!-- value lấy từ $_POST nếu có (sau submit), nếu không thì lấy từ $discount -->
               <input type="text" 
                      name="code" 
                      id="code" 
@@ -36,7 +50,7 @@
                      value="<?= htmlspecialchars($_POST['code'] ?? $discount['code']) ?>" 
                      
                      placeholder="VD: WEEKEND25, HOLIDAY30..."
-                     style="text-transform: uppercase;">
+                     style="text-transform: uppercase;"> <!-- CSS tự động chuyển thành chữ hoa khi gõ -->
               <small class="form-text text-muted">Mã sẽ được tự động chuyển thành chữ in hoa</small>
               <?php if (!empty($errors['code'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['code'] ?></div>

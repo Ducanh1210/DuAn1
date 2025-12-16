@@ -1,16 +1,25 @@
+<?php
+// SHOWTIMES/CREATE.PHP - TRANG TẠO LỊCH CHIẾU MỚI ADMIN
+// Chức năng: Form tạo lịch chiếu mới (chọn phim, rạp, phòng, ngày, giờ, loại)
+// Biến từ controller: $errors (lỗi validation), $movies (danh sách phim), $cinemas (danh sách rạp), $rooms (danh sách phòng)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Thêm lịch chiếu mới</h4>
+      <!-- Link quay lại danh sách lịch chiếu -->
       <a href="<?= BASE_URL ?>?act=showtimes" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi validation nếu có: $errors từ controller -->
       <?php if (!empty($errors)): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <strong><i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường sau:</strong>
           <ul class="mb-0 mt-2">
+            <!-- Vòng lặp: hiển thị từng lỗi -->
             <?php foreach ($errors as $field => $error): ?>
               <li><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
@@ -19,17 +28,22 @@
         </div>
       <?php endif; ?>
 
+      <!-- Form tạo lịch chiếu: onsubmit gọi hàm validateShowtimeForm() để validate client-side -->
       <form action="" method="post" id="showtimeForm" onsubmit="return validateShowtimeForm(event)">
         <div class="row">
           <div class="col-md-6">
+            <!-- Dropdown chọn phim: bắt buộc (*) -->
             <div class="mb-3">
               <label for="movie_id" class="form-label">Phim <span class="text-danger">*</span></label>
               <select name="movie_id" id="movie_id" class="form-select <?= !empty($errors['movie_id']) ? 'is-invalid' : '' ?>" >
                 <option value="">-- Chọn phim --</option>
+                <!-- Vòng lặp: tạo option cho mỗi phim -->
                 <?php if (!empty($movies)): ?>
                   <?php foreach ($movies as $movie): ?>
+                    <!-- selected: đánh dấu phim đang được chọn (nếu đã submit form) -->
                     <option value="<?= $movie['id'] ?>" <?= (isset($_POST['movie_id']) && $_POST['movie_id'] == $movie['id']) ? 'selected' : '' ?>>
                       <?= htmlspecialchars($movie['title']) ?>
+                      <!-- Hiển thị ngày phát hành trong ngoặc nếu có -->
                       <?php if (!empty($movie['release_date'])): ?>
                         (<?= date('d/m/Y', strtotime($movie['release_date'])) ?>)
                       <?php endif; ?>
@@ -37,6 +51,7 @@
                   <?php endforeach; ?>
                 <?php endif; ?>
               </select>
+              <!-- Hiển thị lỗi validation nếu có -->
               <?php if (!empty($errors['movie_id'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['movie_id'] ?></div>
               <?php endif; ?>

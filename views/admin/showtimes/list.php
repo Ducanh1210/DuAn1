@@ -1,38 +1,55 @@
+<?php
+// SHOWTIMES/LIST.PHP - TRANG QUẢN LÝ LỊCH CHIẾU ADMIN
+// Chức năng: Hiển thị danh sách lịch chiếu với bộ lọc (ngày, trạng thái, rạp)
+// Biến từ controller: $data (danh sách showtimes), $cinemas (danh sách rạp), $selectedDate, $selectedStatus, $selectedCinema
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút thêm lịch chiếu mới -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Quản lý lịch chiếu</h4>
       <div>
+        <!-- Link đến trang tạo lịch chiếu mới -->
         <a href="<?= BASE_URL ?>?act=showtimes-create" class="btn btn-primary">
           <i class="bi bi-plus-circle"></i> Thêm lịch chiếu mới
         </a>
       </div>
     </div>
     <div class="card-body">
-      <!-- Filter form -->
+      <!-- Form bộ lọc: lọc theo ngày, trạng thái, rạp (chỉ admin) -->
       <div class="mb-3">
         <form method="get" action="" class="row g-3">
+          <!-- Hidden input: giữ nguyên action -->
           <input type="hidden" name="act" value="showtimes">
+          <!-- Input lọc theo ngày chiếu -->
           <div class="col-md-3">
             <label for="date" class="form-label">Lọc theo ngày:</label>
+            <!-- Input type="date": hiển thị date picker -->
             <input type="date" name="date" id="date" class="form-control" value="<?= htmlspecialchars($selectedDate ?? '') ?>">
           </div>
+          <!-- Dropdown lọc theo trạng thái suất chiếu -->
           <div class="col-md-3">
             <label for="status" class="form-label">Lọc theo trạng thái:</label>
             <select name="status" id="status" class="form-select">
               <option value="">-- Tất cả --</option>
+              <!-- Option sắp chiếu: selected nếu $selectedStatus === 'upcoming' -->
               <option value="upcoming" <?= ($selectedStatus ?? '') === 'upcoming' ? 'selected' : '' ?>>Sắp chiếu</option>
+              <!-- Option đang chiếu: selected nếu $selectedStatus === 'showing' -->
               <option value="showing" <?= ($selectedStatus ?? '') === 'showing' ? 'selected' : '' ?>>Đang chiếu</option>
+              <!-- Option dừng: selected nếu $selectedStatus === 'ended' -->
               <option value="ended" <?= ($selectedStatus ?? '') === 'ended' ? 'selected' : '' ?>>Dừng</option>
             </select>
           </div>
+          <!-- Dropdown lọc theo rạp: chỉ hiển thị nếu là admin -->
           <?php if (isAdmin()): ?>
           <div class="col-md-3">
             <label for="cinema" class="form-label">Lọc theo rạp:</label>
             <select name="cinema" id="cinema" class="form-select">
               <option value="">-- Tất cả --</option>
+              <!-- Vòng lặp: tạo option cho mỗi rạp -->
               <?php if (!empty($cinemas)): ?>
                 <?php foreach ($cinemas as $cinema): ?>
+                  <!-- selected: đánh dấu rạp đang được chọn -->
                   <option value="<?= $cinema['id'] ?>" <?= ($selectedCinema ?? '') == $cinema['id'] ? 'selected' : '' ?>>
                     <?= htmlspecialchars($cinema['name']) ?>
                   </option>
@@ -41,10 +58,13 @@
             </select>
           </div>
           <?php endif; ?>
+          <!-- Nút submit và xóa bộ lọc: col-md-3 nếu admin (có filter rạp), col-md-6 nếu không -->
           <div class="col-md-<?= isAdmin() ? '3' : '6' ?> d-flex align-items-end">
+            <!-- Nút submit form lọc -->
             <button type="submit" class="btn btn-secondary me-2">
               <i class="bi bi-funnel"></i> Lọc
             </button>
+            <!-- Link xóa bộ lọc: quay về trang showtimes không có filter -->
             <a href="<?= BASE_URL ?>?act=showtimes" class="btn btn-outline-secondary">
               <i class="bi bi-x-circle"></i> Xóa bộ lọc
             </a>

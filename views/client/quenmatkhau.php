@@ -1,3 +1,22 @@
+<?php
+/**
+ * QUENMATKHAU.PHP - TRANG QUÊN MẬT KHẨU CLIENT
+ * 
+ * Chức năng: Form đặt lại mật khẩu cho user (email + mật khẩu mới)
+ * 
+ * LUỒNG XỬ LÝ:
+ * 1. User nhập email và mật khẩu mới
+ * 2. JavaScript validate form (email format, password length, password match)
+ * 3. Submit form POST đến controller (AuthController->forgotPassword())
+ * 4. Controller kiểm tra email và cập nhật mật khẩu mới
+ * 5. Nếu thành công: hiển thị thông báo, redirect đến trang đăng nhập
+ * 6. Nếu thất bại: hiển thị lỗi trong $errors
+ * 
+ * BIẾN TỪ CONTROLLER:
+ * - $errors: Mảng lỗi validation (nếu có)
+ * - $success: true/false (đặt lại mật khẩu thành công/thất bại)
+ */
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -15,7 +34,7 @@
     <body>
         <div class="wrap" role="main" aria-labelledby="forgot-title">
 
-            <!-- LEFT: BRAND / PROMO -->
+            <!-- LEFT: BRAND / PROMO - Panel giới thiệu bên trái -->
             <aside class="panel-brand" aria-hidden="false">
                 <div class="brand-top">
                     <div class="brand-logo" aria-hidden="true"><img

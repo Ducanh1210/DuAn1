@@ -1,17 +1,26 @@
-<?php require_once __DIR__ . '/../../../commons/auth.php'; ?>
+<?php
+// MOVIES/CREATE.PHP - TRANG TẠO PHIM MỚI ADMIN
+// Chức năng: Form tạo phim mới với upload ảnh, chọn thể loại, nhập thông tin phim
+// Biến từ controller: $errors (lỗi validation), $genres (danh sách thể loại), $cinemas (danh sách rạp)
+require_once __DIR__ . '/../../../commons/auth.php'; // Include file auth để dùng hàm isAdmin()
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Thêm phim mới</h4>
+      <!-- Link quay lại danh sách phim -->
       <a href="<?= BASE_URL ?>?act=/" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
+    <!-- Hiển thị lỗi validation nếu có: $errors từ controller -->
     <?php if (!empty($errors)): ?>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <strong><i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường sau:</strong>
         <ul class="mb-0 mt-2">
+            <!-- Vòng lặp: hiển thị từng lỗi -->
             <?php foreach ($errors as $field => $error): ?>
                 <li><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
@@ -20,12 +29,16 @@
     </div>
 <?php endif; ?>
 
+      <!-- Form tạo phim: enctype="multipart/form-data" để upload file ảnh -->
       <form action="" method="post" enctype="multipart/form-data" id="movieForm" onsubmit="return validateMovieForm(event)">
         <div class="row">
           <div class="col-md-6">
+            <!-- Input tên phim: bắt buộc (*) -->
             <div class="mb-3">
               <label for="title" class="form-label">Tên phim <span class="text-danger">*</span></label>
+              <!-- is-invalid: thêm class nếu có lỗi để hiển thị border đỏ -->
               <input type="text" name="title" id="title" class="form-control <?= !empty($errors['title']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['title'] ?? '') ?>" >
+              <!-- Hiển thị lỗi validation nếu có -->
               <?php if (!empty($errors['title'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['title'] ?></div>
               <?php endif; ?>

@@ -1,11 +1,18 @@
+<?php
+// PERMISSIONS/LIST.PHP - TRANG QUẢN LÝ PHÂN QUYỀN ADMIN
+// Chức năng: Hiển thị và quản lý phân quyền cho Manager và Staff (quyền mặc định và quyền cá nhân)
+// Biến từ controller: $managers (danh sách manager), $staff (danh sách staff), $defaultManagerPermissions, $defaultStaffPermissions
+?>
 <div class="container-fluid">
   <div class="card shadow-sm">
+    <!-- Header: tiêu đề trang -->
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
       <h4 class="mb-0">
         <i class="bi bi-shield-lock"></i> Quản lý phân quyền
       </h4>
     </div>
     <div class="card-body">
+      <!-- Hiển thị thông báo thành công từ URL parameter -->
       <?php if (isset($_GET['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
           <i class="bi bi-check-circle"></i> Cập nhật phân quyền thành công!
@@ -13,8 +20,10 @@
         </div>
       <?php endif; ?>
 
+      <!-- Hiển thị thông báo lỗi từ URL parameter -->
       <?php if (isset($_GET['error'])): ?>
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <!-- Kiểm tra loại lỗi -->
           <?php if ($_GET['error'] === 'user_not_found'): ?>
             <i class="bi bi-exclamation-triangle"></i> Không tìm thấy người dùng.
           <?php elseif ($_GET['error'] === 'invalid_role'): ?>
@@ -24,6 +33,7 @@
         </div>
       <?php endif; ?>
 
+      <!-- Thông báo hướng dẫn -->
       <div class="row mb-4">
         <div class="col-12">
           <div class="alert alert-info">
@@ -34,17 +44,19 @@
         </div>
       </div>
 
-      <!-- Phần Quản lý (Manager) -->
+      <!-- Phần Quản lý (Manager): quyền mặc định cho tất cả Manager -->
       <div class="row mb-4">
         <div class="col-12">
           <div class="card border-primary">
             <div class="card-header bg-primary text-white">
               <h5 class="mb-0">
                 <i class="bi bi-person-badge"></i> Quản lý (Manager)
+                <!-- Badge hiển thị số lượng tài khoản Manager: count($managers) -->
                 <span class="badge bg-light text-primary ms-2"><?= count($managers) ?> tài khoản</span>
               </h5>
             </div>
             <div class="card-body">
+              <!-- Mô tả: quyền mặc định áp dụng cho tất cả Manager -->
               <p class="text-muted mb-3">
                 Quyền mặc định cho tất cả Quản lý. Tất cả tài khoản có role "Quản lý" sẽ tự động có các quyền này.
               </p>

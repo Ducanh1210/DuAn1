@@ -330,20 +330,52 @@ class BookingController
         ], 'Thanh toán');
     }
 
-    // Xử lý thanh toán - tạo booking, gửi đến VNPay
+    /**
+     * XỬ LÝ THANH TOÁN - TẠO BOOKING, GỬI ĐẾN VNPAY
+     * 
+     * Chức năng: Xử lý request thanh toán từ trang thanhtoan.php, tạo booking và redirect đến VNPay
+     * 
+     * LUỒNG XỬ LÝ:
+     * 1. Validate request (POST, đăng nhập, tham số đầy đủ)
+     * 2. Lấy thông tin showtime, room, seats
+     * 3. Tính tổng tiền (dựa trên giá vé, loại ghế, loại khách hàng)
+     * 4. Validate và áp dụng mã giảm giá (nếu có)
+     * 5. Kiểm tra ghế đã được đặt chưa (tránh double booking)
+     * 6. Sử dụng TRANSACTION để đảm bảo atomic operation
+     * 7. Tạo booking với status = 'pending'
+     * 8. Tạo URL thanh toán VNPay
+     * 9. Trả về JSON với payment_url để frontend redirect
+     * 
+     * API ENDPOINT: ?act=payment-process (POST)
+     * 
+     * REQUEST PARAMS:
+     * - showtime_id: ID suất chiếu
+     * - seats: Danh sách ID ghế (comma-separated)
+     * - seat_labels: Danh sách nhãn ghế (comma-separated, ví dụ: A1,A2)
+     * - payment_method: Phương thức thanh toán (vnpay)
+     * - adult_count: Số lượng người lớn
+     * - student_count: Số lượng sinh viên
+     * - voucher_code: Mã giảm giá (tùy chọn)
+     * 
+     * RESPONSE (JSON):
+     * - success: true/false
+     * - payment_method: 'vnpay'
+     * - payment_url: URL thanh toán VNPay (nếu success = true)
+     * - message: Thông báo lỗi (nếu success = false)
+     */
     public function processPayment()
     {
-        // Tắt tất cả output để đảm bảo chỉ trả về JSON
+        // Tắt tất cả output để đảm bảo chỉ trả về JSON (không có HTML, warning, notice)
         ini_set('display_errors', 0);
         ini_set('display_startup_errors', 0);
 
-        // Bắt đầu output buffering ngay từ đầu
+        // Bắt đầu output buffering ngay từ đầu (để clean output trước khi trả về JSON)
         while (ob_get_level() > 0) {
             ob_end_clean();
         }
         ob_start();
 
-        // Set header JSON ngay từ đầu
+        // Set header JSON ngay từ đầu (để frontend biết response là JSON)
         header('Content-Type: application/json; charset=utf-8');
 
         require_once __DIR__ . '/../commons/auth.php';
@@ -592,27 +624,33 @@ class BookingController
                 exit;
             }
 
-            // Xử lý thanh toán theo phương thức
+            // ============================================
+            // XỬ LÝ THANH TOÁN THEO PHƯƠNG THỨC
+            // ============================================
             if ($paymentMethod === 'vnpay') {
+                // Tích hợp VNPay: Tạo URL thanh toán
                 require_once __DIR__ . '/../commons/VNPay.php';
                 $vnpay = new VNPay();
 
-                // Sử dụng finalAmount (sau khi giảm giá) thay vì totalPrice
+                // Tạo URL thanh toán VNPay
+                // QUAN TRỌNG: Sử dụng finalAmount (sau khi giảm giá) thay vì totalPrice
+                // VNPay sẽ thanh toán số tiền finalAmount, không phải totalPrice
                 $paymentUrl = $vnpay->createPaymentUrl([
-                    'txn_ref' => $bookingId . '_' . time(),
-                    'amount' => $finalAmount, // Dùng finalAmount (đã trừ discount) thay vì totalPrice
-                    'order_info' => 'Thanh toan dat ve xem phim - ' . $bookingCode
+                    'txn_ref' => $bookingId . '_' . time(), // Mã đơn hàng: bookingId_timestamp (để parse lại khi callback)
+                    'amount' => $finalAmount, // Số tiền thanh toán (đã trừ discount)
+                    'order_info' => 'Thanh toan dat ve xem phim - ' . $bookingCode // Thông tin đơn hàng
                 ]);
 
+                // Trả về JSON với payment_url để frontend redirect user đến VNPay
                 ob_clean();
                 echo json_encode([
                     'success' => true,
                     'payment_method' => 'vnpay',
-                    'payment_url' => $paymentUrl
+                    'payment_url' => $paymentUrl // URL thanh toán VNPay (frontend sẽ redirect)
                 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 exit;
             } else {
-                // Các phương thức thanh toán khác (chưa implement)
+                // Các phương thức thanh toán khác (chưa implement: MoMo, ZaloPay, ...)
                 ob_clean();
                 echo json_encode([
                     'success' => true,
@@ -907,33 +945,77 @@ class BookingController
         ], 'Đặt vé của tôi');
     }
 
-    // Callback từ VNPay sau khi thanh toán xong - cập nhật trạng thái booking
+    /**
+     * CALLBACK TỪ VNPAY SAU KHI THANH TOÁN XONG
+     * 
+     * Chức năng: Xử lý callback từ VNPay sau khi user thanh toán xong, cập nhật trạng thái booking
+     * 
+     * LUỒNG XỬ LÝ:
+     * 1. VNPay gửi callback về URL: ?act=vnpay-return với các tham số trong $_GET
+     * 2. Parse dữ liệu callback (processCallback): Lấy response_code, txn_ref, amount, ...
+     * 3. Xác thực checksum (validateResponse): Đảm bảo dữ liệu không bị giả mạo
+     * 4. Parse booking_id từ txn_ref (format: bookingId_timestamp)
+     * 5. Lấy thông tin booking từ database
+     * 6. Kiểm tra thanh toán thành công (isPaymentSuccess)
+     * 7. Nếu thành công:
+     *    - Kiểm tra lại ghế đã được đặt bởi booking khác chưa (tránh conflict)
+     *    - Cập nhật payment: status = 'paid', lưu transaction_code
+     *    - Cập nhật booking: status = 'paid'
+     *    - Cập nhật total_spending và tier_id của user
+     *    - Tạo notification cho user
+     * 8. Nếu thất bại:
+     *    - Cập nhật payment: status = 'failed'
+     *    - Cập nhật booking: status = 'cancelled'
+     * 9. Render trang kết quả thanh toán (payment-result.php)
+     * 
+     * API ENDPOINT: ?act=vnpay-return (GET)
+     * 
+     * CALLBACK PARAMS (từ VNPay):
+     * - vnp_ResponseCode: Mã phản hồi (00 = thành công)
+     * - vnp_TxnRef: Mã đơn hàng (bookingId_timestamp)
+     * - vnp_Amount: Số tiền (đã nhân 100)
+     * - vnp_TransactionStatus: Trạng thái giao dịch (00 = thành công)
+     * - vnp_TransactionNo: Mã giao dịch VNPay (unique)
+     * - vnp_SecureHash: Checksum để xác thực
+     * 
+     * BẢO MẬT:
+     * - Luôn validate checksum trước khi xử lý
+     * - Kiểm tra lại ghế đã được đặt chưa (tránh double booking)
+     * - Sử dụng transaction để đảm bảo atomic operation
+     */
     public function vnpayReturn()
     {
         // Session đã được start ở index.php, không cần start lại
         require_once __DIR__ . '/../commons/VNPay.php';
         require_once __DIR__ . '/../models/Payment.php';
 
-        // DEBUG: Xem dữ liệu từ VNPay (có thể xóa sau)
+        // DEBUG: Xem dữ liệu từ VNPay (có thể xóa sau khi test xong)
         // Uncomment dòng sau để xem chi tiết dữ liệu callback
         // echo '<pre>'; print_r($_GET); echo '</pre>'; die();
 
+        // Khởi tạo VNPay và xử lý callback
         $vnpay = new VNPay();
+        // processCallback(): Parse dữ liệu từ $_GET, chuyển đổi số tiền, xác thực checksum
         $callbackData = $vnpay->processCallback();
 
         // Debug: Log dữ liệu callback (có thể xóa sau khi test xong)
         // error_log('VNPay Callback Data: ' . json_encode($callbackData));
 
-        // Lấy booking_id từ txn_ref (format: bookingId_timestamp)
+        // ============================================
+        // PARSE BOOKING_ID TỪ TXN_REF
+        // ============================================
+        // txn_ref format: bookingId_timestamp (ví dụ: 123_1699123456)
+        // Tách để lấy booking_id
         $txnRef = $callbackData['txn_ref'] ?? '';
         $bookingId = null;
         if (!empty($txnRef)) {
             $parts = explode('_', $txnRef);
-            $bookingId = $parts[0] ?? null;
+            $bookingId = $parts[0] ?? null; // Lấy phần đầu (booking_id)
         }
 
+        // Validate booking_id
         if (!$bookingId) {
-            // Không tìm thấy booking
+            // Không tìm thấy booking_id trong txn_ref
             renderClient('client/payment-result.php', [
                 'success' => false,
                 'message' => 'Không tìm thấy thông tin đơn đặt vé',
@@ -942,9 +1024,12 @@ class BookingController
             exit;
         }
 
-        // Lấy thông tin booking
+        // ============================================
+        // LẤY THÔNG TIN BOOKING TỪ DATABASE
+        // ============================================
         $booking = $this->booking->find($bookingId);
         if (!$booking) {
+            // Booking không tồn tại
             renderClient('client/payment-result.php', [
                 'success' => false,
                 'message' => 'Đơn đặt vé không tồn tại',
@@ -953,15 +1038,32 @@ class BookingController
             exit;
         }
 
-        // Kiểm tra thanh toán có thành công không
+        // ============================================
+        // KIỂM TRA THANH TOÁN CÓ THÀNH CÔNG KHÔNG
+        // ============================================
+        // isPaymentSuccess(): Kiểm tra 3 điều kiện:
+        // 1. is_valid = true (checksum hợp lệ)
+        // 2. response_code = '00' (VNPay phản hồi thành công)
+        // 3. transaction_status = '00' (Giao dịch thành công)
         $isSuccess = $vnpay->isPaymentSuccess($callbackData);
 
-        // Cập nhật thông tin thanh toán
+        // ============================================
+        // LẤY THÔNG TIN PAYMENT (NẾU CÓ)
+        // ============================================
+        // Tìm payment record đã tạo trước đó (nếu có)
+        // Nếu có -> update, nếu không có -> insert mới
         $payment = new Payment();
         $existingPayment = $payment->findByBookingId($bookingId);
 
+        // ============================================
+        // XỬ LÝ THEO KẾT QUẢ THANH TOÁN
+        // ============================================
         if ($isSuccess) {
+            // ============================================
+            // THANH TOÁN THÀNH CÔNG
+            // ============================================
             // Kiểm tra lại xem ghế đã được đặt bởi booking khác chưa (trước khi cập nhật status)
+            // Đây là double-check để tránh conflict khi nhiều user đặt cùng ghế
             $showtimeId = $booking['showtime_id'] ?? null;
             $bookedSeats = trim($booking['booked_seats'] ?? '', ', ');
             $bookedSeats = preg_replace('/,+/', ',', $bookedSeats);
@@ -1029,36 +1131,49 @@ class BookingController
                 }
             }
 
+            // ============================================
+            // CẬP NHẬT PAYMENT VÀ BOOKING STATUS
+            // ============================================
             // Thanh toán thành công - cập nhật status thành 'paid' ngay lập tức
             $paymentStatus = 'paid';
             $bookingStatus = 'paid'; // Thanh toán thành công ngay lập tức
 
-            // Cập nhật payment
+            // Cập nhật payment: Nếu đã có payment record -> update, nếu chưa có -> insert mới
             if ($existingPayment) {
+                // Update payment đã tồn tại
                 $payment->update($existingPayment['id'], [
-                    'transaction_code' => $callbackData['transaction_no'],
-                    'payment_date' => date('Y-m-d H:i:s'),
-                    'status' => $paymentStatus
+                    'transaction_code' => $callbackData['transaction_no'], // Mã giao dịch VNPay
+                    'payment_date' => date('Y-m-d H:i:s'), // Ngày giờ thanh toán
+                    'status' => $paymentStatus // 'paid'
                 ]);
             } else {
+                // Insert payment mới
                 $paymentData = [
                     'booking_id' => $bookingId,
-                    'method' => 'vnpay',
-                    'transaction_code' => $callbackData['transaction_no'],
-                    'total_amount' => $callbackData['amount'],
-                    'discount_amount' => $booking['discount_amount'] ?? 0,
-                    'final_amount' => $booking['final_amount'] ?? $callbackData['amount'],
-                    'status' => $paymentStatus
+                    'method' => 'vnpay', // Phương thức thanh toán
+                    'transaction_code' => $callbackData['transaction_no'], // Mã giao dịch VNPay
+                    'total_amount' => $callbackData['amount'], // Tổng tiền từ VNPay (đã chia 100)
+                    'discount_amount' => $booking['discount_amount'] ?? 0, // Số tiền giảm giá
+                    'final_amount' => $booking['final_amount'] ?? $callbackData['amount'], // Tổng tiền cuối cùng
+                    'status' => $paymentStatus // 'paid'
                 ];
                 $payment->insert($paymentData);
             }
 
-            // Cập nhật booking status thành 'paid'
+            // Cập nhật booking status thành 'paid' (đơn đặt vé đã thanh toán)
             $this->booking->updateStatus($bookingId, $bookingStatus);
 
+            // ============================================
+            // CẬP NHẬT USER SPENDING VÀ TIER
+            // ============================================
             // Cập nhật total_spending và tier_id của user ngay sau khi thanh toán thành công
+            // total_spending: Tổng số tiền user đã chi
+            // tier_id: Hạng thành viên (dựa trên total_spending)
             $this->updateUserSpendingAndTier($booking['user_id'], $booking['final_amount']);
 
+            // ============================================
+            // LẤY LẠI BOOKING VÀ TẠO NOTIFICATION
+            // ============================================
             // Lấy lại booking sau khi cập nhật để đảm bảo có dữ liệu mới nhất
             $updatedBooking = $this->booking->find($bookingId);
 
@@ -1073,33 +1188,42 @@ class BookingController
                 'transactionCode' => $callbackData['transaction_no'] ?? null
             ], 'Kết quả thanh toán');
         } else {
-            // Thanh toán thất bại hoặc bị hủy
+            // ============================================
+            // THANH TOÁN THẤT BẠI HOẶC BỊ HỦY
+            // ============================================
             $paymentStatus = 'failed';
-            $bookingStatus = 'cancelled';
+            $bookingStatus = 'cancelled'; // Hủy đơn đặt vé
 
-            // Cập nhật payment
+            // Cập nhật payment: status = 'failed'
             if ($existingPayment) {
                 $payment->update($existingPayment['id'], [
-                    'transaction_code' => $callbackData['transaction_no'] ?? null,
+                    'transaction_code' => $callbackData['transaction_no'] ?? null, // Có thể null nếu thanh toán thất bại
                     'payment_date' => date('Y-m-d H:i:s'),
-                    'status' => $paymentStatus
+                    'status' => $paymentStatus // 'failed'
                 ]);
             }
 
-            // Cập nhật booking status
+            // Cập nhật booking status thành 'cancelled' (đơn đặt vé bị hủy)
             $this->booking->updateStatus($bookingId, $bookingStatus);
 
+            // ============================================
+            // XÁC ĐỊNH THÔNG BÁO LỖI CỤ THỂ
+            // ============================================
             $errorMessage = 'Thanh toán thất bại';
 
-            // Kiểm tra mã lỗi cụ thể
+            // Kiểm tra mã lỗi cụ thể từ VNPay
             $responseCode = $callbackData['response_code'] ?? '';
             if (!$callbackData['is_valid']) {
+                // Checksum không hợp lệ -> dữ liệu có thể bị giả mạo
                 $errorMessage = 'Thông tin thanh toán không hợp lệ (Checksum không đúng)';
             } elseif ($responseCode === '24') {
+                // User hủy giao dịch trên VNPay
                 $errorMessage = 'Giao dịch bị hủy';
             } elseif ($responseCode === '07') {
+                // Trừ tiền thành công nhưng giao dịch bị nghi ngờ (có thể do fraud detection)
                 $errorMessage = 'Trừ tiền thành công nhưng giao dịch bị nghi ngờ';
             } elseif (!empty($responseCode) && $responseCode !== '00') {
+                // Các mã lỗi khác (có thể do hết tiền, thẻ bị khóa, ...)
                 $errorMessage = 'Thanh toán thất bại (Mã lỗi: ' . $responseCode . ')';
             }
 

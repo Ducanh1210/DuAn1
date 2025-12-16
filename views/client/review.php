@@ -1,4 +1,7 @@
 <?php
+// REVIEW.PHP - TRANG ĐÁNH GIÁ PHIM CLIENT
+// Chức năng: Form đánh giá và bình luận phim sau khi xem
+// Biến từ controller: $booking (thông tin đặt vé), $movie (thông tin phim), $existingComment (đánh giá đã có)
 $booking = $booking ?? null;
 $movie = $movie ?? null;
 $existingComment = $existingComment ?? null;

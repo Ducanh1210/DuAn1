@@ -1,4 +1,7 @@
 <?php
+// SELECT_SEATS.PHP - TRANG CHỌN GHẾ CLIENT
+// Chức năng: Hiển thị sơ đồ ghế, cho phép chọn ghế, đếm ngược thời gian
+// Biến từ controller: $showtime, $movie, $room, $seatsByRow (ghế theo hàng), $bookedSeats (ghế đã đặt), $countdownSeconds
 $showtime = $showtime ?? null;
 $movie = $movie ?? null;
 $room = $room ?? null;
@@ -6,7 +9,7 @@ $seatsByRow = $seatsByRow ?? [];
 $bookedSeats = $bookedSeats ?? [];
 $countdownSeconds = $countdownSeconds ?? 900;
 
-// TẤT CẢ PHÒNG ĐỀU HIỂN THỊ 12 CỘT (2 khối, mỗi khối 6 cột)
+// Tất cả phòng đều hiển thị 12 cột (2 khối, mỗi khối 6 cột)
 $maxColumns = 12;
 ?>
 

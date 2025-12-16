@@ -1,5 +1,11 @@
+<?php
+// COMMENTS/SHOW.PHP - TRANG CHI TIẾT BÌNH LUẬN ADMIN
+// Chức năng: Hiển thị thông tin chi tiết của một bình luận/đánh giá phim (ID, ngày tạo, đánh giá sao, nội dung, thông tin người dùng, thông tin phim)
+// Biến từ controller: $comment (thông tin bình luận cần hiển thị)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Chi tiết bình luận</h4>
       <div>
@@ -10,12 +16,15 @@
     </div>
     <div class="card-body">
       <div class="row">
+        <!-- Cột trái: thông tin bình luận, người dùng, phim -->
         <div class="col-md-8">
+          <!-- Card thông tin bình luận -->
           <div class="card mb-4">
             <div class="card-header bg-primary text-white">
               <h5 class="mb-0">Thông tin bình luận</h5>
             </div>
             <div class="card-body">
+              <!-- Hiển thị ID và ngày tạo -->
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label class="text-muted small mb-1 d-block">ID</label>
@@ -27,10 +36,12 @@
                 </div>
               </div>
 
+              <!-- Hiển thị đánh giá sao: từ 1-5 sao -->
               <div class="mb-3">
                 <label class="text-muted small mb-1 d-block">Đánh giá</label>
                 <?php if (!empty($comment['rating'])): ?>
                   <div class="d-flex align-items-center">
+                    <!-- Vòng lặp: hiển thị 5 sao, sao đầy nếu <= rating, sao rỗng nếu > rating -->
                     <span class="text-warning me-2" style="font-size: 1.5rem;">
                       <?php for ($i = 1; $i <= 5; $i++): ?>
                         <?php if ($i <= $comment['rating']): ?>
@@ -40,6 +51,7 @@
                         <?php endif; ?>
                       <?php endfor; ?>
                     </span>
+                    <!-- Badge hiển thị số sao -->
                     <span class="badge bg-warning text-dark" style="font-size: 1rem;"><?= $comment['rating'] ?>/5</span>
                   </div>
                 <?php else: ?>

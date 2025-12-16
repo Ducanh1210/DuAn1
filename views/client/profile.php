@@ -1,5 +1,8 @@
 <?php
-// Tách họ và tên
+// PROFILE.PHP - TRANG THÔNG TIN CÁ NHÂN CLIENT
+// Chức năng: Quản lý thông tin cá nhân, hạng thành viên, lịch sử đặt vé, điểm thưởng
+// Biến từ controller: $user, $tab, $tier, $nextTier, $pointsToNextTier, $allTiers, $rewardPoints, $bookingHistory, $rewardHistory
+// Tách họ và tên thành lastName và firstName
 $fullName = $user['full_name'] ?? '';
 $nameParts = explode(' ', $fullName, 2);
 $lastName = $nameParts[0] ?? '';
@@ -49,6 +52,7 @@ $firstName = isset($nameParts[1]) ? $nameParts[1] : '';
             </div>
           <?php endif; ?>
 
+          <!-- Form sửa thông tin: submit POST -->
           <form action="<?= BASE_URL ?>?act=profile-update" method="POST" class="profile-form">
             <div class="form-row">
               <div class="form-group">

@@ -1,8 +1,15 @@
+<?php
+// CONTACTS/LIST.PHP - TRANG QUẢN LÝ LIÊN HỆ ADMIN
+// Chức năng: Hiển thị danh sách liên hệ từ khách hàng với bộ lọc (trạng thái, rạp)
+// Biến từ controller: $data (danh sách liên hệ), $statusCounts (số lượng theo trạng thái), $selectedStatus, $cinemaFilter, $currentCinemaName
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và tên rạp (nếu là staff/manager) -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <div>
         <h4 class="mb-0">Quản lý Liên hệ</h4>
+        <!-- Hiển thị tên rạp nếu là staff hoặc manager -->
         <?php if ((isset($isStaff) && $isStaff || isset($isManager) && $isManager) && !empty($currentCinemaName)): ?>
           <small class="text-muted">
             <i class="bi bi-building"></i> Rạp: <strong><?= htmlspecialchars($currentCinemaName) ?></strong>
@@ -11,42 +18,49 @@
       </div>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi từ session -->
       <?php if (isset($_SESSION['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <?= htmlspecialchars($_SESSION['error']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        <!-- Xóa lỗi sau khi hiển thị -->
         <?php unset($_SESSION['error']); ?>
       <?php endif; ?>
       
+      <!-- Hiển thị thông báo thành công từ session -->
       <?php if (isset($_SESSION['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
           <?= htmlspecialchars($_SESSION['success']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        <!-- Xóa thông báo sau khi hiển thị -->
         <?php unset($_SESSION['success']); ?>
       <?php endif; ?>
 
-      <!-- Filter by status and cinema -->
+      <!-- Card bộ lọc: lọc theo trạng thái và rạp -->
       <div class="card mb-4 shadow-sm border-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
         <div class="card-body p-3">
           <div class="row g-3 align-items-end">
-            <!-- Status Filter -->
+            <!-- Bộ lọc theo trạng thái: các nút filter dạng badge -->
             <div class="col-12">
               <label class="form-label fw-bold text-muted mb-2" style="font-size: 0.875rem;">
                 <i class="bi bi-funnel"></i> Lọc theo trạng thái:
               </label>
               <div class="d-flex flex-wrap gap-2">
+                <!-- Nút "Tất cả": active nếu không có $selectedStatus -->
                 <a href="?act=contacts<?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>" 
                    class="btn btn-sm <?= !$selectedStatus ? 'btn-primary shadow-sm' : 'btn-outline-primary' ?>"
                    style="border-radius: 20px; padding: 6px 16px; font-weight: 500;">
-                  <i class="bi bi-list-ul"></i> Tất cả (<?= array_sum($statusCounts) ?>)
+                  <i class="bi bi-list-ul"></i> Tất cả (<?= array_sum($statusCounts) ?>) <!-- array_sum: tổng số lượng tất cả trạng thái -->
                 </a>
+                <!-- Nút "Chờ xử lý": active nếu $selectedStatus === 'pending' -->
                 <a href="?act=contacts&status=pending<?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>" 
                    class="btn btn-sm <?= $selectedStatus == 'pending' ? 'btn-warning shadow-sm' : 'btn-outline-warning' ?>"
                    style="border-radius: 20px; padding: 6px 16px; font-weight: 500;">
-                  <i class="bi bi-clock"></i> Chờ xử lý (<?= $statusCounts['pending'] ?>)
+                  <i class="bi bi-clock"></i> Chờ xử lý (<?= $statusCounts['pending'] ?>) <!-- Số lượng liên hệ chờ xử lý -->
                 </a>
+                <!-- Nút "Đang xử lý": active nếu $selectedStatus === 'processing' -->
                 <a href="?act=contacts&status=processing<?= $cinemaFilter ? '&cinema_id=' . $cinemaFilter : '' ?>" 
                    class="btn btn-sm <?= $selectedStatus == 'processing' ? 'btn-info shadow-sm' : 'btn-outline-info' ?>"
                    style="border-radius: 20px; padding: 6px 16px; font-weight: 500;">

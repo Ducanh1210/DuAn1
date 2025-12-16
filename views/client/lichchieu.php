@@ -1,3 +1,8 @@
+<?php
+// LICHCHIEU.PHP - TRANG LỊCH CHIẾU CLIENT
+// Chức năng: Hiển thị lịch chiếu phim theo rạp
+// Biến từ controller: $cinemas (danh sách rạp), $showtimes (lịch chiếu), $selectedCinemaId (rạp được chọn)
+?>
 <link rel="stylesheet" href="<?= BASE_URL ?>/views/layout/css/lichchieu.css">
 <style>
     .lichchieu-layout {

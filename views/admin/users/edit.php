@@ -1,16 +1,25 @@
+<?php
+// USERS/EDIT.PHP - TRANG SỬA THÔNG TIN NGƯỜI DÙNG ADMIN
+// Chức năng: Form sửa thông tin người dùng (admin, manager, staff, customer)
+// Biến từ controller: $user (thông tin người dùng cần sửa), $errors (lỗi validation), $cinemas (danh sách rạp), $roles (danh sách quyền)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Sửa thông tin người dùng</h4>
+      <!-- Link quay lại danh sách người dùng -->
       <a href="<?= BASE_URL ?>?act=users" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi validation nếu có: $errors từ controller -->
       <?php if (!empty($errors)): ?>
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <strong><i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường sau:</strong>
           <ul class="mb-0 mt-2">
+              <!-- Vòng lặp: hiển thị từng lỗi -->
               <?php foreach ($errors as $field => $error): ?>
                   <li><?= htmlspecialchars($error) ?></li>
               <?php endforeach; ?>
@@ -19,12 +28,16 @@
       </div>
       <?php endif; ?>
 
+      <!-- Form sửa người dùng: onsubmit gọi hàm validateUserForm() để validate client-side -->
       <form action="" method="post" id="userForm" onsubmit="return validateUserForm(event)" novalidate>
         <div class="row">
           <div class="col-md-6">
+            <!-- Input họ tên: bắt buộc (*), value lấy từ $_POST nếu có (sau submit), nếu không thì lấy từ $user -->
             <div class="mb-3">
               <label for="full_name" class="form-label">Họ tên <span class="text-danger">*</span></label>
+              <!-- is-invalid: thêm class nếu có lỗi để hiển thị border đỏ -->
               <input type="text" name="full_name" id="full_name" class="form-control <?= !empty($errors['full_name']) ? 'is-invalid' : '' ?>" value="<?= htmlspecialchars($_POST['full_name'] ?? $user['full_name']) ?>" required>
+              <!-- Hiển thị lỗi validation nếu có -->
               <?php if (!empty($errors['full_name'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['full_name'] ?></div>
               <?php endif; ?>

@@ -1,17 +1,26 @@
-<?php require_once __DIR__ . '/../../../commons/auth.php'; ?>
+<?php
+// MOVIES/EDIT.PHP - TRANG SỬA PHIM ADMIN
+// Chức năng: Form sửa thông tin phim (tên, mô tả, ảnh, thể loại, ngày phát hành, etc.)
+// Biến từ controller: $movie (thông tin phim cần sửa), $errors (lỗi validation), $genres (danh sách thể loại)
+require_once __DIR__ . '/../../../commons/auth.php'; // Include file auth để dùng hàm isAdmin()
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề với tên phim và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Sửa phim: <?= htmlspecialchars($movie['title']) ?></h4>
+      <!-- Link quay lại danh sách phim -->
       <a href="<?= BASE_URL ?>?act=/" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi validation nếu có: $errors từ controller -->
       <?php if (!empty($errors)): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <strong><i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường sau:</strong>
           <ul class="mb-0 mt-2">
+            <!-- Vòng lặp: hiển thị từng lỗi -->
             <?php foreach ($errors as $field => $error): ?>
               <li><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
@@ -20,21 +29,26 @@
         </div>
       <?php endif; ?>
 
+      <!-- Form sửa phim: enctype="multipart/form-data" để upload file ảnh -->
       <form action="" method="post" enctype="multipart/form-data" id="movieForm" onsubmit="return validateMovieForm(event)">
         <div class="row">
           <div class="col-md-6">
+            <!-- Input tên phim: bắt buộc (*), value lấy từ $_POST nếu có (sau submit), nếu không thì lấy từ $movie -->
             <div class="mb-3">
               <label for="title" class="form-label">Tên phim <span class="text-danger">*</span></label>
               <input type="text" name="title" id="title"
                 class="form-control <?= !empty($errors['title']) ? 'is-invalid' : '' ?>"
                 value="<?= htmlspecialchars($_POST['title'] ?? $movie['title']) ?>" >
+              <!-- Hiển thị lỗi validation nếu có -->
               <?php if (!empty($errors['title'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['title'] ?></div>
               <?php endif; ?>
             </div>
 
+            <!-- Textarea mô tả: bắt buộc (*) -->
             <div class="mb-3">
               <label for="description" class="form-label">Mô tả <span class="text-danger">*</span></label>
+              <!-- value lấy từ $_POST nếu có, nếu không thì lấy từ $movie, nếu không có thì rỗng -->
               <textarea name="description" id="description"
                 class="form-control <?= !empty($errors['description']) ? 'is-invalid' : '' ?>"
                 rows="4"><?= htmlspecialchars($_POST['description'] ?? $movie['description'] ?? '') ?></textarea>

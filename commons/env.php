@@ -1,6 +1,6 @@
 <?php
 
-define('BASE_URL', 'http://localhost/DuAn2/');
+define('BASE_URL', 'http://localhost/DuAn1-main/');
 define('DB_HOST', 'localhost');
 define('DB_PORT', 3306);
 define('DB_USERNAME', value: 'root');

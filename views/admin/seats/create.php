@@ -1,16 +1,25 @@
+<?php
+// SEATS/CREATE.PHP - TRANG TẠO GHẾ MỚI ADMIN
+// Chức năng: Form tạo ghế mới thủ công (chọn phòng, tên ghế, hàng, cột, loại ghế)
+// Biến từ controller: $errors (lỗi validation), $rooms (danh sách phòng)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Thêm ghế mới</h4>
+      <!-- Link quay lại: giữ nguyên room_id nếu có trong URL -->
       <a href="<?= BASE_URL ?>?act=seats<?= isset($_GET['room_id']) ? '&room_id=' . $_GET['room_id'] : '' ?>" class="btn btn-secondary">
         <i class="bi bi-arrow-left"></i> Quay lại
       </a>
     </div>
     <div class="card-body">
+      <!-- Hiển thị lỗi validation nếu có: $errors từ controller -->
       <?php if (!empty($errors)): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <strong><i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường sau:</strong>
           <ul class="mb-0 mt-2">
+            <!-- Vòng lặp: hiển thị từng lỗi -->
             <?php foreach ($errors as $field => $error): ?>
               <li><?= htmlspecialchars($error) ?></li>
             <?php endforeach; ?>
@@ -19,21 +28,26 @@
         </div>
       <?php endif; ?>
 
+      <!-- Form tạo ghế: onsubmit gọi hàm validateSeatForm() để validate client-side -->
       <form action="" method="post" id="seatForm" onsubmit="return validateSeatForm(event)">
         <div class="row">
           <div class="col-md-8">
+            <!-- Dropdown chọn phòng: bắt buộc (*) -->
             <div class="mb-3">
               <label for="room_id" class="form-label">Phòng <span class="text-danger">*</span></label>
               <select name="room_id" id="room_id" class="form-select <?= !empty($errors['room_id']) ? 'is-invalid' : '' ?>" required>
                 <option value="">-- Chọn phòng --</option>
+                <!-- Vòng lặp: tạo option cho mỗi phòng -->
                 <?php if (!empty($rooms)): ?>
                   <?php foreach ($rooms as $room): ?>
+                    <!-- selected: đánh dấu phòng đang được chọn (từ GET hoặc POST) -->
                     <option value="<?= $room['id'] ?>" <?= (isset($_GET['room_id']) && $_GET['room_id'] == $room['id']) || (isset($_POST['room_id']) && $_POST['room_id'] == $room['id']) ? 'selected' : '' ?>>
                       <?= htmlspecialchars($room['name'] ?? '') ?> (<?= htmlspecialchars($room['room_code'] ?? '') ?>)
                     </option>
                   <?php endforeach; ?>
                 <?php endif; ?>
               </select>
+              <!-- Hiển thị lỗi validation nếu có -->
               <?php if (!empty($errors['room_id'])): ?>
                 <div class="text-danger small mt-1"><?= $errors['room_id'] ?></div>
               <?php endif; ?>

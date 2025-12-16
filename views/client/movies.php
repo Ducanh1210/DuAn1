@@ -1,5 +1,7 @@
 <?php
-// Lấy thông tin phim từ biến $movie (sẽ được truyền từ controller)
+// MOVIES.PHP - TRANG CHI TIẾT PHIM CLIENT
+// Chức năng: Hiển thị thông tin phim, lịch chiếu, chọn ghế, đánh giá
+// Biến từ controller: $movie (thông tin phim), $showtimes (lịch chiếu), $dates (danh sách ngày), $selectedDate (ngày chọn), $isComingSoon (phim sắp chiếu)
 $movie = $movie ?? null;
 $showtimes = $showtimes ?? [];
 $dates = $dates ?? [];

@@ -1,3 +1,7 @@
+<?php
+// GIOITHIEU.PHP - TRANG GIỚI THIỆU CLIENT
+// Chức năng: Trang giới thiệu về TicketHub, tính năng, lợi ích
+?>
 <!-- Nội dung giới thiệu -->
 <main class="about-page">
     <!-- Hero Section -->

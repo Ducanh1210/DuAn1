@@ -1,4 +1,7 @@
 <?php
+// _PROMO_CARD.PHP - COMPONENT CARD KHUYẾN MÃI
+// Chức năng: Component hiển thị card khuyến mãi (được include trong khuyenmai.php)
+// Biến: $promo (thông tin khuyến mãi), $statusLabels (nhãn trạng thái)
 $tag = htmlspecialchars($promo['tag']);
 $status = htmlspecialchars($promo['display_status'] ?? $promo['status'] ?? 'ongoing');
 $code = !empty($promo['code']) ? htmlspecialchars($promo['code']) : '';

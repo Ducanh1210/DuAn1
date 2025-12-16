@@ -1,3 +1,8 @@
+<?php
+// DANGNHAP.PHP - TRANG ĐĂNG NHẬP CLIENT
+// Chức năng: Form đăng nhập (email + password)
+// Biến từ controller: $errors (lỗi validation)
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -15,7 +20,7 @@
     <body>
         <div class="wrap" role="main" aria-labelledby="login-title">
 
-            <!-- LEFT: BRAND / PROMO -->
+            <!-- LEFT: BRAND / PROMO - Panel giới thiệu bên trái -->
             <aside class="panel-brand" aria-hidden="false">
                 <div class="brand-top">
                     <div class="brand-logo" aria-hidden="true"><img
@@ -47,10 +52,11 @@
                 </div>
             </aside>
 
-            <!-- RIGHT: AUTH FORM -->
+            <!-- Form đăng nhập -->
             <section class="auth" aria-labelledby="login-title">
                 <h2 id="login-title">Đăng nhập vào TicketHub</h2>
                 
+                <!-- Thông báo đăng ký thành công -->
                 <?php if (isset($_GET['registered']) && $_GET['registered'] == '1'): ?>
                     <div class="alert alert-success" style="padding: 14px 16px; border-radius: 12px; margin-bottom: 20px; background: rgba(45, 212, 191, 0.1); border: 1px solid rgba(45, 212, 191, 0.3); color: #2dd4bf;">
                         <i class="bi bi-check-circle"></i>
@@ -61,6 +67,7 @@
                     </div>
                 <?php endif; ?>
 
+                <!-- Thông báo đặt lại mật khẩu thành công -->
                 <?php if (isset($_GET['reset']) && $_GET['reset'] == '1'): ?>
                     <div class="alert alert-success" style="padding: 14px 16px; border-radius: 12px; margin-bottom: 20px; background: rgba(45, 212, 191, 0.1); border: 1px solid rgba(45, 212, 191, 0.3); color: #2dd4bf;">
                         <i class="bi bi-check-circle"></i>
@@ -71,6 +78,7 @@
                     </div>
                 <?php endif; ?>
 
+                <!-- Hiển thị lỗi validation -->
                 <?php if (!empty($errors)): ?>
                     <div class="alert alert-error" style="padding: 14px 16px; border-radius: 12px; margin-bottom: 20px; background: rgba(255, 75, 75, 0.1); border: 1px solid rgba(255, 75, 75, 0.3); color: #ff6a6a;">
                         <i class="bi bi-exclamation-triangle"></i>
@@ -78,14 +86,13 @@
                     </div>
                 <?php endif; ?>
 
+                <!-- Form đăng nhập: submit POST -->
                 <form method="POST" action="" id="loginForm" onsubmit="return validateLoginForm(event)">
-                    <!-- email / phone -->
+                    <!-- Input email -->
                     <div class="field">
                         <label for="email">Email</label>
-                        <div class="input" role="group"
-                            aria-labelledby="email">
-                            <svg width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" aria-hidden="true"><path
+                        <div class="input" role="group" aria-labelledby="email">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path
                                     d="M3 7.5A3.5 3.5 0 016.5 4h11A3.5 3.5 0 0121 7.5V16a3.5 3.5 0 01-3.5 3.5h-11A3.5 3.5 0 013 16V7.5z"
                                     stroke="rgba(255,255,255,0.16)"
                                     stroke-width="1.2" stroke-linecap="round"
@@ -102,12 +109,11 @@
                         <?php endif; ?>
                     </div>
 
-                    <!-- password -->
+                    <!-- Input password -->
                     <div class="field">
                         <label for="password">Mật khẩu</label>
                         <div class="input" style="position:relative;">
-                            <svg width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" aria-hidden="true"><path
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path
                                     d="M17 11V9a5 5 0 00-10 0v2"
                                     stroke="rgba(255,255,255,0.16)"
                                     stroke-width="1.2" stroke-linecap="round"
@@ -120,6 +126,7 @@
                                 placeholder="Mật khẩu"
                                 class="<?= !empty($errors['password']) ? 'error' : '' ?>"
                                 style="<?= !empty($errors['password']) ? 'border-color: rgba(255, 75, 75, 0.5) !important;' : '' ?>">
+                            <!-- Nút toggle hiển thị/ẩn mật khẩu -->
                             <button type="button" id="togglePassword" class="password-toggle" aria-label="Hiển thị/Ẩn mật khẩu">
                                 <i class="bi bi-eye" id="eyeIcon"></i>
                             </button>
@@ -129,16 +136,16 @@
                         <?php endif; ?>
                     </div>
 
-                    <!-- meta row -->
+                    <!-- Link quên mật khẩu -->
                     <div class="meta-row" style="position: relative; z-index: 10;">
                         <a href="<?= BASE_URL ?>?act=quenmatkhau" class="forgot" style="cursor: pointer; pointer-events: auto; position: relative; z-index: 10; display: inline-block;">Quên mật khẩu?</a>
                     </div>
 
-                    <!-- submit -->
+                    <!-- Nút submit -->
                     <div class="actions">
-                        <button class="btn btn-primary" type="submit">Đăng
-                            nhập</button>
+                        <button class="btn btn-primary" type="submit">Đăng nhập</button>
                     </div>
+                    <!-- Link đăng ký -->
                     <div class="foot">Chưa có tài khoản? <a href="<?= BASE_URL ?>?act=dangky"
                             style="color:#9ad7ff;text-decoration:underline">Đăng ký</a></div>
                 </form>
@@ -146,11 +153,12 @@
         </div>
 
         <script>
+            // Validate form đăng nhập (client-side)
             function validateLoginForm(event) {
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
 
-                // Kiểm tra email
+                // Kiểm tra email không rỗng
                 if (!email || email === '') {
                     alert('Bạn cần phải điền thông tin mới đăng nhập được. Vui lòng nhập email!');
                     document.getElementById('email').focus();
@@ -165,13 +173,14 @@
                     return false;
                 }
 
-                // Kiểm tra mật khẩu
+                // Kiểm tra password không rỗng
                 if (!password || password === '') {
                     alert('Bạn cần phải điền thông tin mới đăng nhập được. Vui lòng nhập mật khẩu!');
                     document.getElementById('password').focus();
                     return false;
                 }
 
+                // Kiểm tra password tối thiểu 6 ký tự
                 if (password.length < 6) {
                     alert('Mật khẩu phải có ít nhất 6 ký tự!');
                     document.getElementById('password').focus();
@@ -189,10 +198,11 @@
 
                 if (togglePassword && passwordInput && eyeIcon) {
                     togglePassword.addEventListener('click', function() {
+                        // Chuyển đổi type: password <-> text
                         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                         passwordInput.setAttribute('type', type);
                         
-                        // Đổi icon
+                        // Đổi icon: mắt mở <-> mắt đóng
                         if (type === 'text') {
                             eyeIcon.classList.remove('bi-eye');
                             eyeIcon.classList.add('bi-eye-slash');

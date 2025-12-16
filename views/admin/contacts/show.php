@@ -1,5 +1,11 @@
+<?php
+// CONTACTS/SHOW.PHP - TRANG CHI TIẾT LIÊN HỆ ADMIN
+// Chức năng: Hiển thị thông tin chi tiết của một liên hệ từ khách hàng (thông tin khách hàng, chủ đề, nội dung, trạng thái)
+// Biến từ controller: $contact (thông tin liên hệ cần hiển thị), $isAdmin, $isStaff (quyền người dùng)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề với ID liên hệ và nút quay lại -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Chi tiết Liên hệ #<?= $contact['id'] ?></h4>
       <a href="<?= BASE_URL ?>?act=contacts" class="btn btn-secondary">
@@ -7,20 +13,22 @@
       </a>
     </div>
     <div class="card-body">
+      <!-- Hiển thị thông báo lỗi: từ $_SESSION['error'] -->
       <?php if (isset($_SESSION['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
           <?= htmlspecialchars($_SESSION['error']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <?php unset($_SESSION['error']); ?>
+        <?php unset($_SESSION['error']); // Xóa sau khi hiển thị ?>
       <?php endif; ?>
       
+      <!-- Hiển thị thông báo thành công: từ $_SESSION['success'] -->
       <?php if (isset($_SESSION['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
           <?= htmlspecialchars($_SESSION['success']) ?>
           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <?php unset($_SESSION['success']); ?>
+        <?php unset($_SESSION['success']); // Xóa sau khi hiển thị ?>
       <?php endif; ?>
 
       <div class="row">

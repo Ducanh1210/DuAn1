@@ -1,27 +1,57 @@
+<?php
+// USERS/LIST.PHP - TRANG QUẢN LÝ NGƯỜI DÙNG ADMIN
+// Chức năng: Hiển thị danh sách người dùng với 2 tab (Nhân viên & Quản lý / Khách hàng)
+// Biến từ controller: $data (danh sách users), $stats (thống kê), $tab (tab đang chọn)
+?>
 <div class="container-fluid">
   <div class="card">
+    <!-- Header: tiêu đề và nút thêm mới -->
     <div class="card-header d-flex justify-content-between align-items-center">
       <h4 class="mb-0">Quản lý người dùng</h4>
       <div>
+        <!-- Link đến trang tạo người dùng mới -->
         <a href="<?= BASE_URL ?>?act=users-create" class="btn btn-primary">
           <i class="bi bi-plus-circle"></i> Thêm người dùng mới
         </a>
       </div>
     </div>
     <div class="card-body">
+      <!-- Hiển thị thông báo thành công từ URL parameter -->
       <?php if (isset($_GET['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <!-- Kiểm tra loại thông báo: banned hoặc unbanned -->
           <?php if ($_GET['success'] === 'banned'): ?>
             <i class="bi bi-check-circle"></i> Đã khóa tài khoản thành công!
           <?php elseif ($_GET['success'] === 'unbanned'): ?>
             <i class="bi bi-check-circle"></i> Đã mở khóa tài khoản thành công!
           <?php endif; ?>
+          <!-- Nút đóng thông báo: data-bs-dismiss="alert" tự động ẩn alert -->
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       <?php endif; ?>
 
+      <!-- Hiển thị thông báo lỗi từ session -->
+      <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <?= htmlspecialchars($_SESSION['error']) ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['error']); // Xóa sau khi hiển thị ?>
+      <?php endif; ?>
+      
+      <!-- Hiển thị thông báo thành công từ session -->
+      <?php if (isset($_SESSION['success'])): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <?= htmlspecialchars($_SESSION['success']) ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['success']); // Xóa sau khi hiển thị ?>
+      <?php endif; ?>
+      
+      <!-- Hiển thị thông báo lỗi từ URL parameter (giữ lại cho tương thích) -->
       <?php if (isset($_GET['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <!-- Kiểm tra lỗi: không thể khóa chính mình -->
           <?php if ($_GET['error'] === 'cannot_ban_self'): ?>
             <i class="bi bi-exclamation-triangle"></i> Bạn không thể khóa tài khoản của chính mình!
           <?php endif; ?>
@@ -29,8 +59,9 @@
         </div>
       <?php endif; ?>
 
-      <!-- Thống kê -->
+      <!-- Thống kê số lượng người dùng theo từng role -->
       <div class="row mb-4">
+        <!-- Card tổng số: $stats['total'] từ controller -->
         <div class="col-md-2">
           <div class="card bg-primary text-white">
             <div class="card-body">
@@ -39,6 +70,7 @@
             </div>
           </div>
         </div>
+        <!-- Card số Admin: $stats['admin'] từ controller -->
         <div class="col-md-2">
           <div class="card bg-danger text-white">
             <div class="card-body">
@@ -47,6 +79,7 @@
             </div>
           </div>
         </div>
+        <!-- Card số Manager: $stats['manager'] từ controller, ?? 0 nếu không có -->
         <div class="col-md-2">
           <div class="card bg-info text-white">
             <div class="card-body">
@@ -55,6 +88,7 @@
             </div>
           </div>
         </div>
+        <!-- Card số Staff: $stats['staff'] từ controller -->
         <div class="col-md-2">
           <div class="card bg-warning text-white">
             <div class="card-body">
@@ -63,6 +97,7 @@
             </div>
           </div>
         </div>
+        <!-- Card số Customer: $stats['customer'] từ controller -->
         <div class="col-md-2">
           <div class="card bg-success text-white">
             <div class="card-body">
@@ -73,8 +108,9 @@
         </div>
       </div>
 
-      <!-- Tabs -->
+      <!-- Tabs điều hướng: 2 tab (Nhân viên & Quản lý / Khách hàng) -->
       <ul class="nav nav-tabs mb-3" id="userTabs" role="tablist">
+        <!-- Tab 1: Nhân viên & Quản lý rạp -->
         <li class="nav-item" role="presentation">
           <button class="nav-link <?= ($tab ?? 'staff') === 'staff' ? 'active' : '' ?>" 
                   id="staff-tab" 
@@ -86,6 +122,7 @@
             <i class="bi bi-people"></i> Nhân viên & Quản lý rạp
           </button>
         </li>
+        <!-- Tab 2: Khách hàng -->
         <li class="nav-item" role="presentation">
           <button class="nav-link <?= ($tab ?? 'staff') === 'customer' ? 'active' : '' ?>" 
                   id="customer-tab" 
@@ -147,7 +184,7 @@
                 </tr>
               </thead>
               <tbody>
-                <?php if (!empty($data) && ($tab ?? 'staff') === 'staff'): ?>
+                <?php if (!empty($data) && ($tab ?? 'staff') !== 'customer'): ?>
                   <?php foreach ($data as $item): ?>
                     <tr>
                       <td><?= $item['id'] ?></td>
@@ -207,6 +244,7 @@
                           <a href="<?= BASE_URL ?>?act=users-edit&id=<?= $item['id'] ?>" class="btn btn-sm btn-warning" title="Sửa">
                             <i class="bi bi-pencil"></i>
                           </a>
+                          <!-- Nút khóa/mở khóa: chỉ hiển thị cho non-admin -->
                           <?php if (($item['role'] ?? '') !== 'admin'): ?>
                             <?php if (($item['status'] ?? 'active') === 'active'): ?>
                               <a href="<?= BASE_URL ?>?act=users-ban&id=<?= $item['id'] ?>" 
@@ -278,7 +316,7 @@
                 </tr>
               </thead>
               <tbody>
-                <?php if (!empty($data) && ($tab ?? 'staff') === 'customer'): ?>
+                <?php if (!empty($data) && ($tab ?? '') === 'customer'): ?>
                   <?php foreach ($data as $item): ?>
                     <tr>
                       <td><?= $item['id'] ?></td>
@@ -312,6 +350,7 @@
                           <a href="<?= BASE_URL ?>?act=users-edit&id=<?= $item['id'] ?>" class="btn btn-sm btn-warning" title="Sửa">
                             <i class="bi bi-pencil"></i>
                           </a>
+                          <!-- Nút khóa/mở khóa -->
                           <?php if (($item['status'] ?? 'active') === 'active'): ?>
                             <a href="<?= BASE_URL ?>?act=users-ban&id=<?= $item['id'] ?>" 
                                class="btn btn-sm btn-danger" 
