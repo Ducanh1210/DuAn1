@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 11, 2025 at 02:35 PM
+-- Generation Time: Dec 16, 2025 at 02:13 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `duan2`
+-- Database: `duan1`
 --
 
 -- --------------------------------------------------------
@@ -76,7 +76,10 @@ INSERT INTO `bookings` (`id`, `user_id`, `showtime_id`, `discount_id`, `booking_
 (29, 3, NULL, NULL, '2025-12-03 11:02:50', 'A3', NULL, NULL, 75000.00, 0.00, 75000.00, 'paid', NULL, 'BK17647345706049', 2, 21),
 (30, 9, NULL, NULL, '2025-12-03 11:02:51', 'A3', NULL, NULL, 75000.00, 0.00, 75000.00, 'paid', NULL, 'BK17647345715822', 2, 21),
 (31, 3, NULL, NULL, '2025-12-09 00:33:32', 'A1', NULL, NULL, 75000.00, 0.00, 75000.00, 'paid', NULL, 'BK17652152121573', 1, 18),
-(32, 3, NULL, 8, '2025-12-09 16:30:32', 'A1', NULL, NULL, 75000.00, 18750.00, 56250.00, 'paid', NULL, 'BK17652726329554', 2, 21);
+(32, 3, NULL, 8, '2025-12-09 16:30:32', 'A1', NULL, NULL, 75000.00, 18750.00, 56250.00, 'paid', NULL, 'BK17652726329554', 2, 21),
+(33, 3, 1, 1, '2025-12-11 23:25:06', 'D1,D2,D3,D4,E3,E4,E5,E6', NULL, NULL, 660000.00, 165000.00, 495000.00, 'paid', NULL, 'BK17654703064290', 1, 17),
+(34, 3, 359, 5, '2025-12-11 23:46:20', 'A1,A2,A3,A4', NULL, NULL, 260000.00, 104000.00, 156000.00, 'paid', NULL, 'BK17654715801861', 1, 19),
+(35, 3, 116, NULL, '2025-12-11 23:58:15', 'A1,A2,B3,B4,A3,A4,A5,A6', NULL, NULL, 520000.00, 0.00, 520000.00, 'paid', NULL, 'BK17654722955914', 2, 22);
 
 -- --------------------------------------------------------
 
@@ -125,7 +128,8 @@ INSERT INTO `comments` (`id`, `user_id`, `movie_id`, `cinema_id`, `rating`, `con
 (2, 3, 6, 1, 5, 'cũng hay nhm bn cần làm j đó cho khách hàng bt đến nhiều hơn', 'active', '2025-11-27 20:44:25'),
 (3, 3, 7, 3, 5, 'bổ rẻ hay nữa', 'active', '2025-11-27 21:10:59'),
 (4, 3, 10, 1, 5, 'cũng hay đó', 'active', '2025-12-09 00:35:13'),
-(5, 3, 10, 2, 4, 'bình thường', 'active', '2025-12-10 21:11:38');
+(5, 3, 10, 2, 4, 'bình thường', 'active', '2025-12-10 21:11:38'),
+(6, 3, 12, 1, 4, 'nhân viên ngon', 'active', '2025-12-11 23:48:51');
 
 -- --------------------------------------------------------
 
@@ -153,7 +157,8 @@ CREATE TABLE `contacts` (
 
 INSERT INTO `contacts` (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `user_id`, `cinema_id`, `created_at`, `updated_at`) VALUES
 (3, 'Duc anh', 'anh123@gmail.com', '0386036692', 'Đặt vé', 'fnbfdbdfd', 'resolved', 3, 2, '2025-12-06 20:04:41', '2025-12-06 20:18:10'),
-(7, 'nguyễn văn A', 'anh123@gmail.com', '0386036636', 'Đặt vé', 'bcsxvdszd', 'pending', 3, 1, '2025-12-06 20:11:50', '2025-12-06 20:11:50');
+(7, 'nguyễn văn A', 'anh123@gmail.com', '0386036636', 'Đặt vé', 'bcsxvdszd', 'pending', 3, 1, '2025-12-06 20:11:50', '2025-12-06 20:11:50'),
+(9, 'Trương Tổng', 'hhhhhh@gmail.com', '0846146594', 'ngol thí', 'nhân viên ngon quá', 'pending', 11, 3, '2025-12-11 23:43:29', '2025-12-11 23:43:29');
 
 -- --------------------------------------------------------
 
@@ -190,6 +195,8 @@ CREATE TABLE `discount_codes` (
   `benefits` json DEFAULT NULL,
   `status` varchar(20) DEFAULT 'active',
   `cta` varchar(100) DEFAULT NULL,
+  `usage_limit` int DEFAULT NULL,
+  `usage_used` int DEFAULT '0',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Bảng mã giảm giá (movie_id = NULL: áp dụng cho tất cả phim, movie_id != NULL: chỉ áp dụng cho phim cụ thể)';
@@ -198,15 +205,15 @@ CREATE TABLE `discount_codes` (
 -- Dumping data for table `discount_codes`
 --
 
-INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_date`, `end_date`, `movie_id`, `description`, `benefits`, `status`, `cta`, `created_at`, `updated_at`) VALUES
-(1, 'WEEKEND25', 'Giảm giá cuối tuần 25%', 25, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho các suất chiếu cuối tuần (Thứ 6, Thứ 7, Chủ nhật). Áp dụng cho tất cả phim và tất cả rạp.', '[\"Áp dụng cho suất chiếu cuối tuần\", \"Giảm 25% cho mọi vé\", \"Không giới hạn số lượng vé\", \"Áp dụng cho tất cả phim\"]', 'active', 'Đặt vé cuối tuần', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', NULL, 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', '2025-11-20 15:00:00', '2025-11-24 09:19:57'),
-(3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', NULL, 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
-(6, 'FASHION209', '85%', 85, '2025-11-28', '2025-11-30', NULL, '', NULL, 'active', '', '2025-11-26 10:47:51', '2025-11-28 10:02:17'),
-(7, 'TRONCHAY30', 'Giảm giá TRỐN CHẠY TỬ THẦN 30%', 30, '2025-11-28', '2025-12-12', 9, 'Ưu đãi đặc biệt dành riêng cho phim TRỐN CHẠY TỬ THẦN-T18. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 30% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim TRỐN CHẠY TỬ THẦN-T18\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', '2025-11-28 10:00:00', '2025-11-28 10:00:00'),
-(8, 'CHINGA25', 'Giảm giá Chị Ngã Em Nâng 25%', 25, '2025-11-28', '2025-12-11', 12, 'Ưu đãi đặc biệt dành riêng cho phim Chị Ngã Em Nâng. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 25% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim Chị Ngã Em Nâng\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', '2025-11-28 10:00:00', '2025-11-28 10:00:00');
+INSERT INTO `discount_codes` (`id`, `code`, `title`, `discount_percent`, `start_date`, `end_date`, `movie_id`, `description`, `benefits`, `status`, `cta`, `usage_limit`, `usage_used`, `created_at`, `updated_at`) VALUES
+(1, 'WEEKEND25', 'Giảm giá cuối tuần 25%', 25, '2025-11-10', '2025-12-31', 7, 'Ưu đãi đặc biệt cho các suất chiếu cuối tuần (Thứ 6, Thứ 7, Chủ nhật). Áp dụng cho tất cả phim và tất cả rạp.', '[\"Áp dụng cho suất chiếu cuối tuần\", \"Giảm 25% cho mọi vé\", \"Không giới hạn số lượng vé\", \"Áp dụng cho tất cả phim\"]', 'active', 'Đặt vé cuối tuần', 4, 0, '2025-11-20 15:00:00', '2025-12-16 21:11:01'),
+(2, 'HOLIDAY30', 'Giảm giá ngày lễ 30%', 30, '2025-12-20', '2026-01-05', NULL, 'Ưu đãi đặc biệt trong dịp lễ Tết. Áp dụng cho các ngày lễ được chỉ định trong khoảng thời gian từ 20/12/2025 đến 05/01/2026.', '[\"Áp dụng trong dịp lễ Tết\", \"Giảm 30% cho mọi vé\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé dịp lễ', NULL, 0, '2025-11-20 15:00:00', '2025-11-24 09:19:57'),
+(3, 'COUPLE20', 'Ưu đãi cặp đôi 20%', 20, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi dành riêng cho các cặp đôi. Áp dụng khi mua từ 2 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 2 vé\", \"Giảm 20% cho mỗi vé\", \"Ghế liền kề miễn phí\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé cặp đôi', NULL, 0, '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(4, 'FAMILY35', 'Ưu đãi gia đình 35%', 35, '2025-11-01', '2025-12-31', NULL, 'Ưu đãi đặc biệt cho gia đình. Áp dụng khi mua từ 3 vé trở lên trong cùng một đơn đặt vé.', '[\"Áp dụng khi mua từ 3 vé\", \"Giảm 35% cho mỗi vé\", \"Ưu tiên ghế gia đình\", \"Áp dụng cho tất cả suất chiếu\"]', 'active', 'Đặt vé gia đình', NULL, 0, '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(5, 'PREMIERE40', 'Giảm giá buổi chiếu đặc biệt 40%', 40, '2025-11-15', '2025-12-15', NULL, 'Ưu đãi đặc biệt cho các buổi chiếu đặc biệt và phim mới ra mắt. Áp dụng cho các suất chiếu được chỉ định.', '[\"Áp dụng cho buổi chiếu đặc biệt\", \"Giảm 40% cho mỗi vé\", \"Ưu tiên đặt chỗ sớm\", \"Số lượng có hạn\"]', 'active', 'Đặt vé chiếu đặc biệt', NULL, 0, '2025-11-20 15:00:00', '2025-11-20 15:00:00'),
+(6, 'FASHION209', '85%', 85, '2025-11-28', '2025-11-30', NULL, '', NULL, 'active', '', NULL, 0, '2025-11-26 10:47:51', '2025-11-28 10:02:17'),
+(7, 'TRONCHAY30', 'Giảm giá TRỐN CHẠY TỬ THẦN 30%', 30, '2025-11-28', '2025-12-21', 9, 'Ưu đãi đặc biệt dành riêng cho phim TRỐN CHẠY TỬ THẦN-T18. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 30% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim TRỐN CHẠY TỬ THẦN-T18\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', 8, 0, '2025-11-28 10:00:00', '2025-12-16 21:10:28'),
+(8, 'CHINGA25', 'Giảm giá Chị Ngã Em Nâng 25%', 25, '2025-12-10', '2025-12-21', 12, 'Ưu đãi đặc biệt dành riêng cho phim Chị Ngã Em Nâng. Áp dụng cho tất cả suất chiếu của phim này.', '[\"Giảm 25% cho tổng đơn hàng\", \"Chỉ áp dụng cho phim Chị Ngã Em Nâng\", \"Áp dụng cho tất cả suất chiếu\", \"Không giới hạn số lượng vé\"]', 'active', 'Đặt vé ngay', 2, 0, '2025-11-28 10:00:00', '2025-12-16 21:10:00');
 
 -- --------------------------------------------------------
 
@@ -265,7 +272,19 @@ INSERT INTO `movies` (`id`, `genre_id`, `cinema_id`, `title`, `description`, `du
 (12, 2, NULL, 'Chị Ngã Em Nâng', 'Giữa muôn vàn phim chiếu rạp hay tháng 10, \"Chị Ngã Em Nâng\" nổi bật như một bản giao hòa đầy cảm xúc về tình thân và nghị lực con người. Bộ phim khắc họa hành trình của hai chị em Thương và Lực là những người lớn lên trong gia đình gắn bó với nghề làm nhang truyền thống. Với tuổi thơ nhiều mất mát, Thương trở thành điểm tựa duy nhất cho em trai, mang trong mình khát vọng đổi đời và niềm tin mãnh liệt vào tương lai. Thế nhưng, khi thành công đến, sự kỳ vọng và áp lực vô tình khiến tình chị em rạn nứt, đẩy họ đến những lựa chọn đau lòng. \"Chị Ngã Em Nâng\" chạm đến trái tim người xem bằng những giá trị nhân văn sâu sắc, về tình thương, sự bao dung và ý nghĩa của hai chữ \"gia đình\".', 122, 'image/hh.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-12-11', '2025-12-20', '3D', 'Tiếng Việt', 'Phụ Đề', 'C13', 'Việt Nam', 'active', '2025-11-19 09:40:28', '2025-12-11 21:34:40'),
 (15, 7, NULL, 'Anh Trai Say Xe', 'Anh Trai Say Xe” xoay quanh nhóm bạn thân từ thời cấp 3 gồm Tae Jeong, Do Jin, Yeon Min và Geum Bok. Họ từng hứa sẽ đi du lịch cùng nhau sau khi tốt nghiệp, nhưng vì cuộc sống mỗi người một hướng: kẻ bận kiếm sống, người xuất gia, kẻ định cư, người lại gặp vấn đề tâm lý và lời hứa hẹn khi xưa cứ thế bị bỏ lỡ suốt hơn mười năm. Khi hội bạn này quyết định thực hiện chuyến xuất ngoại đầu tiên tại Bangkok, mọi chuyện nhanh chóng vượt khỏi tầm kiểm soát. Bốn anh trai liên tục gặp tình huống dở khóc dở cười, tạo nên hành trình đầy tiếng cười, kịch tính và cả những khoảnh khắc lắng đọng. Sự xuất hiện của cô nàng “vô duyên” Ok Sim càng khiến chuyến đi trở thành ký ức không thể quên. Đây là những bộ phim chiếu rạp hay đáng mong chờ cho những tháng cuối năm 2025.', 110, 'image/p1.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-12-15', '2025-12-26', '2D', 'Tiếng Việt', 'Phụ Đề', 'P', 'Hàn Quốc', 'active', '2025-12-10 10:14:14', '2025-12-10 21:36:13'),
 (16, 3, NULL, 'Núi Tế Vong', 'Núi Tế Vong” kể về Gia Minh, Ngọc Hân và An Vĩ – ba sinh viên trong câu lạc bộ leo núi. Trong một chuyến thám hiểm, họ phớt lờ cảnh báo địa phương và bước vào khu vực cấm dưới Núi Ngọc Sơn, nơi đây nổi tiếng với lời truyền: “Nếu thấy bóng người mặc áo mưa vàng, tuyệt đối đừng đi theo.” Cả nhóm nhanh chóng bị lạc và rơi vào một vòng lặp kỳ quái dù đã đánh dấu đường đi. Giữa sương mù dày đặc, một bóng người khoác áo mưa vàng xuất hiện tưởng chừng đem lại hy vọng, nhưng lại mở ra chuỗi hiện tượng rùng rợn liên tiếp. Khi một người trong nhóm mất tích bí ẩn, hai người còn lại phải đối mặt với nỗi ám ảnh tột độ, bị săn đuổi bởi một thực thể ma quỷ và mắc kẹt trong địa ngục của sự lặp lại. Bộ phim dựa trên một kỳ án nổi tiếng của Đài Loan, tái hiện “Vong Hồn Áo Mưa Vàng” đầy ám ảnh.', 122, 'image/p2.jpg', 'https://youtu.be/_ygZTJBJkJ4?si=u8Extq4lLZlTT5Go', '2025-12-15', '2025-12-20', '3D', 'Tiếng Việt', 'Phụ Đề', 'C13', 'Mỹ', 'active', '2025-11-19 09:40:28', '2025-12-10 21:36:36'),
-(17, 2, NULL, 'Sư Thầy Gặp Sư Lầy', '“Sư Thầy Gặp Sư Lầy” theo chân Luang Phi Pae – một nhà sư Thái Lan nghiêm khắc, tu tập trong truyền thống Phật giáo Nam tông với giới luật chặt chẽ. Trong chuyến sang Nhật dự lễ cưới của em gái, Sư Pae bàng hoàng khi phát hiện chú rể lại là một nhà sư Nhật thuộc tông phái cho phép tăng sĩ kết hôn. Sự khác biệt quan niệm về tu hành, giới luật và đời sống gia đình khiến hai bên liên tục rơi vào những tình huống oái oăm, hài hước. Khi mâu thuẫn giữa “không được kết hôn” và “kết hôn là bình thường” dần bùng lên, bộ phim mở ra hành trình vừa vui nhộn vừa cảm động, khai thác sự va chạm văn hoá và niềm tin tôn giáo theo góc nhìn nhẹ nhàng, nhân văn.', 90, 'image/p3.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-12-15', '2025-12-22', '2D', 'Tiếng Việt', 'Phụ Đề', 'C16', 'Thái Lan', 'active', '2025-12-10 10:30:11', '2025-12-10 21:37:09');
+(17, 2, NULL, 'Sư Thầy Gặp Sư Lầy', '“Sư Thầy Gặp Sư Lầy” theo chân Luang Phi Pae – một nhà sư Thái Lan nghiêm khắc, tu tập trong truyền thống Phật giáo Nam tông với giới luật chặt chẽ. Trong chuyến sang Nhật dự lễ cưới của em gái, Sư Pae bàng hoàng khi phát hiện chú rể lại là một nhà sư Nhật thuộc tông phái cho phép tăng sĩ kết hôn. Sự khác biệt quan niệm về tu hành, giới luật và đời sống gia đình khiến hai bên liên tục rơi vào những tình huống oái oăm, hài hước. Khi mâu thuẫn giữa “không được kết hôn” và “kết hôn là bình thường” dần bùng lên, bộ phim mở ra hành trình vừa vui nhộn vừa cảm động, khai thác sự va chạm văn hoá và niềm tin tôn giáo theo góc nhìn nhẹ nhàng, nhân văn.', 90, 'image/p3.jpg', 'https://youtu.be/elpzTvcWy0Q?si=_CHytHk32w_WIgVd', '2025-12-15', '2025-12-22', '2D', 'Tiếng Việt', 'Phụ Đề', 'C16', 'Thái Lan', 'active', '2025-12-10 10:30:11', '2025-12-10 21:37:09'),
+(18, 6, NULL, 'Zootopia 2', 'Trong bộ phim \"Zootopia 2 - Phi Vụ Động Trời 2\" từ Walt Disney Animation Studios, hai thám tử Judy Hopps (lồng tiếng bởi Ginnifer Goodwin) và Nick Wilde (lồng tiếng bởi Jason Bateman) bước vào hành trình truy tìm một sinh vật bò sát bí ẩn vừa xuất hiện tại Zootopia và khiến cả vương quốc động vật bị đảo lộn. Để phá được vụ án, Judy và Nick buộc phải hoạt động bí mật tại những khu vực mới lạ của thành phố – nơi mối quan hệ đồng nghiệp của họ bị thử thách hơn bao giờ hết.', 120, 'image/zootopia.jpg', 'https://www.youtube.com/watch?v=BjkIOU5PhyQ', '2025-12-11', '2025-12-31', '2D', 'Tiếng Anh', 'Tiếng Việt', 'P', 'Animation USA', 'active', '2025-12-11 22:35:06', '2025-12-11 22:35:06'),
+(19, 6, NULL, 'Vua của các vua', 'Trong một đêm Giáng Sinh đầy tuyết trắng, nhà văn Charles Dickens kể cho cậu con trai nhỏ của mình nghe câu chuyện kỳ diệu về “Vua của các Vua” – Chúa Giê-su. Cậu bé tưởng tượng mình được bước vào chính thế giới ấy - nơi có ánh sao rực rỡ, tiếng hát thiên thần vang vọng, và những phép lạ tuyệt vời xảy ra khắp nơi. Cậu theo chân Chúa Giê-su, chứng kiến lòng nhân hậu, tình yêu thương và những điều kỳ diệu Người mang đến cho mọi người. Khi câu chuyện đi đến hành trình gian nan và phép màu phục sinh, cậu bé hiểu ra ý nghĩa thật sự của niềm tin, sự tha thứ và hy vọng — những món quà quý giá nhất mà mùa Giáng Sinh gửi tặng cho mỗi trái tim.', 60, 'image/vuacuacacvua.jpg', 'https://www.youtube.com/watch?v=0kCRLxU4M8Y', '2025-12-14', '2025-12-31', '2D', 'Tiếng Hàn Quốc', 'Tiếng Việt', 'P', 'Animation Korea', 'active', '2025-12-11 22:49:50', '2025-12-11 22:49:50'),
+(20, 3, NULL, 'Ma lủng tường', 'Một gia đình chết một cách khủng khiếp. Một cô gái bị buộc tội là kẻ giết người.Cuộc chiến trừ tà đẫm máu và gây choáng nhất cuối năm giữa hậu duệ một gia tộc diệt quỷ cùng những thế lực tà ác khủng khiếp nhất xứ vạn đảo.', 99, 'image/malungtuong.jpg', 'https://www.youtube.com/watch?v=W3MX-xMTivU', '2025-12-23', '2026-01-11', '3D', 'Tiếng Anh', 'Tiếng Việt', 'C18', 'Horror', 'active', '2025-12-11 22:58:12', '2025-12-16 19:14:19'),
+(24, 1, NULL, 'AVATAR', 'phần 2 thú vị của bộ phim avatar', 120, 'image/avatar.jpg', 'https://www.youtube.com/watch?v=Ma1x7ikpid8', '2025-12-26', '2026-01-03', '3D', 'Tiếng Anh', 'Tiếng Việt', 'C16', 'AEON', 'active', '2025-12-16 19:19:17', '2025-12-16 19:19:17'),
+(25, 1, NULL, 'Chú thuật hồi chiến', 'thử thách gha shibuya đầy hấp hẫn và hồi hộp', 120, 'image/chuthuathoichien.jpg', 'https://www.youtube.com/watch?v=EWKm0lolQRM', '2025-12-22', '2026-01-11', '3D', 'Tiếng Nhật', 'Tiếng Việt', 'C13', 'Japan movie', 'active', '2025-12-16 19:24:25', '2025-12-16 19:24:25'),
+(26, 1, NULL, 'SPONGEBOB', 'tuổi thơ của biết bao người quay trở lại', 120, 'image/spongebob.jpg', 'https://www.youtube.com/watch?v=XdPt8QWTypI', '2025-12-23', '2025-12-26', '3D', 'Tiếng Nhật', 'Tiếng Việt', 'P', 'USA', 'active', '2025-12-16 19:27:29', '2025-12-16 19:27:29'),
+(27, 2, NULL, 'SCARLET', 'Bộ phim hoạt hình hot nhất năm', 120, 'image/scarlet.jpg', 'https://www.youtube.com/watch?v=uveBZ_JKrU4', '2025-12-23', '2026-01-11', '2D', 'Tiếng Anh', 'Tiếng Việt', 'P', 'Japan', 'active', '2025-12-16 19:32:10', '2025-12-16 19:32:10'),
+(28, 1, NULL, 'Em sẽ khử anh', 'bộ phim hành động kịch tính', 90, 'image/emsekhuanh.jpg', 'https://www.youtube.com/watch?v=5ijfhBt40ck', '2025-12-27', '2026-01-11', '2D', 'Tiếng Anh', 'Tiếng Việt', 'C16', 'AEON', 'active', '2025-12-16 19:35:57', '2025-12-16 19:35:57'),
+(29, 3, NULL, 'Thử thách thần chết', 'Thử thách thần chết sẽ đưa bạn ...', 120, 'image/thuthachthanchet.jpg', 'https://www.youtube.com/watch?v=PPwIGAajeXc', '2025-12-25', '2026-01-10', '3D', 'Tiếng Nhật', 'Tiếng Việt', 'C16', 'AEON', 'active', '2025-12-16 19:39:43', '2025-12-16 19:39:43'),
+(30, 3, NULL, 'Oán thai đòi mẹ', 'Bộ phim kinh dị vn', 120, 'image/oanthaidoime.jpg', 'https://www.youtube.com/watch?v=VsvB5pzmx3g', '2025-12-28', '2026-01-11', '3D', 'Tiếng Anh', 'Tiếng Việt', 'C18', 'Horror', 'active', '2025-12-16 19:44:55', '2025-12-16 19:44:55'),
+(31, 2, NULL, 'Tom & Jerry', 'Bộ phim hoạt hình bất hủ', 120, 'image/tom.jpg', 'https://www.youtube.com/watch?v=kP9TfCWaQT4', '2025-12-31', '2026-01-11', '3D', 'Tiếng Anh', 'Tiếng Việt', 'C16', 'USA', 'active', '2025-12-16 19:48:44', '2025-12-16 19:48:44'),
+(32, 7, NULL, 'Linh trưởng', 'linh trưởng', 60, 'image/linhtruong.jpg', 'https://www.youtube.com/watch?v=vA8iXY8a1YQ', '2025-12-27', '2026-01-11', '3D', 'Tiếng Anh', 'Tiếng Việt', 'C13', 'USA', 'active', '2025-12-16 19:52:05', '2025-12-16 19:52:05');
 
 -- --------------------------------------------------------
 
@@ -301,7 +320,36 @@ INSERT INTO `movie_cinemas` (`id`, `movie_id`, `cinema_id`, `created_at`) VALUES
 (25, 15, 1, '2025-12-10 03:14:14'),
 (26, 16, 1, '2025-12-10 03:17:25'),
 (27, 17, 2, '2025-12-10 03:30:11'),
-(28, 10, 1, '2025-12-11 14:33:52');
+(28, 10, 1, '2025-12-11 14:33:52'),
+(29, 18, 1, '2025-12-11 15:35:06'),
+(30, 18, 2, '2025-12-11 15:35:06'),
+(31, 18, 3, '2025-12-11 15:35:06'),
+(32, 19, 1, '2025-12-11 15:49:50'),
+(33, 19, 2, '2025-12-11 15:49:50'),
+(34, 19, 3, '2025-12-11 15:49:50'),
+(35, 20, 1, '2025-12-11 15:58:12'),
+(36, 20, 2, '2025-12-11 15:58:12'),
+(43, 24, 1, '2025-12-16 12:19:17'),
+(44, 25, 2, '2025-12-16 12:24:25'),
+(45, 25, 3, '2025-12-16 12:24:25'),
+(46, 26, 1, '2025-12-16 12:27:29'),
+(47, 26, 2, '2025-12-16 12:27:29'),
+(48, 26, 3, '2025-12-16 12:27:29'),
+(49, 27, 1, '2025-12-16 12:32:10'),
+(50, 27, 2, '2025-12-16 12:32:10'),
+(51, 28, 1, '2025-12-16 12:35:57'),
+(52, 28, 2, '2025-12-16 12:35:57'),
+(53, 28, 3, '2025-12-16 12:35:57'),
+(54, 29, 1, '2025-12-16 12:39:43'),
+(55, 29, 2, '2025-12-16 12:39:43'),
+(56, 29, 3, '2025-12-16 12:39:43'),
+(57, 30, 1, '2025-12-16 12:44:55'),
+(58, 31, 1, '2025-12-16 12:48:44'),
+(59, 31, 2, '2025-12-16 12:48:44'),
+(60, 31, 3, '2025-12-16 12:48:44'),
+(61, 32, 1, '2025-12-16 12:52:05'),
+(62, 32, 2, '2025-12-16 12:52:05'),
+(63, 32, 3, '2025-12-16 12:52:05');
 
 -- --------------------------------------------------------
 
@@ -369,7 +417,10 @@ INSERT INTO `payments` (`id`, `booking_id`, `method`, `transaction_code`, `payme
 (17, 29, 'vnpay', '15316675', '2025-12-03 04:03:14', 75000.00, 0.00, 75000.00, 'paid'),
 (18, 30, 'vnpay', '15316674', '2025-12-03 04:03:15', 75000.00, 0.00, 75000.00, 'paid'),
 (19, 31, 'vnpay', '15328492', '2025-12-08 17:34:13', 75000.00, 0.00, 75000.00, 'paid'),
-(20, 32, 'vnpay', '15329950', '2025-12-09 09:40:30', 56250.00, 18750.00, 56250.00, 'paid');
+(20, 32, 'vnpay', '15329950', '2025-12-09 09:40:30', 56250.00, 18750.00, 56250.00, 'paid'),
+(21, 33, 'vnpay', '15335846', '2025-12-11 16:25:26', 495000.00, 165000.00, 495000.00, 'paid'),
+(22, 34, 'vnpay', '15335893', '2025-12-11 16:48:24', 156000.00, 104000.00, 156000.00, 'paid'),
+(23, 35, 'vnpay', '15335902', '2025-12-11 16:58:31', 520000.00, 0.00, 520000.00, 'paid');
 
 -- --------------------------------------------------------
 
@@ -2105,7 +2156,12 @@ INSERT INTO `showtimes` (`id`, `movie_id`, `room_id`, `show_date`, `start_time`,
 (354, 17, 25, '2025-12-28', '19:00:00', '20:30:00', 70000.00, 60000.00, '2D'),
 (355, 17, 21, '2025-12-29', '09:00:00', '10:30:00', 70000.00, 60000.00, '2D'),
 (356, 17, 22, '2025-12-29', '13:00:00', '14:30:00', 70000.00, 60000.00, '2D'),
-(357, 17, 25, '2025-12-29', '19:00:00', '20:30:00', 70000.00, 60000.00, '2D');
+(357, 17, 25, '2025-12-29', '19:00:00', '20:30:00', 70000.00, 60000.00, '2D'),
+(358, 16, 23, '2025-12-11', '21:17:00', '23:19:00', NULL, NULL, '2D'),
+(359, 12, 19, '2025-12-11', '10:25:00', '12:27:00', NULL, NULL, '2D'),
+(360, 12, 19, '2025-12-12', '10:30:00', '12:32:00', NULL, NULL, '2D'),
+(361, 18, 21, '2025-12-11', '21:30:00', '23:30:00', NULL, NULL, '2D'),
+(362, NULL, 22, '2025-12-12', '11:17:00', '12:33:00', NULL, NULL, '2D');
 
 -- --------------------------------------------------------
 
@@ -2173,13 +2229,14 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `birth_date`, `tier_id`, `total_spending`, `created_at`, `role`, `cinema_id`, `status`) VALUES
 (2, 'Nguyễn Đức Anh', 'anp93005@gmail.com', '$2y$10$CWyRPSmpryxfnvWJk.WU6ee587peAVpJ2WM.gPnWxn1EURYPTorwe', '0386036692', '2025-10-28', NULL, 0.00, '2025-11-15 20:56:13', 'admin', NULL, 'active'),
-(3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$7gVirXBuWLl4bzlkZvpaT.MVe380dkGfWNRRmYFa8t.GeG6R9dVp2', '0386036636', '2000-10-12', NULL, 3455000.00, '2025-11-15 21:17:27', 'customer', NULL, 'active'),
+(3, 'nguyễn văn A', 'anh123@gmail.com', '$2y$10$7gVirXBuWLl4bzlkZvpaT.MVe380dkGfWNRRmYFa8t.GeG6R9dVp2', '0386036636', '2000-10-12', NULL, 4206750.00, '2025-11-15 21:17:27', 'customer', NULL, 'active'),
 (4, 'Bảo Châu', 'baochau06@gmail.com', '$2y$10$4msjaSiici7YXHciPSW0Cu/bYvTZuQRdlhm3ifOL4LTesvPmpzGxq', '0386036693', '2006-12-11', NULL, 0.00, '2025-11-18 22:28:02', 'manager', 3, 'active'),
 (5, 'quoc tuan', 'quoctuan26@gmail.com', '$2y$10$hMMowF.wiR0LVaRVr4kf3.Q1r/DAU3gdS6fe/qZbf8neBZAokstIK', '0386036695', '2006-10-02', NULL, 0.00, '2025-11-26 20:54:11', 'manager', 2, 'active'),
 (7, 'Anh Duc', 'anhnguyen121016@gmail.com', '$2y$10$aYquSofzM2G67EOJkmCFU.39C3rEOraUdheu6RV8oFRISvlvkDm8G', '0386036692', '2006-06-14', NULL, 0.00, '2025-11-26 21:46:48', 'staff', 2, 'active'),
 (8, 'nhat minh', 'minh264@gmail.com', '$2y$10$LF5hZWO7P8lwFvEACPVBdOdcIY4WpbPJlW13QikkT12QZiCd59qCy', '0386036652', '2006-06-12', NULL, 0.00, '2025-11-26 22:03:59', 'manager', 1, 'active'),
 (9, 'phong', 'p@gmail.com', '$2y$10$Rhh7ZfmteVo7RQh.FlvaiOS3YXiiO..rOFSpiwbHMwuRSpFnxmXiu', '0846146594', '2006-12-12', NULL, 75000.00, '2025-12-03 11:01:27', 'customer', NULL, 'active'),
-(10, 'Duc anh1', 'ducanh@gmail.com', '$2y$10$5iVpce9YSxtrBDYhp2wq6.FVOIk.0sl60SGduHcmoHqoE2APKPE3u', '0386036563', '2000-10-12', NULL, 0.00, '2025-12-09 00:21:00', 'staff', NULL, 'active');
+(10, 'Duc anh1', 'ducanh@gmail.com', '$2y$10$5iVpce9YSxtrBDYhp2wq6.FVOIk.0sl60SGduHcmoHqoE2APKPE3u', '0386036563', '2000-10-12', NULL, 0.00, '2025-12-09 00:21:00', 'staff', NULL, 'active'),
+(11, 'Trương Tổng', 'hhhhhh@gmail.com', '$2y$10$AoGOHdc/rx.AK0aXqGtwV.yTbHfLywSCFSHrfEWl0Ed8xWtQjUloK', '0846146594', '2006-05-09', NULL, 0.00, '2025-12-11 23:26:19', 'customer', NULL, 'active');
 
 --
 -- Indexes for dumped tables
@@ -2333,7 +2390,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `cinemas`
@@ -2345,13 +2402,13 @@ ALTER TABLE `cinemas`
 -- AUTO_INCREMENT for table `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `contacts`
 --
 ALTER TABLE `contacts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `customer_tiers`
@@ -2375,13 +2432,13 @@ ALTER TABLE `food_drinks`
 -- AUTO_INCREMENT for table `movies`
 --
 ALTER TABLE `movies`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `movie_cinemas`
 --
 ALTER TABLE `movie_cinemas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT for table `movie_genres`
@@ -2393,7 +2450,7 @@ ALTER TABLE `movie_genres`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -2423,7 +2480,7 @@ ALTER TABLE `seats`
 -- AUTO_INCREMENT for table `showtimes`
 --
 ALTER TABLE `showtimes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=358;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=363;
 
 --
 -- AUTO_INCREMENT for table `ticket_prices`
@@ -2435,7 +2492,7 @@ ALTER TABLE `ticket_prices`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Constraints for dumped tables
