@@ -584,6 +584,12 @@ function formatPrice($price)
                                             </span>`
                                             : '<span style="font-size: 12px; color: rgba(255, 255, 255, 0.6);">Áp dụng cho tất cả phim</span>'
                                         }
+                                        ${code.usage_label ? `<span style="font-size: 12px; color: rgba(255, 255, 255, 0.7); font-weight: 500;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                                <path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                            </svg>
+                                            ${code.usage_label}
+                                        </span>` : ''}
                                     </div>
                                 </div>
                                 <button type="button" class="apply-voucher-btn" data-code="${code.code}" data-movie-id="${isMovieSpecific ? movieId : ''}" 

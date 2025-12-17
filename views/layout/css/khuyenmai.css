@@ -2,7 +2,7 @@
    KHUVENMAI.CSS - Trang Khuyến Mãi
    ============================================ */
 
-:root {
+   :root {
     --accent: #ff6978;
     --accent-hover: #ff5067;
     --bg-dark: #0d1113;
@@ -454,12 +454,14 @@
     margin: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
 .promo-card-with-movie .desc {
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     font-size: 12px;
 }
 

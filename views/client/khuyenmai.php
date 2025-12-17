@@ -1,7 +1,4 @@
 <?php
-// KHUYENMAI.PHP - TRANG KHUYẾN MÃI CLIENT
-// Chức năng: Hiển thị danh sách mã giảm giá, ưu đãi, quyền lợi thành viên
-// Biến từ controller: $allPromotions, $movieSpecificPromotions, $otherPromotions, $membershipBenefits, $faqs, $heroStats
 $allPromotions = $allPromotions ?? [];
 $movieSpecificPromotions = $movieSpecificPromotions ?? [];
 $otherPromotions = $otherPromotions ?? [];

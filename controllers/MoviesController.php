@@ -633,13 +633,21 @@ class MoviesController
         $discountCodeModel = new DiscountCode();
         $discountCodes = $discountCodeModel->all();
 
+        // Lấy user_id nếu có (để kiểm tra lượt sử dụng còn lại)
+        $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
+
         // Chuyển đổi discount codes thành format promotions
         $dbPromotions = [];
         $now = date('Y-m-d');
 
         foreach ($discountCodes as $dc) {
             if ($dc['status'] === 'active') {
-                // Xác định trạng thái dựa trên ngày (giống logic admin)
+                // Tính lượt sử dụng còn lại của user
+                $usageLimit = isset($dc['usage_limit']) ? (int)$dc['usage_limit'] : null;
+                $usageUsed = $discountCodeModel->getUserUsageFromBookings($dc['id'], $userId);
+                $remainingUses = $usageLimit !== null ? max(0, $usageLimit - $usageUsed) : null;
+                
+                // Xác định trạng thái dựa trên ngày và lượt sử dụng
                 $startDate = $dc['start_date'] ?? null;
                 $endDate = $dc['end_date'] ?? null;
                 $displayStatus = 'ongoing'; // Mặc định
@@ -650,8 +658,11 @@ class MoviesController
                 } elseif ($endDate && $now > $endDate) {
                     // Đã quá ngày kết thúc -> Đã kết thúc
                     $displayStatus = 'ended';
+                } elseif ($usageLimit !== null && $remainingUses <= 0) {
+                    // Hết lượt sử dụng -> Đã kết thúc
+                    $displayStatus = 'ended';
                 } else {
-                    // Đang trong thời gian hiệu lực -> Đang diễn ra
+                    // Đang trong thời gian hiệu lực và còn lượt -> Đang diễn ra
                     $displayStatus = 'ongoing';
                 }
 
@@ -688,6 +699,14 @@ class MoviesController
                     $benefits[] = 'Có hiệu lực từ ' . $period;
                 }
 
+                // Tạo usage_label
+                $usageLabel = '';
+                if ($usageLimit !== null) {
+                    $usageLabel = "Bạn còn {$remainingUses}/{$usageLimit} lượt";
+                } else {
+                    $usageLabel = 'Không giới hạn lượt';
+                }
+
                 $promoData = [
                     'title' => 'Mã giảm giá: ' . $dc['code'],
                     'tag' => $isMovieSpecific ? 'movie' : 'general',
@@ -697,7 +716,10 @@ class MoviesController
                     'description' => 'Giảm ' . $dc['discount_percent'] . '% cho đơn hàng của bạn.',
                     'benefits' => $benefits,
                     'code' => $dc['code'],
-                    'cta' => 'Sử dụng mã'
+                    'cta' => 'Sử dụng mã',
+                    'usage_label' => $usageLabel,
+                    'remaining_uses' => $remainingUses,
+                    'usage_limit' => $usageLimit
                 ];
 
                 // Thêm thông tin phim nếu là mã giảm giá theo phim
@@ -778,6 +800,7 @@ class MoviesController
         $code = $_GET['code'] ?? '';
         $totalAmount = floatval($_GET['total_amount'] ?? 0);
         $movieId = isset($_GET['movie_id']) && !empty($_GET['movie_id']) ? (int)$_GET['movie_id'] : null;
+        $seatCount = isset($_GET['seat_count']) ? max(1, (int)$_GET['seat_count']) : 1;
 
         if (empty($code)) {
             echo json_encode([
@@ -791,7 +814,7 @@ class MoviesController
         $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
         
         $discountCodeModel = new DiscountCode();
-        $result = $discountCodeModel->validateDiscountCode($code, $totalAmount, $movieId, 1, $userId);
+        $result = $discountCodeModel->validateDiscountCode($code, $totalAmount, $movieId, $seatCount, $userId);
 
         if ($result && !isset($result['error'])) {
             echo json_encode([
@@ -818,8 +841,11 @@ class MoviesController
         $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50; // Lấy limit từ URL (mặc định 50)
         $includeMovieSpecific = isset($_GET['include_movie_specific']) && $_GET['include_movie_specific'] === 'true'; // Có lấy mã phim cụ thể không
         
+        // Lấy user_id nếu có (để kiểm tra lượt sử dụng còn lại)
+        $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
+        
         $discountCodeModel = new DiscountCode(); // Khởi tạo model DiscountCode
-        $codes = $discountCodeModel->getAvailableCodes($movieId, $limit, $includeMovieSpecific || !$movieId); // Lấy danh sách mã giảm giá
+        $codes = $discountCodeModel->getAvailableCodes($movieId, $limit, $includeMovieSpecific || !$movieId, $userId); // Lấy danh sách mã giảm giá
         
         $codes = array_map(function($code) { // Duyệt qua từng mã
             if (isset($code['movie_id']) && ($code['movie_id'] === null || $code['movie_id'] === '' || $code['movie_id'] === 'null')) {

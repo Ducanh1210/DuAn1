@@ -4,6 +4,7 @@
 class DiscountCode
 {
     private $conn; // Kết nối database (PDO)
+    private $lastError = null; // Lưu lỗi cuối cùng để hiển thị/log
 
     public function __construct()
     {
@@ -24,6 +25,12 @@ class DiscountCode
                     LEFT JOIN movies m ON dc.movie_id = m.id
                     ORDER BY dc.created_at DESC";
             $stmt = $this->conn->prepare($sql);
+            if (!$stmt) {
+                $info = $this->conn->errorInfo();
+                $this->lastError = 'Prepare failed (insert): ' . json_encode($info);
+                error_log($this->lastError);
+                return false;
+            }
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -40,6 +47,12 @@ class DiscountCode
         try {
             $sql = "SELECT * FROM discount_codes WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
+            if (!$stmt) {
+                $info = $this->conn->errorInfo();
+                $this->lastError = 'Prepare failed (update): ' . json_encode($info);
+                error_log($this->lastError);
+                return false;
+            }
             $stmt->execute([':id' => $id]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -88,34 +101,16 @@ class DiscountCode
                 return ['error' => 'Mã giảm giá không hoạt động'];
             }
 
-            // Kiểm tra lượt sử dụng còn lại (mỗi ghế sử dụng 1 lượt)
+            // Kiểm tra lượt sử dụng còn lại (mỗi ghế sử dụng 1 lượt) THEO TÀI KHOẢN
             $usageLimit = isset($discount['usage_limit']) ? (int)$discount['usage_limit'] : null;
-            $usageUsed = isset($discount['usage_used']) ? (int)$discount['usage_used'] : 0;
+            $usageUsed = $this->getUserUsageFromBookings($discount['id'], $userId);
+            $remainingUses = $usageLimit !== null ? max(0, $usageLimit - $usageUsed) : null;
             if ($usageLimit !== null) {
-                $remaining = $usageLimit - $usageUsed;
-                if ($remaining <= 0) {
-                    return ['error' => 'Mã giảm giá đã hết lượt sử dụng'];
+                if ($remainingUses <= 0) {
+                    return ['error' => 'Bạn đã hết lượt sử dụng mã này'];
                 }
-                if ($seatCount > $remaining) {
-                    return ['error' => "Mã giảm giá chỉ còn {$remaining} lượt, không đủ cho số ghế đã chọn"];
-                }
-            }
-
-            // Kiểm tra nếu usage_limit = 1, mỗi user chỉ được dùng 1 lần
-            if ($usageLimit === 1 && $userId !== null) {
-                $checkUserSql = "SELECT COUNT(*) FROM bookings 
-                                WHERE user_id = :user_id 
-                                AND discount_id = :discount_id 
-                                AND status IN ('pending', 'confirmed', 'paid')";
-                $checkUserStmt = $this->conn->prepare($checkUserSql);
-                $checkUserStmt->execute([
-                    ':user_id' => (int)$userId,
-                    ':discount_id' => (int)$discount['id']
-                ]);
-                $userUsageCount = (int)$checkUserStmt->fetchColumn();
-                
-                if ($userUsageCount > 0) {
-                    return ['error' => 'Bạn đã sử dụng mã giảm giá này rồi. Mỗi tài khoản chỉ được sử dụng 1 lần.'];
+                if ($seatCount > $remainingUses) {
+                    return ['error' => "Bạn chỉ còn {$remainingUses} lượt, không đủ cho số ghế đã chọn"];
                 }
             }
 
@@ -155,7 +150,11 @@ class DiscountCode
                 'end_date' => $discount['end_date'],
                 'movie_id' => $discount['movie_id'] ?? null,
                 'usage_limit' => $usageLimit,
-                'usage_used' => $usageUsed
+                'usage_used' => $usageUsed,
+                'remaining_uses' => $remainingUses,
+                'usage_label' => $usageLimit !== null
+                    ? "Bạn còn {$remainingUses}/{$usageLimit} lượt"
+                    : 'Không giới hạn lượt'
             ];
         } catch (Exception $e) {
             error_log('Error in DiscountCode->validateDiscountCode(): ' . $e->getMessage());
@@ -183,7 +182,7 @@ class DiscountCode
                 }
             }
 
-            return $stmt->execute([
+            $ok = $stmt->execute([
                 ':code' => strtoupper(trim($data['code'])),
                 ':title' => trim($data['title']),
                 ':discount_percent' => (int)($data['discount_percent'] ?? 0),
@@ -195,10 +194,21 @@ class DiscountCode
                 ':status' => $data['status'] ?? 'active',
                 ':cta' => $data['cta'] ?? null,
                 ':usage_limit' => isset($data['usage_limit']) && $data['usage_limit'] !== '' ? (int)$data['usage_limit'] : null,
-                ':usage_used' => 0
+                ':usage_used' => isset($data['usage_used']) ? (int)$data['usage_used'] : 0
             ]);
+            if (!$ok) {
+                $info = $stmt->errorInfo();
+                $this->lastError = 'Insert failed: ' . json_encode($info);
+                error_log('Error in DiscountCode->insert(): ' . $this->lastError);
+            }
+            return $ok;
         } catch (Exception $e) {
-            error_log('Error in DiscountCode->insert(): ' . $e->getMessage());
+            $this->lastError = $e->getMessage();
+            if (isset($stmt)) {
+                $info = $stmt->errorInfo();
+                $this->lastError .= ' | PDO: ' . json_encode($info);
+            }
+            error_log('Error in DiscountCode->insert(): ' . $this->lastError);
             return false;
         }
     }
@@ -212,7 +222,8 @@ class DiscountCode
             $sql = "UPDATE discount_codes 
                     SET code = :code, title = :title, discount_percent = :discount_percent, 
                         start_date = :start_date, end_date = :end_date, movie_id = :movie_id, 
-                        description = :description, benefits = :benefits, status = :status, cta = :cta, usage_limit = :usage_limit, updated_at = NOW()
+                        description = :description, benefits = :benefits, status = :status, cta = :cta, 
+                        usage_limit = :usage_limit, usage_used = :usage_used, updated_at = NOW()
                     WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
 
@@ -226,7 +237,7 @@ class DiscountCode
                 }
             }
 
-            return $stmt->execute([
+            $ok = $stmt->execute([
                 ':id' => $id,
                 ':code' => strtoupper(trim($data['code'])),
                 ':title' => trim($data['title']),
@@ -238,12 +249,32 @@ class DiscountCode
                 ':benefits' => $benefits,
                 ':status' => $data['status'] ?? 'active',
                 ':cta' => $data['cta'] ?? null,
-                ':usage_limit' => isset($data['usage_limit']) && $data['usage_limit'] !== '' ? (int)$data['usage_limit'] : null
+                ':usage_limit' => isset($data['usage_limit']) && $data['usage_limit'] !== '' ? (int)$data['usage_limit'] : null,
+                ':usage_used' => isset($data['usage_used']) ? (int)$data['usage_used'] : 0
             ]);
+            if (!$ok) {
+                $info = $stmt->errorInfo();
+                $this->lastError = 'Update failed: ' . json_encode($info);
+                error_log('Error in DiscountCode->update(): ' . $this->lastError);
+            }
+            return $ok;
         } catch (Exception $e) {
-            error_log('Error in DiscountCode->update(): ' . $e->getMessage());
+            $this->lastError = $e->getMessage();
+            if (isset($stmt)) {
+                $info = $stmt->errorInfo();
+                $this->lastError .= ' | PDO: ' . json_encode($info);
+            }
+            error_log('Error in DiscountCode->update(): ' . $this->lastError);
             return false;
         }
+    }
+
+    /**
+     * Lấy mô tả lỗi cuối cùng (để controller hiển thị thân thiện hơn).
+     */
+    public function getLastError(): ?string
+    {
+        return $this->lastError;
     }
 
     /**
@@ -267,17 +298,23 @@ class DiscountCode
     public function codeExists($code, $excludeId = null)
     {
         try {
-            $sql = "SELECT COUNT(*) FROM discount_codes WHERE code = :code";
-            $params = [':code' => strtoupper(trim($code))];
+            $normalizedCode = strtoupper(trim($code));
+            $stmt = $this->conn->prepare(
+                "SELECT id FROM discount_codes WHERE code = :code LIMIT 1"
+            );
+            $stmt->execute([':code' => $normalizedCode]);
+            $foundId = $stmt->fetchColumn();
 
-            if ($excludeId) {
-                $sql .= " AND id != :exclude_id";
-                $params[':exclude_id'] = $excludeId;
+            if ($foundId === false) {
+                return false; // Không tìm thấy mã
             }
 
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute($params);
-            return $stmt->fetchColumn() > 0;
+            // Nếu tìm thấy chính bản ghi đang sửa thì không tính là trùng
+            if ($excludeId !== null && (int)$foundId === (int)$excludeId) {
+                return false;
+            }
+
+            return true;
         } catch (Exception $e) {
             error_log('Error in DiscountCode->codeExists(): ' . $e->getMessage());
             return false;
@@ -289,8 +326,9 @@ class DiscountCode
      * @param int|null $movieId Nếu có, chỉ lấy mã áp dụng cho phim đó hoặc mã tổng quát
      * @param int $limit Số lượng mã tối đa
      * @param bool $includeMovieSpecific Nếu true, bao gồm cả mã áp dụng cho phim cụ thể
+     * @param int|null $userId ID người dùng để kiểm tra lượt sử dụng còn lại
      */
-    public function getAvailableCodes($movieId = null, $limit = 5, $includeMovieSpecific = false)
+    public function getAvailableCodes($movieId = null, $limit = 5, $includeMovieSpecific = false, $userId = null)
     {
         try {
             $now = date('Y-m-d'); // Lấy ngày hiện tại
@@ -300,27 +338,25 @@ class DiscountCode
                     FROM discount_codes dc
                     LEFT JOIN movies m ON dc.movie_id = m.id
                     WHERE dc.status = 'active'"; // Chỉ lấy mã active
-            
+
             $params = [];
-            
-            if (!$includeMovieSpecific) { // Nếu từ thanh toán (không phải modal)
-                $sql .= " AND (dc.usage_limit IS NULL OR dc.usage_used < dc.usage_limit)"; // Chưa hết lượt sử dụng
-                $sql .= " AND (dc.start_date IS NULL OR dc.start_date <= :now)"; // Đã đến ngày bắt đầu
-                $sql .= " AND (dc.end_date IS NULL OR dc.end_date >= :now)"; // Chưa đến ngày kết thúc
-                $params[':now'] = $now; // Thêm tham số ngày hiện tại
-            }
-            
-            if ($includeMovieSpecific) { // Nếu từ modal -> lấy tất cả mã
-                // Không filter movie_id
+
+            // Luôn lọc theo hạn sử dụng (ngày bắt đầu và kết thúc)
+            $sql .= " AND (dc.start_date IS NULL OR dc.start_date <= :now)"; // Đã đến ngày bắt đầu
+            $sql .= " AND (dc.end_date IS NULL OR dc.end_date >= :now)"; // Chưa đến ngày kết thúc
+            $params[':now'] = $now; // Thêm tham số ngày hiện tại
+
+            if ($includeMovieSpecific) { // Nếu từ modal -> lấy cả mã phim cụ thể
+                // Không filter movie_id, lấy tất cả
             } elseif ($movieId) { // Nếu có movie_id
                 $sql .= " AND (dc.movie_id IS NULL OR dc.movie_id = :movie_id)"; // Mã cho phim này hoặc tất cả phim
                 $params[':movie_id'] = $movieId; // Thêm tham số movie_id
             } else { // Không có movie_id
                 $sql .= " AND dc.movie_id IS NULL"; // Chỉ lấy mã cho tất cả phim
             }
-            
+
             $sql .= " ORDER BY dc.discount_percent DESC, dc.created_at DESC LIMIT :limit"; // Sắp xếp giảm dần theo % và giới hạn số lượng
-            
+
             $stmt = $this->conn->prepare($sql); // Chuẩn bị câu lệnh SQL
             foreach ($params as $key => $value) {
                 $stmt->bindValue($key, $value); // Gán giá trị cho tham số
@@ -328,15 +364,29 @@ class DiscountCode
             $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT); // Gán limit
             $stmt->execute(); // Thực thi query
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC); // Lấy kết quả dạng mảng
-            
-            foreach ($results as &$result) { // Duyệt qua từng kết quả
+
+            // Lọc theo lượt sử dụng còn lại của user
+            $filteredResults = [];
+            foreach ($results as $result) {
                 if (isset($result['movie_id']) && ($result['movie_id'] === 'null' || $result['movie_id'] === '')) {
                     $result['movie_id'] = null; // Chuyển string "null" thành null
                 }
+                $usageLimit = isset($result['usage_limit']) ? (int)$result['usage_limit'] : null;
+                $usageUsed = $this->getUserUsageFromBookings($result['id'], $userId);
+                $remainingUses = $usageLimit !== null ? max(0, $usageLimit - $usageUsed) : null;
+                
+                // Chỉ thêm mã nếu còn lượt sử dụng (hoặc không giới hạn)
+                if ($usageLimit === null || $remainingUses > 0) {
+                    $result['remaining_uses'] = $remainingUses;
+                    $result['usage_used'] = $usageUsed;
+                    $result['usage_label'] = $usageLimit !== null
+                        ? "Bạn còn {$remainingUses}/{$usageLimit} lượt"
+                        : 'Không giới hạn lượt';
+                    $filteredResults[] = $result;
+                }
             }
-            unset($result);
-            
-            return $results; // Trả về danh sách mã giảm giá
+
+            return $filteredResults; // Trả về danh sách mã giảm giá đã lọc
         } catch (Exception $e) {
             error_log('Error in DiscountCode->getAvailableCodes(): ' . $e->getMessage()); // Ghi log lỗi
             return []; // Trả về mảng rỗng nếu lỗi
@@ -349,28 +399,44 @@ class DiscountCode
     public function consumeUsage($discountId, $seatCount = 1, $externalConn = null)
     {
         try {
-            $seatCount = max(1, (int)$seatCount);
-            $conn = $externalConn ?? $this->conn;
-
-            $sql = "UPDATE discount_codes
-                    SET usage_used = usage_used + :seat_count,
-                        status = CASE 
-                            WHEN usage_limit IS NOT NULL AND usage_used + :seat_count >= usage_limit THEN 'inactive' 
-                            ELSE status 
-                        END,
-                        updated_at = NOW()
-                    WHERE id = :id
-                      AND (usage_limit IS NULL OR usage_used + :seat_count <= usage_limit)";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([
-                ':seat_count' => $seatCount,
-                ':id' => $discountId
-            ]);
-
-            return $stmt->rowCount() > 0;
+            // Không trừ lượt toàn hệ thống; lượt được tính theo tài khoản qua booking.
+            return true;
         } catch (Exception $e) {
             error_log('Error in DiscountCode->consumeUsage(): ' . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Đếm lượt sử dụng mã của một user dựa trên bookings (tính theo số ghế).
+     */
+    public function getUserUsageFromBookings($discountId, $userId = null)
+    {
+        try {
+            if (empty($userId)) {
+                return 0;
+            }
+            $sql = "SELECT booked_seats FROM bookings 
+                    WHERE discount_id = :discount_id 
+                      AND user_id = :user_id
+                      AND status IN ('pending', 'confirmed', 'paid', 'completed')";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                ':discount_id' => $discountId,
+                ':user_id' => $userId
+            ]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $count = 0;
+            foreach ($rows as $row) {
+                if (!empty($row['booked_seats'])) {
+                    $parts = array_filter(array_map('trim', explode(',', $row['booked_seats'])));
+                    $count += count($parts);
+                }
+            }
+            return $count;
+        } catch (Exception $e) {
+            error_log('Error in DiscountCode->getUserUsageFromBookings(): ' . $e->getMessage());
+            return 0;
         }
     }
 }

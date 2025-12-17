@@ -32,12 +32,13 @@ class DiscountsController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $selectedMovieId = $this->resolveMovieSelection($movies, $_POST['movie_id'] ?? null, $errors);
 
+            $inputCode = strtoupper(trim($_POST['code'] ?? ''));
             // Kiểm tra trường rỗng
-            if (empty(trim($_POST['code'] ?? ''))) {
+            if (empty($inputCode)) {
                 $errors['code'] = "Bạn vui lòng nhập mã giảm giá";
             } else {
                 // Kiểm tra mã code đã tồn tại chưa
-                if ($this->discountCode->codeExists(trim($_POST['code']))) {
+                if ($this->discountCode->codeExists($inputCode)) {
                     $errors['code'] = "Mã giảm giá này đã tồn tại";
                 }
             }
@@ -61,21 +62,22 @@ class DiscountsController
                 }
             }
 
-            if (!empty($_POST['max_discount']) && !is_numeric($_POST['max_discount'])) {
-                $errors['max_discount'] = "Giá trị giảm tối đa phải là số";
-            }
-
             // Validate số lượt sử dụng (tùy chọn, mỗi ghế trừ 1 lượt)
             if (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') {
                 if (!is_numeric($_POST['usage_limit']) || (int)$_POST['usage_limit'] < 0) {
                     $errors['usage_limit'] = "Số lượt sử dụng phải là số không âm";
                 }
             }
-
-            // Validate số lượt sử dụng (tùy chọn, mỗi ghế trừ 1 lượt)
-            if (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') {
-                if (!is_numeric($_POST['usage_limit']) || (int)$_POST['usage_limit'] < 0) {
-                    $errors['usage_limit'] = "Số lượt sử dụng phải là số không âm";
+            if (isset($_POST['usage_used']) && $_POST['usage_used'] !== '') {
+                if (!is_numeric($_POST['usage_used']) || (int)$_POST['usage_used'] < 0) {
+                    $errors['usage_used'] = "Lượt đã dùng phải là số không âm";
+                }
+            }
+            if (empty($errors['usage_limit'] ?? null) && empty($errors['usage_used'] ?? null)) {
+                $limit = ($_POST['usage_limit'] ?? '') === '' ? null : (int)$_POST['usage_limit'];
+                $used = ($_POST['usage_used'] ?? '') === '' ? 0 : (int)$_POST['usage_used'];
+                if ($limit !== null && $used > $limit) {
+                    $errors['usage_used'] = "Lượt đã dùng không được lớn hơn tổng lượt cho phép";
                 }
             }
 
@@ -109,7 +111,7 @@ class DiscountsController
             // Nếu không có lỗi, lưu vào database
             if (empty($errors)) {
                 $data = [
-                    'code' => strtoupper(trim($_POST['code'])),
+                    'code' => $inputCode,
                     'title' => trim($_POST['title']),
                     'discount_percent' => (float)$_POST['discount_percent'],
                     'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
@@ -120,7 +122,8 @@ class DiscountsController
                     'benefits' => $benefits,
                     'status' => $_POST['status'] ?? 'active',
                     'cta' => trim($_POST['cta'] ?? ''),
-                    'usage_limit' => (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') ? (int)$_POST['usage_limit'] : null
+                    'usage_limit' => (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') ? (int)$_POST['usage_limit'] : null,
+                    'usage_used' => (isset($_POST['usage_used']) && $_POST['usage_used'] !== '') ? (int)$_POST['usage_used'] : 0
                 ];
 
                 $result = $this->discountCode->insert($data);
@@ -169,12 +172,15 @@ class DiscountsController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $selectedMovieId = $this->resolveMovieSelection($movies, $_POST['movie_id'] ?? null, $errors);
 
+            $inputCode = strtoupper(trim($_POST['code'] ?? ''));
+            $currentCode = strtoupper(trim($discount['code'] ?? ''));
+
             // Kiểm tra trường rỗng
-            if (empty(trim($_POST['code'] ?? ''))) {
+            if (empty($inputCode)) {
                 $errors['code'] = "Bạn vui lòng nhập mã giảm giá";
             } else {
                 // Kiểm tra mã code đã tồn tại chưa (trừ ID hiện tại)
-                if ($this->discountCode->codeExists(trim($_POST['code']), $id)) {
+                if ($inputCode !== $currentCode && $this->discountCode->codeExists($inputCode, $id)) {
                     $errors['code'] = "Mã giảm giá này đã tồn tại";
                 }
             }
@@ -198,10 +204,6 @@ class DiscountsController
                 }
             }
 
-            if (!empty($_POST['max_discount']) && !is_numeric($_POST['max_discount'])) {
-                $errors['max_discount'] = "Giá trị giảm tối đa phải là số";
-            }
-
             if (empty(trim($_POST['start_date'] ?? ''))) {
                 $errors['start_date'] = "Bạn vui lòng chọn ngày bắt đầu";
             }
@@ -214,6 +216,25 @@ class DiscountsController
             if (!empty($_POST['start_date']) && !empty($_POST['end_date'])) {
                 if (strtotime($_POST['end_date']) < strtotime($_POST['start_date'])) {
                     $errors['end_date'] = "Ngày kết thúc phải sau ngày bắt đầu";
+                }
+            }
+
+            // Validate số lượt sử dụng (tùy chọn, mỗi ghế trừ 1 lượt)
+            if (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') {
+                if (!is_numeric($_POST['usage_limit']) || (int)$_POST['usage_limit'] < 0) {
+                    $errors['usage_limit'] = "Số lượt sử dụng phải là số không âm";
+                }
+            }
+            if (isset($_POST['usage_used']) && $_POST['usage_used'] !== '') {
+                if (!is_numeric($_POST['usage_used']) || (int)$_POST['usage_used'] < 0) {
+                    $errors['usage_used'] = "Lượt đã dùng phải là số không âm";
+                }
+            }
+            if (empty($errors['usage_limit'] ?? null) && empty($errors['usage_used'] ?? null)) {
+                $limit = ($_POST['usage_limit'] ?? '') === '' ? null : (int)$_POST['usage_limit'];
+                $used = ($_POST['usage_used'] ?? '') === '' ? 0 : (int)$_POST['usage_used'];
+                if ($limit !== null && $used > $limit) {
+                    $errors['usage_used'] = "Lượt đã dùng không được lớn hơn tổng lượt cho phép";
                 }
             }
 
@@ -232,10 +253,9 @@ class DiscountsController
             // Nếu không có lỗi, cập nhật vào database
             if (empty($errors)) {
                 $data = [
-                    'code' => strtoupper(trim($_POST['code'])),
+                    'code' => $inputCode,
                     'title' => trim($_POST['title']),
                     'discount_percent' => (float)$_POST['discount_percent'],
-                    'max_discount' => !empty($_POST['max_discount']) ? (float)$_POST['max_discount'] : null,
                     'start_date' => $_POST['start_date'],
                     'end_date' => $_POST['end_date'],
                     'movie_id' => $selectedMovieId,
@@ -243,7 +263,8 @@ class DiscountsController
                     'benefits' => $benefits,
                     'status' => $_POST['status'] ?? 'active',
                     'cta' => trim($_POST['cta'] ?? ''),
-                    'usage_limit' => (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') ? (int)$_POST['usage_limit'] : null
+                    'usage_limit' => (isset($_POST['usage_limit']) && $_POST['usage_limit'] !== '') ? (int)$_POST['usage_limit'] : null,
+                    'usage_used' => (isset($_POST['usage_used']) && $_POST['usage_used'] !== '') ? (int)$_POST['usage_used'] : 0
                 ];
 
                 $result = $this->discountCode->update($id, $data);

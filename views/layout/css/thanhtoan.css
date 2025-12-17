@@ -1111,7 +1111,7 @@ h3.section-title {
 }
 
 [data-theme="light"] .voucher-tab-btn {
-  color: #666;
+  color: #000 !important;
 }
 
 [data-theme="light"] .voucher-tab-btn:hover {
@@ -1159,6 +1159,39 @@ h3.section-title {
 [data-theme="light"] .copy-code-btn:hover {
   background: rgba(0, 0, 0, 0.1);
 }
+
+/* Light mode - tất cả text trong modal đều màu đen (override inline styles) */
+[data-theme="light"] .voucher-modal-body,
+[data-theme="light"] .voucher-modal-body *,
+[data-theme="light"] .voucher-modal-body div[style*="color"],
+[data-theme="light"] .voucher-modal-body span[style*="color"],
+[data-theme="light"] .voucher-modal-body strong[style*="color"] {
+  color: #000 !important;
+}
+
+/* Light mode - các text cụ thể */
+[data-theme="light"] .voucher-modal-card div[style*="color: rgba(255, 255, 255"] {
+  color: #000 !important;
+}
+
+[data-theme="light"] .voucher-modal-card span[style*="color: rgba(255, 255, 255"] {
+  color: #000 !important;
+}
+
+[data-theme="light"] .voucher-modal-card strong[style*="color: rgba(255, 255, 255"] {
+  color: #000 !important;
+}
+
+/* Light mode - border và background cho modal card */
+[data-theme="light"] .voucher-modal-card {
+  border-top-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .voucher-modal-card div[style*="border-top: 1px solid rgba(255, 255, 255"] {
+  border-top-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Dark mode - giữ nguyên màu trắng (không cần override vì inline style đã đúng) */
 
 /* Responsive cho modal */
 @media (max-width: 768px) {
